@@ -1,0 +1,18 @@
+[Unit]
+Description=Garmin IP and Status Monitor
+After=network.target
+
+[Service]
+Type=simple
+# Załadowanie Twoich haseł z centralnego pliku [cite: 1]
+EnvironmentFile=/etc/default/miscale-mqtt
+ExecStart=/bin/bash /root/ha-project/garmin-check.sh
+Restart=always
+RestartSec=30
+User=root
+# Logowanie do pliku dla łatwej diagnostyki
+StandardOutput=append:/root/ha-project/garmin_check.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

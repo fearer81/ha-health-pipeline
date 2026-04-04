@@ -1,0 +1,218 @@
+homeassistant:
+  enabled: true
+advanced:
+  network_key:
+    - 24
+    - 3
+    - 163
+    - 152
+    - 191
+    - 230
+    - 224
+    - 244
+    - 108
+    - 207
+    - 64
+    - 185
+    - 21
+    - 19
+    - 103
+    - 52
+  pan_id: 8161
+  ext_pan_id:
+    - 78
+    - 41
+    - 51
+    - 111
+    - 156
+    - 97
+    - 41
+    - 82
+  log_level: info
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: addons
+  password: UH6tee6viPh4Etaek9eiph0moo3Eez4Wahre1eiz5amu7eiY2AhchieghaeFah5I
+frontend:
+  enabled: true
+  port: 8099
+serial:
+  port: /dev/ttyACM0
+  adapter: deconz
+devices:
+  '0x881a14fffede7f76':
+    friendly_name: Repeater1
+    availability: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/76c0001de83f0bac1e6bd196ca1bc310.png
+  '0x3410f4fffeb4a108':
+    friendly_name: Przedpokój2
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0x3410f4fffeb4be80':
+    friendly_name: Łazienka3
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0x0cae5ffffed8803a':
+    friendly_name: Łazienka1
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0x84ba20fffecf26a1':
+    friendly_name: Łazienka2
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0x003c84fffed57c46':
+    friendly_name: Salon
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0xa4c138d9544b8e65':
+    friendly_name: Przedpokój1
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/29ed2c85862f01312e9e5d739acc8764.png
+  '0xa4c13872890f87f6':
+    friendly_name: Przedpokój1b
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/29ed2c85862f01312e9e5d739acc8764.png
+  '0xa4c138e879679bbf':
+    friendly_name: Pokój
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/29ed2c85862f01312e9e5d739acc8764.png
+  '0xa4c13860b59b96b4':
+    friendly_name: Kuchnia
+    availability: true
+    state_action: true
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/a8ab5d6b9a60f2418d5163d5d030e7bb.png
+  '0x84fd27fffe6dc01e':
+    friendly_name: Włącznik1
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 10800
+        reportable_change: 1
+    icon: device_icons/8f9ce3b1f665ef137cccc873d58ba5d0.png
+  '0x70ac08fffebf9536':
+    friendly_name: Schowek
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 10800
+        reportable_change: 1
+    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
+  '0xa4c13877fd02afdd':
+    friendly_name: Sypialnia
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 3600
+        reportable_change: 1
+    icon: device_icons/29ed2c85862f01312e9e5d739acc8764.png
+  '0x804b50fffee53e08':
+    friendly_name: Włącznik2
+    reporting:
+      - attribute: 778
+        cluster: genDiagnostics
+        minimum_report_interval: 30
+        maximum_report_interval: 10800
+        reportable_change: 1
+    icon: device_icons/8f9ce3b1f665ef137cccc873d58ba5d0.png
+  '0xa4c1388169d89978':
+    friendly_name: PGE2
+  '0xa4c13891d1233802':
+    friendly_name: PGE_PC
+  '0xa4c1385839fa5f88':
+    friendly_name: PGE_TV
+  '0xa4c1388f9106d274':
+    friendly_name: PGE3
+  '0xa4c1385331350184':
+    friendly_name: PGE1
+  '0xa4c13812b06df744':
+    friendly_name: PGE_Pralka
+  '0xa4c1385d79929669':
+    friendly_name: Czujnik_Przedpokój2
+  '0xa4c138ff44be0631':
+    friendly_name: Czujnik_Kuchnia
+  '0xa4c138803c6eeffe':
+    friendly_name: Czujnik_Salon
+  '0xa4c1381ca7bb066d':
+    friendly_name: Czujnik_Pokój
+  '0xa4c138668b596a05':
+    friendly_name: Czujnik_Przedpokój1
+availability:
+  enabled: true
+  active:
+    timeout: 5
+  passive:
+    timeout: 1500
+version: 5
+blocklist:
+  - '0xa4c138b1ac05660c'

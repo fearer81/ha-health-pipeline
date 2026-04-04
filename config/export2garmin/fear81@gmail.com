@@ -1,0 +1,1 @@
+/root/ha-project/external/export2garmin/user/fear81@gmail.com

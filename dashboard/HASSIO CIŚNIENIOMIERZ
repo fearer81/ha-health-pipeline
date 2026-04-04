@@ -1,0 +1,180 @@
+type: custom:flex-table-card
+sort_by: ts-
+entities:
+  include:
+    - sensor.omron_m4_history
+columns:
+  - name: 🕒 Data<br>& Czas
+    data: rows
+    modify: |-
+      (function(){
+        let t = String(x.time);
+        if (t.includes('-')) {
+          let p = t.split(' ');
+          let d = p[0].split('-');
+          return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+        }
+        return t.replace('.2026', '');
+      })()
+    style: >
+      text-align: left; white-space: nowrap !important; width: 1px;
+      padding-right: 15px !important;
+  - name: 🩺<br>Ciśń.
+    data: rows
+    modify: x.pressure && x.pressure.replace(' mmHg','')
+    align: center
+  - name: 🚦<br>St.
+    data: rows
+    modify: |-
+      (function(){
+        if (!x.pressure) return '---';
+        var p = x.pressure.split('/');
+        var s = parseInt(p[0]); var d = parseInt(p[1]);
+        if (s >= 140 || d >= 90) return '🔴';
+        if (s >= 130 || d >= 85) return '🟡';
+        return '🟢';
+      })()
+    align: center
+  - name: ❤️<br>Tęt.
+    data: rows
+    modify: x.pulse && x.pulse.replace(' bpm','')
+    align: center
+  - name: 🧗<br>Str.
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+          const gRows = gHist.attributes.rows;
+          const omronTime = new Date(x.ts * 1000).getTime();
+          const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+          const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+          if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+          return closest.stress || '---';
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: ⚡<br>BB
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+          const gRows = gHist.attributes.rows;
+          const omronTime = new Date(x.ts * 1000).getTime();
+          const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+          const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+          if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+          return closest.bb || '---';
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: 💤<br>RHR
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+          const gRows = gHist.attributes.rows;
+          const omronTime = new Date(x.ts * 1000).getTime();
+          const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+          const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+          if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+          return closest.rhr || '---';
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: 🛌<br>Sen
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+          const gRows = gHist.attributes.rows;
+          const omronTime = new Date(x.ts * 1000).getTime();
+          const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+          const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+          if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+          return (closest.ss && closest.ss != "0") ? closest.ss + '/' + closest.sh + 'h' : '---';
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: 🔄<br>Sync
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+          const gRows = gHist.attributes.rows;
+          const omronTime = new Date(x.ts * 1000).getTime();
+          const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+          const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+          if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+          const ls = String(closest.ls);
+          const timePart = ls.includes('T') ? ls.split('T')[1] : ls.split(' ')[1];
+          return timePart ? timePart.substring(0, 5) : '---';
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: ⚖️<br>Waga
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
+          const parsed = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))}));
+          const last30 = parsed.filter(r => (Date.now()/1000 - r.t) <= (30*24*3600));
+          return last30.length === 0 ? '---' : (last30.reduce((s, r) => s + r.w, 0) / last30.length).toFixed(1);
+        } catch(e){ return '---'; }
+      })()
+    align: center
+  - name: 📊<br>Ktx
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
+          if (!hist || !hist.attributes || !hist.attributes.rows) return '';
+          const sorted = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))})).sort((a,b) => b.t - a.t);
+          if (sorted.length < 2) return '';
+          const diff = sorted[0].w - sorted[1].w;
+          return diff > 0.3 ? '⚠️ ↑' : (diff < -0.3 ? '✅ ↓' : '➖');
+        } catch(e){ return ''; }
+      })()
+    align: center
+strict: true
+card_mod:
+  style: |
+    ha-card {
+      max-height: 310px; /* Wysokość dopasowana do ok. 13-14 wierszy */
+      overflow-y: auto;
+      font-size: 12px;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+    ha-card table {
+      width: 100% !important;
+      border-collapse: collapse;
+      table-layout: auto;
+      user-select: text !important;
+    }
+    ha-card thead th {
+      text-align: center;
+      vertical-align: bottom;
+      padding: 4px !important;
+      line-height: 1.1;
+      font-weight: bold;
+      cursor: pointer;
+      position: sticky;
+      top: 0;
+      background: var(--card-background-color);
+      z-index: 2;
+    }
+    ha-card td {
+      padding: 1px 2px !important;
+      user-select: text !important;
+    }
+    ha-card td:first-child, ha-card th:first-child {
+      width: 1% !important;
+      white-space: nowrap !important;
+    }

@@ -1,0 +1,40 @@
+# PYTHON & VIRTUAL ENVS
+__pycache__/
+*.pyc
+*.pyo
+**/venv/
+
+# LOGI I PLIKI TYMCZASOWE
+*.log
+pass.txt
+
+# HOME ASSISTANT — SEKRETY I KLUCZE GOOGLE
+config/hassio/secrets.yaml
+config/hassio/fearer-*.json
+config/hassio/html5_push_registrations.conf
+config/hassio/custom_components/
+.env
+*.key
+*.token
+
+# HOME ASSISTANT — DANE RUNTIME (BAZY I CACHE)
+config/hassio/*.db*
+config/hassio/**/*.db*
+config/hassio/**/*.db-shm
+config/hassio/**/*.db-wal
+config/hassio/.storage/
+config/hassio/deps/
+config/hassio/tts/
+config/hassio/image/
+config/hassio/zigbee2mqtt/state.json
+
+# SSH SECURITY
+.ssh/
+id_rsa
+id_rsa.pub
+known_hosts
+authorized_keys
+
+# REPOZYTORIA ZEWNĘTRZNE I SYMLINKI
+external/export2garmin/
+user

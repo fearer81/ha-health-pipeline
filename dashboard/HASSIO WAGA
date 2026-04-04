@@ -1,0 +1,82 @@
+type: custom:flex-table-card
+entities:
+  include:
+    - sensor.xiaomi_s400_history
+columns:
+  - name: 🕒<br>Data & Czas
+    data: rows
+    modify: x.time
+    style: |
+      white-space: nowrap;
+      min-width: 130px;
+  - name: ⚖️<br>Waga (kg)
+    data: rows
+    modify: x.weight && parseFloat(x.weight).toFixed(1)
+    align: center
+  - name: 📉<br>Zrzuć (kg)
+    data: rows
+    modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+    align: center
+  - name: Δ<br>Zm (kg)
+    data: rows
+    modify: x.change && parseFloat(x.change).toFixed(1)
+    align: center
+  - name: 🧍<br>BMI (kg_m2)
+    data: rows
+    modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+    align: center
+  - name: 🟡<br>Tłuszcz (%)
+    data: rows
+    modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+    align: center
+  - name: 💧<br>Woda (%)
+    data: rows
+    modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+    align: center
+  - name: 🧠<br>Tłuszcz Trzewny
+    data: rows
+    modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+    align: center
+  - name: 🔥<br>BMR (kcal)
+    data: rows
+    modify: x.bmr && Math.round(parseFloat(x.bmr))
+    align: center
+  - name: ⏳<br>Wiek metab.
+    data: rows
+    modify: >-
+      x.metabolic_age && x.metabolic_age.replace(' y','') &&
+      Math.round(parseFloat(x.metabolic_age))
+    align: center
+strict: true
+clickable: false
+view_layout:
+  column_span: 2
+card_mod:
+  style: |
+    ha-card {
+      user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+      max-height: 360px;
+      overflow-y: auto;       /* Przewijanie pionowe */
+      overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+      font-size: 12px; 
+    }
+    ha-card table {
+      width: 100% !important; /* Tabela trzyma się szerokości karty */
+      border-collapse: collapse;
+    }
+    /* DANE: Zawsze w jednej linii */
+    ha-card td {
+      white-space: nowrap !important;
+      padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+    }
+    /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
+    ha-card thead th {
+      white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+      text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+      vertical-align: bottom;
+      padding: 2px;
+      position: sticky;
+      top: 0;
+      background: var(--card-background-color);
+      z-index: 10;
+    }

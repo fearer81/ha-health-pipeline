@@ -1,0 +1,12 @@
+{
+  "ts": 1775328245,
+  "time": "04.04 20:44",
+  "age_sec": 3521,
+  "age_min": 58,
+  "status": "OK",
+  "measured_at": "04.04.2026 19:45",
+  "weight": 101.0,
+  "bmi": 32.2,
+  "body_fat": 34.0,
+  "visceral_fat": 27.0
+}
