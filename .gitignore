@@ -32,6 +32,6 @@ known_hosts
 authorized_keys
 
 # REPOZYTORIA ZEWNĘTRZNE
-external/omramin/
-external/export2garmin/
+external/omramin/*.*
+external/export2garmin/*.*
 user/
