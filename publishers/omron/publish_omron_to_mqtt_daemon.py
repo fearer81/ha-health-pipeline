@@ -21,9 +21,10 @@ MQTT_DISCOVERY_TOPIC = "homeassistant/sensor/omron_history/config"
 
 HISTORY_SIZE = int(os.getenv("HISTORY_SIZE", "100"))
 
-# Okno czasowe sesji w sekundach (10 min — zgodnie ze specyfikacją Omron M4:
-# "Średnia z ostatnich 2 lub 3 odczytów dokonanych w odstępie 10 minut")
-SESSION_WINDOW = int(os.getenv("SESSION_WINDOW", "600"))
+# Okno czasowe sesji w sekundach (12 min = 10 min spec Omron M4 + 2 min margines)
+# Omron: "Średnia z ostatnich 2 lub 3 odczytów dokonanych w odstępie 10 minut"
+# 720s zamiast 600s — zabezpieczenie przed drobnym dryfem timestampów z chmury
+SESSION_WINDOW = int(os.getenv("SESSION_WINDOW", "720"))
 
 HEALTH_FILE = "/root/ha-project/health/omron.json"
 
