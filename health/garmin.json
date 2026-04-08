@@ -1,10 +1,10 @@
 {
-  "ts": 1775480500,
-  "time": "2026-04-06 15:01:40",
-  "stress": 44,
-  "bb": 52,
-  "rhr": 51,
-  "sleep_score": 74,
-  "sleep_hours": 7.5,
-  "message": "Sync: 2026-04-06T14:48:47"
+  "ts": 1775679498,
+  "time": "2026-04-08 22:18:18",
+  "stress": 53,
+  "bb": 35,
+  "rhr": 55,
+  "sleep_score": 49,
+  "sleep_hours": 8.4,
+  "message": "Sync: 2026-04-08T09:16:14"
 }
