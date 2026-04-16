@@ -4,7 +4,7 @@ entities:
   include:
     - sensor.omron_m4_history
 columns:
-  - name: 🕒 Data<br>& Czas
+  - name: 🕒<br>Data i Czas
     data: rows
     modify: |-
       (function(){
@@ -16,30 +16,45 @@ columns:
         }
         return t.replace('.2026', '');
       })()
-    style: >
-      text-align: left; white-space: nowrap !important; width: 1px;
-      padding-right: 15px !important;
-  - name: 🩺<br>Ciśń.
+  - name: 💢<br>PP
+    data: rows
+    modify: |-
+      (function(){
+        if (!x.pressure) return '---';
+        var p = x.pressure.split('/');
+        var s = parseInt(p[0]);
+        var d = parseInt(p[1]);
+        var pp = s - d;
+        if (pp >= 60) return pp + ' 🔴';
+        if (pp >= 50) return pp + ' 🟡';
+        if (pp >= 40) return pp + ' 🟢';
+        return pp + ' 💚';
+      })()
+    align: center
+  - name: 🩺<br>Ciśnie.
     data: rows
     modify: x.pressure && x.pressure.replace(' mmHg','')
     align: center
-  - name: 🚦<br>St.
+  - name: 🚦<br>S0-3
     data: rows
     modify: |-
       (function(){
         if (!x.pressure) return '---';
         var p = x.pressure.split('/');
         var s = parseInt(p[0]); var d = parseInt(p[1]);
-        if (s >= 140 || d >= 90) return '🔴';
-        if (s >= 130 || d >= 85) return '🟡';
-        return '🟢';
+        if (s >= 180 || d >= 110) return '⛔ S3';
+        if (s >= 160 || d >= 100) return '🔴 S2';
+        if (s >= 140 || d >=  90) return '🟠 S1';
+        if (s >= 130 || d >=  85) return '🟡 S0';
+        if (s >= 120 || d >=  80) return '🔵 Pr';
+        return '🟢 Pr';
       })()
     align: center
-  - name: ❤️<br>Tęt.
+  - name: ❤️<br>Tęt
     data: rows
     modify: x.pulse && x.pulse.replace(' bpm','')
     align: center
-  - name: 🧗<br>Str.
+  - name: 🧗<br>Str
     data: rows
     modify: |-
       (function(){
@@ -69,7 +84,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 💤<br>RHR
+  - name: 💤<br>RhR
     data: rows
     modify: |-
       (function(){
@@ -138,7 +153,7 @@ columns:
           const sorted = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))})).sort((a,b) => b.t - a.t);
           if (sorted.length < 2) return '';
           const diff = sorted[0].w - sorted[1].w;
-          return diff > 0.3 ? '⚠️ ↑' : (diff < -0.3 ? '✅ ↓' : '➖');
+          return diff > 0.3 ? '⚠️↑' : (diff < -0.3 ? '✅↓' : '➖');
         } catch(e){ return ''; }
       })()
     align: center
@@ -146,25 +161,23 @@ strict: true
 card_mod:
   style: |
     ha-card {
-      max-height: 310px; /* Wysokość dopasowana do ok. 13-14 wierszy */
+      max-height: 333px;
       overflow-y: auto;
       font-size: 12px;
       user-select: text !important;
       -webkit-user-select: text !important;
     }
     ha-card table {
-      width: 100% !important;
+      width: 99% !important;
       border-collapse: collapse;
       table-layout: auto;
-      user-select: text !important;
     }
     ha-card thead th {
       text-align: center;
       vertical-align: bottom;
-      padding: 4px !important;
+      padding: 2px 2px !important;
       line-height: 1.1;
       font-weight: bold;
-      cursor: pointer;
       position: sticky;
       top: 0;
       background: var(--card-background-color);
@@ -172,9 +185,9 @@ card_mod:
     }
     ha-card td {
       padding: 1px 2px !important;
-      user-select: text !important;
-    }
-    ha-card td:first-child, ha-card th:first-child {
-      width: 1% !important;
       white-space: nowrap !important;
+    }
+    ha-card td:first-child,
+    ha-card th:first-child {
+      width: 1px;
     }

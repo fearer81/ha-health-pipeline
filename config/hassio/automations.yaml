@@ -1,0 +1,2562 @@
+- id: '1724313766518'
+  alias: Pokój ON 19:55 - 00:30
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: 6a0e20a679995b318aed2b445f08855d
+    entity_id: a7a1603fa9734c9a390584ac02273592
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: time
+      after: '19:55:00'
+      before: 00:30:00
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - sun
+      - fri
+      - sat
+    - condition: device
+      type: is_off
+      device_id: d36e7b1056abfdb139090057df440135
+      entity_id: 719e637226eb5009d8932bd1daf8290a
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1
+    - condition: state
+      entity_id: input_boolean.pokoj_manual
+      state: 'off'
+  actions:
+  - type: turn_on
+    device_id: d36e7b1056abfdb139090057df440135
+    entity_id: 719e637226eb5009d8932bd1daf8290a
+    domain: switch
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.pokoj_manual
+  mode: single
+- id: '1724313797129'
+  alias: Pokój OFF
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 6a0e20a679995b318aed2b445f08855d
+    entity_id: a7a1603fa9734c9a390584ac02273592
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 6
+      seconds: 45
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: d36e7b1056abfdb139090057df440135
+      entity_id: 719e637226eb5009d8932bd1daf8290a
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.pokoj_manual
+      state: 'off'
+  actions:
+  - data:
+      title: Pokój OFF 3m
+      message: ' '
+      data:
+        tag: Pokój OFF 3m
+        ttl: 0
+        priority: high
+    action: notify.mobile_app_xiaomihmi15
+  - delay:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - type: is_not_occupied
+      condition: device
+      device_id: 6a0e20a679995b318aed2b445f08855d
+      entity_id: a7a1603fa9734c9a390584ac02273592
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 6
+        seconds: 45
+    then:
+    - type: turn_off
+      device_id: d36e7b1056abfdb139090057df440135
+      entity_id: 719e637226eb5009d8932bd1daf8290a
+      domain: switch
+    - data:
+        title: Pokój OFF
+        message: ' '
+        data:
+          tag: Pokój OFF
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: false
+    else:
+    - data:
+        title: Pokój will stay ON
+        message: ' '
+        data:
+          tag: Pokój will stay ON
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: false
+  mode: single
+- id: '1724313838302'
+  alias: Przedpokój1 ON 16:00 - 23:00
+  description: Włącza światło w przedpokoju, gdy jest ruch i odpowiednia pora
+  triggers:
+  - type: occupied
+    device_id: 9858452f909bc80957cdc984e2aa5efb
+    entity_id: 32ddeda54c126b8c0cc710242c97a9ac
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  conditions:
+  - condition: time
+    after: '16:00:00'
+    before: '23:00:00'
+  - condition: state
+    entity_id: switch.przedpokoj1_1b
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.przedpokoj1_manual
+    state: 'off'
+  actions:
+  - target:
+      entity_id: switch.przedpokoj1_1b
+    action: switch.turn_on
+    data: {}
+  - target:
+      entity_id: input_boolean.przedpokoj1_manual
+    action: input_boolean.turn_off
+    data: {}
+  mode: single
+- id: '1724313874822'
+  alias: Przedpokój1 OFF
+  description: Wyłącza światło w przedpokoju po 35 sekundach bez ruchu
+  triggers:
+  - type: not_occupied
+    device_id: 9858452f909bc80957cdc984e2aa5efb
+    entity_id: 32ddeda54c126b8c0cc710242c97a9ac
+    domain: binary_sensor
+    for:
+      seconds: 25
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 1ff9b911c0d913696269646267fc72f8
+      entity_id: 1b6dbf68e8f5a3110059c22c291d8229
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.przedpokoj1_manual
+      state:
+      - 'off'
+  actions:
+  - target:
+      entity_id: switch.przedpokoj1_1b
+    action: switch.turn_off
+    data: {}
+  mode: single
+- id: '1724313948590'
+  alias: Przedpokój2 ON 19:55 - 23:30 (weekend 03:00)
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: 70538f04b085f28f7c606cd7246a078b
+    entity_id: 43a167995e5f805fce7d7f8ea2ced4fb
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  conditions:
+  - condition: state
+    entity_id: input_boolean.przedpokoj2_manual
+    state: 'off'
+  actions:
+  - choose:
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:59:59'
+        weekday:
+        - fri
+      sequence:
+      - target:
+          entity_id: switch.przedpokoj2
+        action: switch.turn_on
+        data: {}
+    - conditions:
+      - condition: time
+        after: 00:00:00
+        before: 03:00:00
+        weekday:
+        - sat
+      sequence:
+      - target:
+          entity_id: switch.przedpokoj2
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:59:59'
+        weekday:
+        - sat
+      sequence:
+      - target:
+          entity_id: switch.przedpokoj2
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: 00:00:00
+        before: 03:00:00
+        weekday:
+        - sun
+      sequence:
+      - target:
+          entity_id: switch.przedpokoj2
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:30:00'
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - sun
+      sequence:
+      - target:
+          entity_id: switch.przedpokoj2
+        action: switch.turn_on
+        data: {}
+  - delay: 00:00:01
+  - target:
+      entity_id: input_boolean.przedpokoj2_manual
+    action: input_boolean.turn_off
+    data: {}
+  mode: single
+- id: '1724313988610'
+  alias: Przedpokój2 OFF
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 70538f04b085f28f7c606cd7246a078b
+    entity_id: 43a167995e5f805fce7d7f8ea2ced4fb
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 25
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 89f70f1df25e47c9084e6cbdc04db268
+      entity_id: 2cb0e806bc0a6d81df602215b17568ed
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.przedpokoj2_manual
+      state: 'off'
+  actions:
+  - type: turn_off
+    device_id: 89f70f1df25e47c9084e6cbdc04db268
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    domain: switch
+  mode: single
+- id: '1724314114541'
+  alias: Salon ON 19:55 - 23:00 (Weekend 02:00)
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: 499116c5d163d2646cf98ddcde70d6e7
+    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: or
+      conditions:
+      - condition: and
+        conditions:
+        - condition: time
+          after: '19:55:00'
+          before: '23:00:00'
+          weekday:
+          - sun
+          - mon
+          - tue
+          - wed
+          - thu
+      - condition: and
+        conditions:
+        - condition: time
+          after: '19:55:00'
+          weekday:
+          - fri
+          - sat
+      - condition: and
+        conditions:
+        - condition: time
+          before: 02:00:00
+          weekday:
+          - sat
+          - sun
+    - condition: device
+      type: is_off
+      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 1
+      enabled: true
+    - condition: state
+      entity_id: input_boolean.salon_manual
+      state: 'off'
+  actions:
+  - type: turn_on
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+    enabled: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.salon_manual
+  mode: single
+- id: '1724314219136'
+  alias: Salon OFF
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 499116c5d163d2646cf98ddcde70d6e7
+    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 6
+      seconds: 45
+    trigger: device
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.salon_manual
+      state: 'off'
+  actions:
+  - action: notify.html5
+    metadata: {}
+    data:
+      message: ' '
+      title: Salon OFF 15s
+  - if:
+    - condition: device
+      device_id: 8a6a0f30da0585ea5d9c83733084551d
+      domain: media_player
+      entity_id: 92eb0d8002c30b04355ff5c7aa987dea
+      type: is_on
+    then:
+    - action: notify.lg_tv
+      metadata: {}
+      data:
+        message: ' Salon OFF 15s'
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - if:
+    - type: is_not_occupied
+      condition: device
+      device_id: 499116c5d163d2646cf98ddcde70d6e7
+      entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 6
+        seconds: 45
+    then:
+    - action: notify.html5
+      metadata: {}
+      data:
+        message: ' '
+        title: 'Salon OFF '
+    - if:
+      - condition: device
+        device_id: 8a6a0f30da0585ea5d9c83733084551d
+        domain: media_player
+        entity_id: 92eb0d8002c30b04355ff5c7aa987dea
+        type: is_on
+      then:
+      - action: notify.lg_tv
+        metadata: {}
+        data:
+          message: Salon OFF
+    - type: turn_off
+      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      domain: switch
+    else:
+    - action: notify.html5
+      metadata: {}
+      data:
+        message: ' '
+        title: Salon will stay ON
+    - if:
+      - condition: device
+        device_id: 8a6a0f30da0585ea5d9c83733084551d
+        domain: media_player
+        entity_id: 92eb0d8002c30b04355ff5c7aa987dea
+        type: is_on
+      then:
+      - action: notify.lg_tv
+        metadata: {}
+        data:
+          message: Salon will stay ON
+  mode: single
+- id: '1724413289298'
+  alias: Kamera REC ON
+  description: Kamera REC ON scene when no motion
+  triggers:
+  - type: not_occupied
+    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
+    entity_id: a0ee0b90899607043991272bc0f0c2e8
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  conditions: []
+  actions:
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.kamera_rec
+  mode: single
+- id: '1724493397494'
+  alias: Włącznik2
+  description: Obsługa przycisku Włącznik2 dla akcji single i double
+  triggers:
+  - trigger: mqtt
+    options:
+      topic: zigbee2mqtt/Włącznik2/action
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''single'' }}'
+      sequence:
+      - type: toggle
+        device_id: 23e63d02839ff85f2dcc874249a6779c
+        entity_id: 2452484240d10c68380b13b6f0eaef9c
+        domain: switch
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''double'' }}'
+      sequence:
+      - target:
+          device_id:
+          - 89f70f1df25e47c9084e6cbdc04db268
+          - 56c7b2aa9ca7aa42122015593e9b11ab
+          - 1ff9b911c0d913696269646267fc72f8
+          - 8e39c2ee99a9d37c629cc334429edbf1
+          - 33ce06e7dbdd679c65eeb79fe0ccf387
+          - 23e63d02839ff85f2dcc874249a6779c
+        action: switch.turn_off
+        data: {}
+  mode: restart
+- id: '1724493516351'
+  alias: Włącznik1
+  description: Obsługa przycisku Włącznik1 dla akcji single, double i hold
+  triggers:
+  - topic: zigbee2mqtt/Włącznik1/action
+    trigger: mqtt
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''single'' }}'
+      sequence:
+      - parallel:
+        - action: script.lgtv_picture_mode
+          data:
+            picture_mode: expert2
+        - target:
+            entity_id: automation.lg_off_23_00_071h
+          data:
+            skip_condition: true
+          action: automation.trigger
+        - sequence:
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 250
+            enabled: true
+          - action: script.lg_tv_wylacz_ekran
+            data: {}
+            enabled: false
+        - target:
+            device_id:
+            - 89f70f1df25e47c9084e6cbdc04db268
+            - 1ff9b911c0d913696269646267fc72f8
+            - d36e7b1056abfdb139090057df440135
+            - 33ce06e7dbdd679c65eeb79fe0ccf387
+            - 2c553901da2c148c5f8f3a35806aac52
+          action: switch.turn_off
+          data: {}
+          enabled: true
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
+            - 046972e0b2024c83e920cb6b90b96d3b
+          enabled: false
+        - action: switch.toggle
+          metadata: {}
+          target:
+            device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+          data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''double'' }}'
+      sequence:
+      - parallel:
+        - action: script.lgtv_picture_mode
+          data:
+            picture_mode: expert1
+        - target:
+            entity_id: automation.lg_off_23_00_071h
+          data:
+            skip_condition: true
+          action: automation.trigger
+        - sequence:
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 250
+            enabled: true
+          - action: script.lg_tv_wylacz_ekran
+            data: {}
+            enabled: false
+        - target:
+            device_id:
+            - 89f70f1df25e47c9084e6cbdc04db268
+            - 56c7b2aa9ca7aa42122015593e9b11ab
+            - 1ff9b911c0d913696269646267fc72f8
+            - d36e7b1056abfdb139090057df440135
+            - 33ce06e7dbdd679c65eeb79fe0ccf387
+            - 2c553901da2c148c5f8f3a35806aac52
+          action: switch.turn_off
+          data: {}
+          enabled: true
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
+            - 09094d3b16a9a010936727c287c04cfe
+            - decdfc9c849e2d160492f0f731bd8fc1
+            - 32f9d6bc3960c64f80491ae3a31e09f8
+            - 046972e0b2024c83e920cb6b90b96d3b
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.payload == ''hold'' }}'
+      sequence:
+      - parallel:
+        - action: script.lgtv_picture_mode
+          data:
+            picture_mode: expert1
+        - target:
+            entity_id: automation.lg_off_23_00_071h
+          data:
+            skip_condition: true
+          action: automation.trigger
+        - sequence:
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 250
+            enabled: true
+          - action: script.lg_tv_wylacz_ekran
+            data: {}
+            enabled: true
+        - target:
+            device_id:
+            - 89f70f1df25e47c9084e6cbdc04db268
+            - 56c7b2aa9ca7aa42122015593e9b11ab
+            - 1ff9b911c0d913696269646267fc72f8
+            - d36e7b1056abfdb139090057df440135
+            - 33ce06e7dbdd679c65eeb79fe0ccf387
+            - 2c553901da2c148c5f8f3a35806aac52
+          action: switch.turn_off
+          data: {}
+          enabled: true
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
+            - 09094d3b16a9a010936727c287c04cfe
+            - decdfc9c849e2d160492f0f731bd8fc1
+            - 32f9d6bc3960c64f80491ae3a31e09f8
+            - 046972e0b2024c83e920cb6b90b96d3b
+  - target:
+      entity_id: input_boolean.lgtv_film_mode_set
+    action: input_boolean.turn_off
+    data: {}
+  mode: restart
+- id: '1725632338648'
+  alias: Kamera2 REC
+  description: Kamera REC2 no motion
+  triggers:
+  - type: occupied
+    device_id: 499116c5d163d2646cf98ddcde70d6e7
+    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - delay:
+      seconds: 2
+  - data:
+      duration: 60
+      lookback: 3
+      filename: /media/K2{{ now().strftime("%Y%m%d-%H%M%S") }}.mp4
+    target:
+      entity_id: camera.kamera2
+    action: camera.record
+  - delay:
+      minutes: 1
+      seconds: 30
+  - data:
+      device_id:
+      - 93b79537147e98d04a2a0c5eb117945a
+    action: homeassistant.disable_device
+  - delay:
+      seconds: 2
+  - data:
+      device_id:
+      - 93b79537147e98d04a2a0c5eb117945a
+    action: homeassistant.enable_device
+  - data:
+      stop_actions: true
+    target:
+      entity_id: automation.kamera2_rec
+    action: automation.turn_off
+  mode: restart
+- id: '1725632828518'
+  alias: Kamera2 REC ON
+  description: Kamera2 REC ON when Salon ON
+  triggers:
+  - type: not_occupied
+    device_id: 499116c5d163d2646cf98ddcde70d6e7
+    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  conditions: []
+  actions:
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.kamera2_rec
+  mode: single
+- id: '1727207087145'
+  alias: Home Alone - Arrive i Leave
+  description: 'Stabilna automatyzacja z krótszymi czasami, bez błędnej logiki last_changed.
+
+    '
+  triggers:
+  - entity_id:
+    - device_tracker.xiaomihmi15
+    to:
+    - home
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    id: arrive
+    trigger: state
+    from:
+    - not_home
+  - entity_id:
+    - device_tracker.xiaomihmi15
+    from:
+    - home
+    to:
+    - not_home
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: leave
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: arrive
+      - condition: time
+        after: '19:55:00'
+        before: '23:30:00'
+      - condition: template
+        value_template: "{% set last = states('input_datetime.last_leave_home') %}
+          {% if last in ('unknown','unavailable','') %}\n  false\n{% else %}\n  {{
+          (as_timestamp(now()) - as_timestamp(last)) > 1800 }}\n{% endif %}\n"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.leave_locked
+      - action: notify.mobile_app_xiaomihmi15
+        data:
+          title: Arrive - Włącz Przedpokój 1 i Pokój
+          message: ' '
+          data:
+            tag: arrive_home
+            ttl: 0
+            priority: high
+      - action: switch.turn_on
+        target:
+          device_id:
+          - 1ff9b911c0d913696269646267fc72f8
+          - d36e7b1056abfdb139090057df440135
+      - device_id: 82d438cb58cfac2ce0769bed5bbaa7bf
+        domain: button
+        entity_id: 6845bf109e857b8f1a442f48e047238b
+        type: press
+    - conditions:
+      - condition: trigger
+        id: leave
+      - condition: state
+        entity_id: input_boolean.leave_locked
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.leave_locked
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_leave_home
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - parallel:
+        - action: switch.turn_off
+          target:
+            device_id:
+            - 177a4f2f1b1e5790f9242f5dc0384b2f
+            - 89f70f1df25e47c9084e6cbdc04db268
+            - 56c7b2aa9ca7aa42122015593e9b11ab
+            - d36e7b1056abfdb139090057df440135
+            - 1ff9b911c0d913696269646267fc72f8
+            - 33ce06e7dbdd679c65eeb79fe0ccf387
+            - 2c553901da2c148c5f8f3a35806aac52
+        - action: fan.turn_off
+          target:
+            device_id:
+            - a7ad34cd864d362d63128c70dddccbb3
+        - action: notify.mobile_app_xiaomihmi15
+          data:
+            title: Leave - Wyłącz światła i wiatrak
+            message: ' '
+            data:
+              tag: leave_home
+              ttl: 0
+              priority: high
+  mode: single
+- id: '1728343000978'
+  alias: PGE_1 ON OFF 08:00-02:00 (Pon-Pt) PGE_2 08:00-18:00 (bez Śr,Sb,Nd)
+  description: 'PGE1 codziennie 08:00–02:00. PGE2 08:00–18:00 bez Środy, Soboty i
+    Niedzieli.
+
+    '
+  triggers:
+  - at: 08:00:00
+    trigger: time
+    id: start
+  - at: '18:00:00'
+    trigger: time
+    id: stop_pge2
+  - at: 02:00:00
+    trigger: time
+    id: stop_pge1
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - action: switch.turn_on
+        target:
+          device_id: 7ff08f995e4b4dd774a49cc4c65cda25
+      - condition: template
+        value_template: '{{ now().weekday() in [0,1,3,4] }}'
+      - action: switch.turn_on
+        target:
+          device_id: 084241f6a5087e5984c7cbdc37bc55c0
+    - conditions:
+      - condition: trigger
+        id: stop_pge2
+      - condition: template
+        value_template: '{{ now().weekday() in [0,1,3,4] }}'
+      sequence:
+      - action: switch.turn_off
+        target:
+          device_id: 084241f6a5087e5984c7cbdc37bc55c0
+    - conditions:
+      - condition: trigger
+        id: stop_pge1
+      sequence:
+      - action: switch.turn_off
+        target:
+          device_id: 7ff08f995e4b4dd774a49cc4c65cda25
+  mode: restart
+- id: '1728343069217'
+  alias: PGE_1 ON OFF 11:00 - 03:00 Sb-Nd
+  description: Włącza o 11:00 i wyłącza o 03:00 w weekend
+  triggers:
+  - at: '11:00:00'
+    trigger: time
+  - at: 03:00:00
+    trigger: time
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ now().strftime(''%H:%M'') == ''11:00'' and now().weekday()
+          in [5,6] }}
+
+          '
+      sequence:
+      - action: switch.turn_on
+        data: {}
+        target:
+          device_id: 7ff08f995e4b4dd774a49cc4c65cda25
+    - conditions:
+      - condition: template
+        value_template: '{{ now().strftime(''%H:%M'') == ''03:00'' and now().weekday()
+          in [5,6] }}
+
+          '
+      - condition: device
+        type: is_on
+        device_id: 7ff08f995e4b4dd774a49cc4c65cda25
+        entity_id: 5441de84571b844ac15e3350b3796911
+        domain: switch
+      sequence:
+      - target:
+          device_id:
+          - 084241f6a5087e5984c7cbdc37bc55c0
+          - 7ff08f995e4b4dd774a49cc4c65cda25
+        action: switch.turn_off
+        data: {}
+  mode: restart
+- id: '1728996583325'
+  alias: Kuchnia ON 19:55 - 06:10 (weekend 04:00)
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
+    entity_id: a0ee0b90899607043991272bc0f0c2e8
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  conditions:
+  - condition: state
+    entity_id: input_boolean.kuchnia_manual
+    state: 'off'
+  actions:
+  - choose:
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:59:59'
+        weekday:
+        - fri
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_left
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: 00:00:00
+        before: 04:00:00
+        weekday:
+        - sat
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_left
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:59:59'
+        weekday:
+        - sat
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_left
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: 00:00:00
+        before: 04:00:00
+        weekday:
+        - sun
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_left
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: '19:55:00'
+        before: '23:59:59'
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - sun
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_left
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: 04:00:00
+        before: 06:10:00
+        weekday:
+        - sat
+        - sun
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_right
+        action: switch.turn_on
+    - conditions:
+      - condition: time
+        after: 00:00:00
+        before: 06:10:00
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+      sequence:
+      - target:
+          entity_id: switch.kuchnia_right
+        action: switch.turn_on
+  mode: single
+- id: '1728996655938'
+  alias: Kuchnia OFF
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
+    entity_id: a0ee0b90899607043991272bc0f0c2e8
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 25
+  conditions:
+  - condition: and
+    conditions:
+    - condition: or
+      conditions:
+      - condition: device
+        type: is_on
+        device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+        entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+        domain: switch
+      - condition: device
+        type: is_on
+        device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+        entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+        domain: switch
+    - condition: state
+      entity_id: input_boolean.kuchnia_manual
+      state: 'off'
+  actions:
+  - type: turn_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+    domain: switch
+  - type: turn_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+    domain: switch
+  mode: single
+- id: '1729354082847'
+  alias: Home Alone - Światło OFF zależnie od Pokoju 19:55 - 08:00
+  description: Jeśli Pokój zostanie włączony, wyłącz pozostałe urządzenia, a jeśli
+    którykolwiek z pozostałych zostanie włączony i Pokój jest włączony, wyłącz Pokój.
+    Ograniczenie raz na 5 minut działa tylko przy option 2.
+  triggers:
+  - device_id: d36e7b1056abfdb139090057df440135
+    domain: switch
+    entity_id: 719e637226eb5009d8932bd1daf8290a
+    type: turned_on
+    id: pokoj_on
+    trigger: device
+  - device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    domain: switch
+    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+    type: turned_on
+    id: other_on
+    trigger: device
+  - device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    domain: switch
+    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+    type: turned_on
+    id: other_on
+    trigger: device
+  - device_id: 1ff9b911c0d913696269646267fc72f8
+    domain: switch
+    entity_id: 1b6dbf68e8f5a3110059c22c291d8229
+    type: turned_on
+    id: other_on
+    trigger: device
+  - device_id: 89f70f1df25e47c9084e6cbdc04db268
+    domain: switch
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    type: turned_on
+    id: other_on
+    trigger: device
+  - device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    domain: switch
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    type: turned_on
+    id: other_on
+    trigger: device
+  - type: turned_on
+    device_id: 25b09a8e5f6f06ef11c7c402cfaa2591
+    entity_id: 21a45c49e9b9499a2688ed2ea255ef25
+    domain: light
+    trigger: device
+    id: other_on
+  - type: turned_on
+    device_id: 046972e0b2024c83e920cb6b90b96d3b
+    entity_id: 7d89da94efd271d27ea53137945890d0
+    domain: light
+    trigger: device
+    id: other_on
+  - device_id: 2c553901da2c148c5f8f3a35806aac52
+    domain: switch
+    entity_id: 2c5cfc2d543a7f70c5a3ce0cb1bc2f23
+    type: turned_on
+    id: other_on
+    trigger: device
+  conditions:
+  - condition: time
+    after: '19:55:00'
+    before: 08:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: pokoj_on
+      sequence:
+      - target:
+          device_id:
+          - 33ce06e7dbdd679c65eeb79fe0ccf387
+        action: switch.turn_off
+        data: {}
+      - target:
+          device_id: 1ff9b911c0d913696269646267fc72f8
+        action: switch.turn_off
+        data: {}
+      - target:
+          device_id: 89f70f1df25e47c9084e6cbdc04db268
+        action: switch.turn_off
+        data: {}
+      - target:
+          device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+        action: switch.turn_off
+        data: {}
+      - target:
+          device_id:
+          - 25b09a8e5f6f06ef11c7c402cfaa2591
+        action: light.turn_off
+        data: {}
+      - action: light.turn_off
+        data: {}
+        target:
+          device_id: 046972e0b2024c83e920cb6b90b96d3b
+      - target:
+          device_id: 2c553901da2c148c5f8f3a35806aac52
+        action: switch.turn_off
+        data: {}
+      - target:
+          entity_id: input_datetime.last_home_alone_run
+        action: input_datetime.set_datetime
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    - conditions:
+      - condition: trigger
+        id: other_on
+      - condition: device
+        device_id: d36e7b1056abfdb139090057df440135
+        domain: switch
+        entity_id: 719e637226eb5009d8932bd1daf8290a
+        type: is_on
+      - condition: state
+        entity_id: input_boolean.pokoj_manual
+        state: 'off'
+      - condition: template
+        value_template: "{% set last = states('input_datetime.last_home_alone_run')
+          %} {% if last == 'unknown' or last == '' %}\n  true\n{% else %}\n  {% set
+          last_dt = as_timestamp(last) %}\n  {% set now_dt = as_timestamp(now()) %}\n
+          \ {{ (now_dt - last_dt) > 300 }}\n{% endif %}\n"
+      sequence:
+      - target:
+          device_id: d36e7b1056abfdb139090057df440135
+        action: switch.turn_off
+        data: {}
+      - target:
+          entity_id: input_datetime.last_home_alone_run
+        action: input_datetime.set_datetime
+        data:
+          datetime: '{{ (now() - timedelta(minutes=8)).strftime(''%Y-%m-%d %H:%M:%S'')
+            }}'
+  mode: single
+- id: '1732520506811'
+  alias: PGE_3 ON OFF 05:00-05:05
+  description: 'Włącznik PGE_3: OFF o 05:00 w wybrane dni, ON o 05:03 jeśli był wyłączony'
+  triggers:
+  - at: 05:00:00
+    id: off_trigger
+    trigger: time
+  - at: 05:05:00
+    id: on_trigger
+    trigger: time
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: off_trigger
+      - condition: time
+        weekday:
+        - mon
+        - wed
+        - fri
+        - sun
+      - condition: device
+        type: is_on
+        device_id: 8f2c9f3cefdfce343bf8c8b0bde912a3
+        entity_id: 1328e7c6f3fb8feba4a98b2b90d18b33
+        domain: switch
+      sequence:
+      - action: switch.turn_off
+        data: {}
+        target:
+          device_id: 8f2c9f3cefdfce343bf8c8b0bde912a3
+    - conditions:
+      - condition: trigger
+        id: on_trigger
+      - condition: device
+        type: is_off
+        device_id: 8f2c9f3cefdfce343bf8c8b0bde912a3
+        entity_id: 1328e7c6f3fb8feba4a98b2b90d18b33
+        domain: switch
+      sequence:
+      - action: switch.turn_on
+        data: {}
+        target:
+          device_id: 8f2c9f3cefdfce343bf8c8b0bde912a3
+  mode: restart
+- id: '1732705272762'
+  alias: Oczyszczacz ON 07:00 / OFF 01:00 i 03:00
+  description: Włącza oczyszczacz o 07:00, wyłącza o 01:00 w nocy przed dniami roboczymi
+    i o 03:00 w nocy przed weekendem, jeśli urządzenia są włączone
+  triggers:
+  - at: 07:00:00
+    trigger: time
+  - at: 01:00:00
+    trigger: time
+  - at: 03:00:00
+    trigger: time
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ now().strftime(''%H:%M'') == ''07:00'' }}'
+      - condition: device
+        type: is_off
+        device_id: f9dd4aa90d12dee6cc181bd7933e2a36
+        entity_id: 2306e95d253e7311244b2b71587c3fa1
+        domain: fan
+      sequence:
+      - data: {}
+        target:
+          device_id:
+          - f9dd4aa90d12dee6cc181bd7933e2a36
+        action: fan.turn_on
+    - conditions:
+      - condition: template
+        value_template: "{{ now().strftime('%H:%M') == '01:00' and\n   (now() + timedelta(days=1)).weekday()
+          >= 0 and\n   (now() + timedelta(days=1)).weekday() <= 4 }}\n"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: device
+            type: is_on
+            device_id: f9dd4aa90d12dee6cc181bd7933e2a36
+            entity_id: 2306e95d253e7311244b2b71587c3fa1
+            domain: fan
+          sequence:
+          - data: {}
+            target:
+              device_id:
+              - f9dd4aa90d12dee6cc181bd7933e2a36
+            action: fan.turn_off
+        - conditions:
+          - condition: device
+            device_id: a7ad34cd864d362d63128c70dddccbb3
+            domain: fan
+            entity_id: 1ad1a6d0f384dfdfa05f84dc152ab96a
+            type: is_on
+          sequence:
+          - data: {}
+            target:
+              device_id:
+              - a7ad34cd864d362d63128c70dddccbb3
+            action: fan.turn_off
+    - conditions:
+      - condition: template
+        value_template: "{{ now().strftime('%H:%M') == '03:00' and\n   ((now() + timedelta(days=1)).weekday()
+          == 5 or\n    (now() + timedelta(days=1)).weekday() == 6) }}\n"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: device
+            type: is_on
+            device_id: f9dd4aa90d12dee6cc181bd7933e2a36
+            entity_id: 2306e95d253e7311244b2b71587c3fa1
+            domain: fan
+          sequence:
+          - data: {}
+            target:
+              device_id:
+              - f9dd4aa90d12dee6cc181bd7933e2a36
+            action: fan.turn_off
+        - conditions:
+          - condition: device
+            device_id: a7ad34cd864d362d63128c70dddccbb3
+            domain: fan
+            entity_id: 1ad1a6d0f384dfdfa05f84dc152ab96a
+            type: is_on
+          sequence:
+          - data: {}
+            target:
+              device_id:
+              - a7ad34cd864d362d63128c70dddccbb3
+            action: fan.turn_off
+  mode: single
+- id: '1733605573655'
+  alias: Xiaomi + Mspos Bateria 100%
+  description: Powiadamia, gdy bateria naładuje się do 100% i utrzyma przez 1 minutę
+  triggers:
+  - id: xiaomi
+    entity_id: sensor.xiaomihmi15_battery_level
+    to: '100'
+    for: 00:01:00
+    trigger: state
+  - id: mspos
+    entity_id: sensor.msposhmi_battery_level
+    to: '100'
+    for: 00:01:00
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''mspos'' }}'
+      sequence:
+      - data:
+          title: MSPOS HMI 100%
+          message: ' '
+          data:
+            tag: MSPOS HMI 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
+      - data:
+          title: MSPOS HMI 100%
+          message: ' '
+        action: notify.html5
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''xiaomi'' }}'
+      sequence:
+      - data:
+          title: Xiaomi 15 100%
+          message: ' '
+          data:
+            tag: Xiaomi 15 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
+      - data:
+          title: Xiaomi 15 100%
+          message: ' '
+        action: notify.html5
+  mode: parallel
+  max: 2
+- id: '1734111657838'
+  alias: Pokój ON OFF Manual
+  description: Synchronizuje input_boolean z przełącznikiem pokoju
+  triggers:
+  - device_id: d36e7b1056abfdb139090057df440135
+    entity_id: 719e637226eb5009d8932bd1daf8290a
+    domain: switch
+    type: turned_on
+    trigger: device
+  - device_id: d36e7b1056abfdb139090057df440135
+    entity_id: 719e637226eb5009d8932bd1daf8290a
+    domain: switch
+    type: turned_off
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: device
+        type: is_on
+        device_id: d36e7b1056abfdb139090057df440135
+        entity_id: 719e637226eb5009d8932bd1daf8290a
+        domain: switch
+      sequence:
+      - target:
+          entity_id: input_boolean.pokoj_manual
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: device
+        type: is_off
+        device_id: d36e7b1056abfdb139090057df440135
+        entity_id: 719e637226eb5009d8932bd1daf8290a
+        domain: switch
+      sequence:
+      - target:
+          entity_id: input_boolean.pokoj_manual
+        action: input_boolean.turn_off
+        data: {}
+  mode: single
+- id: '1734119519822'
+  alias: Przedpokój2 OF 5m
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 70538f04b085f28f7c606cd7246a078b
+    entity_id: 43a167995e5f805fce7d7f8ea2ced4fb
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 89f70f1df25e47c9084e6cbdc04db268
+      entity_id: 2cb0e806bc0a6d81df602215b17568ed
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.przedpokoj2_manual
+      state: 'on'
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.przedpokoj2_manual
+  - type: turn_off
+    device_id: 89f70f1df25e47c9084e6cbdc04db268
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    domain: switch
+  mode: single
+- id: '1734119682839'
+  alias: Przedpokój1 OF 5m
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 9858452f909bc80957cdc984e2aa5efb
+    entity_id: 32ddeda54c126b8c0cc710242c97a9ac
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 1ff9b911c0d913696269646267fc72f8
+      entity_id: 1b6dbf68e8f5a3110059c22c291d8229
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.przedpokoj1_manual
+      state: 'on'
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.przedpokoj1_manual
+  - target:
+      entity_id: switch.przedpokoj1_1b
+    action: switch.turn_off
+    data: {}
+  mode: single
+- id: '1734120016994'
+  alias: Kuchnia OF 5m
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
+    entity_id: a0ee0b90899607043991272bc0f0c2e8
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.kuchnia_manual
+      state: 'on'
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+    - condition: or
+      conditions:
+      - condition: device
+        type: is_on
+        device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+        entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+        domain: switch
+      - condition: device
+        type: is_on
+        device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+        entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+        domain: switch
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.kuchnia_manual
+  - type: turn_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+    domain: switch
+  - type: turn_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+    domain: switch
+  mode: single
+- id: '1734120233781'
+  alias: Pokój OF 5m
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 6a0e20a679995b318aed2b445f08855d
+    entity_id: a7a1603fa9734c9a390584ac02273592
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: d36e7b1056abfdb139090057df440135
+      entity_id: 719e637226eb5009d8932bd1daf8290a
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.pokoj_manual
+      state: 'on'
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.pokoj_manual
+  - type: turn_off
+    device_id: d36e7b1056abfdb139090057df440135
+    entity_id: 719e637226eb5009d8932bd1daf8290a
+    domain: switch
+  mode: single
+- id: '1734120340602'
+  alias: Salon OF 5m
+  description: ''
+  triggers:
+  - type: not_occupied
+    device_id: 499116c5d163d2646cf98ddcde70d6e7
+    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      type: is_on
+      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      domain: switch
+    - condition: state
+      entity_id: input_boolean.salon_manual
+      state: 'on'
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.salon_manual
+  - type: turn_off
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+  mode: single
+- id: '1734179058969'
+  alias: LGTV OFF 1,25h
+  description: ''
+  triggers:
+  - device_id: 8a6a0f30da0585ea5d9c83733084551d
+    domain: media_player
+    entity_id: 92eb0d8002c30b04355ff5c7aa987dea
+    type: playing
+    trigger: device
+    for:
+      hours: 2
+      minutes: 45
+      seconds: 0
+    enabled: true
+  - trigger: state
+    entity_id:
+    - input_button.lgtv_manual
+  conditions: []
+  actions:
+  - delay:
+      hours: 1
+      minutes: 15
+      seconds: 0
+      milliseconds: 0
+    enabled: true
+  - if:
+    - condition: device
+      type: is_off
+      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      domain: switch
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+    then:
+    - action: notify.lg_tv
+      metadata: {}
+      data:
+        message: LGTV OFF 5m
+    - data:
+        message: ' '
+        data:
+          tag: LGTV OFF 5m
+          ttl: 0
+          priority: high
+        title: LGTV OFF 5m
+      action: notify.mobile_app_xiaomihmi15
+    - delay:
+        hours: 0
+        minutes: 4
+        seconds: 0
+        milliseconds: 0
+      enabled: true
+    - action: notify.lg_tv
+      metadata: {}
+      data:
+        message: LGTV OFF 1m
+    - data:
+        message: ' '
+        data:
+          tag: LGTV OFF 1m
+          ttl: 0
+          priority: high
+        title: LGTV OFF 1m
+      action: notify.mobile_app_xiaomihmi15
+    - delay:
+        hours: 0
+        minutes: 1
+        seconds: 0
+        milliseconds: 0
+      enabled: true
+    - action: media_player.turn_off
+      metadata: {}
+      data: {}
+      enabled: true
+      target:
+        device_id: 8a6a0f30da0585ea5d9c83733084551d
+  mode: restart
+- id: '1741190879340'
+  alias: LGTV OFF NOW
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_button.lgtv_manual2
+  conditions:
+  - condition: device
+    type: is_off
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+  actions:
+  - action: script.lgtv_picture_mode
+    data:
+      picture_mode: filmMaker
+  - action: media_player.turn_off
+    metadata: {}
+    data: {}
+    enabled: true
+    target:
+      device_id: 8a6a0f30da0585ea5d9c83733084551d
+  mode: restart
+- id: '1745595852813'
+  alias: Koniec Prania
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.pge_pralka_power
+    above: 3
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 45
+      milliseconds: 0
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - wait_for_trigger:
+    - entity_id:
+      - sensor.pge_pralka_power
+      below: 2
+      for:
+        hours: 0
+        minutes: 3
+        seconds: 0
+      trigger: numeric_state
+    timeout: 04:00:00
+    continue_on_timeout: false
+  - data:
+      message: ' '
+      data:
+        tag: Pranie gotowe
+        ttl: 0
+        priority: high
+      title: '!!! Pranie gotowe !!!'
+    action: notify.mobile_app_xiaomihmi15
+  - data:
+      title: '!!! Pranie gotowe !!!'
+      message: ' '
+    action: notify.html5
+  - target:
+      device_id: 2c553901da2c148c5f8f3a35806aac52
+    action: switch.turn_on
+    data: {}
+  mode: restart
+- id: '1746986141968'
+  alias: Working
+  description: ''
+  triggers:
+  - type: occupied
+    device_id: 9858452f909bc80957cdc984e2aa5efb
+    entity_id: 32ddeda54c126b8c0cc710242c97a9ac
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 5e23f8fa784e7e09730956b8cf461051
+    entity_id: fd9ce63a3f056f9f6e8632fae45c4c2d
+    domain: light
+    brightness_pct: 100
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - type: turn_off
+    device_id: 5e23f8fa784e7e09730956b8cf461051
+    entity_id: fd9ce63a3f056f9f6e8632fae45c4c2d
+    domain: light
+  mode: restart
+- id: '1749143539968'
+  alias: LGTV Set FilmMaker
+  description: ''
+  triggers:
+  - entity_id: media_player.lg_tv
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lgtv_film_mode_set
+    state: 'off'
+  actions:
+  - data:
+      entity_id: media_player.lg_tv
+      command: system.launcher/launch
+      payload:
+        id: com.webos.app.home
+    action: webostv.command
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - data:
+      picture_mode: filmMaker
+    action: script.lgtv_picture_mode
+  - target:
+      entity_id: input_boolean.lgtv_film_mode_set
+    action: input_boolean.turn_on
+    data: {}
+  mode: single
+- id: '1750362745719'
+  alias: LGTV OF FilmMode Flag OF
+  description: ''
+  triggers:
+  - entity_id: media_player.lg_tv
+    to: 'off'
+    trigger: state
+  conditions: []
+  actions:
+  - target:
+      entity_id: input_boolean.lgtv_film_mode_set
+    action: input_boolean.turn_off
+    data: {}
+  mode: single
+- id: przedpokoj1_manual_sync
+  alias: Przedpokój1 ON OFF Manual
+  description: Po ręcznym naciśnięciu włącznika synchronizuje drugi (grupa) oraz ustawia
+    flagę manual.
+  triggers:
+  - entity_id:
+    - switch.przedpokoj1
+    - switch.przedpokoj1b
+    to:
+    - 'on'
+    - 'off'
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state is not none\n   and trigger.to_state.state
+      in ['on','off']\n   and (trigger.from_state is none or trigger.to_state.state
+      != trigger.from_state.state)\n   and (\n        trigger.to_state.context.parent_id
+      is none\n        or trigger.to_state.context.parent_id != this.context.id\n
+      \     )\n   and not (\n        expand(state_attr('switch.przedpokoj1_1b', 'entity_id'))\n
+      \       | selectattr('state', 'ne', trigger.to_state.state)\n        | list\n
+      \       | length == 0\n      )\n}}\n"
+  actions:
+  - alias: Zmienne pomocnicze
+    variables:
+      desired: '{{ trigger.to_state.state }}'
+      members: '{{ state_attr(''switch.przedpokoj1_1b'', ''entity_id'') }}'
+  - alias: Wymuś stan na grupie
+    action: switch.turn_{{ desired }}
+    target:
+      entity_id: switch.przedpokoj1_1b
+  - alias: Czekaj na potwierdzenie stanu
+    wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n   |
+      list\n   | length == (members | count) }}\n"
+    timeout: 00:00:01
+    continue_on_timeout: true
+  - alias: Retry gdy brak potwierdzenia
+    choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ expand(members)\n   | selectattr('state','ne', desired)\n
+          \  | list\n   | length > 0 }}\n"
+      sequence:
+      - action: switch.turn_{{ desired }}
+        target:
+          entity_id: switch.przedpokoj1_1b
+      - wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n
+          \  | list\n   | length == (members | count) }}\n"
+        timeout: 00:00:01
+        continue_on_timeout: true
+  - alias: Ustaw flagę manual zgodnie ze stanem
+    action: input_boolean.turn_{{ desired }}
+    target:
+      entity_id: input_boolean.przedpokoj1_manual
+  mode: queued
+  max_exceeded: silent
+- id: '1750461812065'
+  alias: Kuchnia ON OFF Manual
+  description: Sterowanie input_boolean.kuchnia_manual przez 2 przełączniki
+  triggers:
+  - id: switch1_on
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+    domain: switch
+    type: turned_on
+    trigger: device
+  - id: switch2_on
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+    domain: switch
+    type: turned_on
+    trigger: device
+  - id: switch1_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+    domain: switch
+    type: turned_off
+    trigger: device
+  - id: switch2_off
+    device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+    domain: switch
+    type: turned_off
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - switch1_on
+        - switch2_on
+      sequence:
+      - target:
+          entity_id: input_boolean.kuchnia_manual
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - switch1_off
+        - switch2_off
+      sequence:
+      - target:
+          entity_id: input_boolean.kuchnia_manual
+        action: input_boolean.turn_off
+        data: {}
+  mode: single
+- id: '1750462103030'
+  alias: Przedpokój2 ON OFF Manual
+  description: Sterowanie input_boolean.przedpokoj2_manual jednym przełącznikiem
+  triggers:
+  - id: switch_on
+    device_id: 89f70f1df25e47c9084e6cbdc04db268
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    domain: switch
+    type: turned_on
+    trigger: device
+  - id: switch_off
+    device_id: 89f70f1df25e47c9084e6cbdc04db268
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    domain: switch
+    type: turned_off
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: switch_on
+      sequence:
+      - target:
+          entity_id: input_boolean.przedpokoj2_manual
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: switch_off
+      sequence:
+      - target:
+          entity_id: input_boolean.przedpokoj2_manual
+        action: input_boolean.turn_off
+        data: {}
+  mode: single
+- id: '1750462287161'
+  alias: Salon ON OFF Manual
+  description: Sterowanie input_boolean.salon_manual jednym przełącznikiem
+  triggers:
+  - id: switch_on
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+    type: turned_on
+    trigger: device
+  - id: switch_off
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+    type: turned_off
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: switch_on
+      sequence:
+      - target:
+          entity_id: input_boolean.salon_manual
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: switch_off
+      sequence:
+      - target:
+          entity_id: input_boolean.salon_manual
+        action: input_boolean.turn_off
+        data: {}
+  mode: single
+- id: mama_status_automation
+  alias: MAMA STATUS
+  description: Powiadomienia o wejściu i wyjściu Mamy do/z stref Ciocia, Home i Okolica2
+  triggers:
+  - entity_id: device_tracker.xiaomianna
+    zone: zone.ciocia
+    event: enter
+    id: enter_ciocia
+    trigger: zone
+  - entity_id: device_tracker.xiaomianna
+    zone: zone.ciocia
+    event: leave
+    id: leave_ciocia
+    trigger: zone
+  - entity_id: device_tracker.xiaomianna
+    zone: zone.okolica2
+    event: enter
+    id: enter_okolica2
+    trigger: zone
+  - entity_id: device_tracker.xiaomianna
+    zone: zone.home
+    event: leave
+    id: leave_home
+    trigger: zone
+  conditions:
+  - condition: template
+    value_template: '{% set acc = state_attr(''device_tracker.xiaomianna'', ''gps_accuracy'')
+      %} {{ acc is not none and acc < 30 }}'
+    enabled: true
+  actions:
+  - variables:
+      zone_name: '{{ trigger.zone.attributes.friendly_name }}'
+      action_type: '{{ ''IN'' if trigger.event == ''enter'' else ''OUT'' }}'
+      title: ' '
+      message: "\U0001F4CDMAMA {{ action_type }} {{ zone_name }}. {{ states('sensor.xiaomianna_geocoded_location')
+        }}"
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - enter_ciocia
+        - leave_ciocia
+        - leave_home
+      sequence:
+      - delay: '{{ ''00:00:02'' if trigger.event == ''leave'' else ''00:00:00'' }}'
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+        action: notify.html5
+    - conditions:
+      - condition: trigger
+        id: enter_okolica2
+      sequence:
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+        action: notify.html5
+      - target:
+          entity_id:
+          - automation.test_lokalizacja_leave
+          - automation.home_alone_kuchnia_salon_lazienka_przedpokoj_off
+        data:
+          stop_actions: true
+        action: automation.turn_off
+        enabled: true
+  mode: single
+- id: '1750469114566'
+  alias: Kamera REC
+  description: Kamera REC2 no motion
+  triggers:
+  - type: occupied
+    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
+    entity_id: a0ee0b90899607043991272bc0f0c2e8
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - data:
+      duration: 60
+      lookback: 3
+      filename: /media/K1{{ now().strftime("%Y%m%d-%H%M%S") }}.mp4
+    target:
+      device_id: a6c7542a0f5e1b619b84f9bc43c71b2f
+    action: camera.record
+  - delay:
+      minutes: 1
+      seconds: 30
+  - data:
+      device_id:
+      - a6c7542a0f5e1b619b84f9bc43c71b2f
+    action: homeassistant.disable_device
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - data:
+      device_id:
+      - a6c7542a0f5e1b619b84f9bc43c71b2f
+    action: homeassistant.enable_device
+  - data:
+      stop_actions: true
+    action: automation.turn_off
+    target:
+      entity_id: automation.kamera_rec
+  mode: restart
+- id: '1753345844850'
+  alias: Zigbee - Interview wszystkich urządzeń o 22:00 w środę
+  description: Codziennie o 22:00 otwiera sieć, robi ponowny interview urządzeń i
+    pobiera mapę Zigbee
+  triggers:
+  - at: '22:00:00'
+    trigger: time
+    weekday:
+    - wed
+  conditions: []
+  actions:
+  - data:
+      topic: zigbee2mqtt/bridge/request/permit_join
+      payload: '254'
+    action: mqtt.publish
+  - delay: 00:00:10
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Czujnik_Kuchnia"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Czujnik_Pokój"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Czujnik_Przedpokój1"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Czujnik_Przedpokój2"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Czujnik_Salon"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Kuchnia"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Pokój"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Przedpokój1"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Przedpokój1b"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Przedpokój2"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Salon"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Schowek"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Sypialnia"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Włącznik1"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Włącznik2"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Łazienka1"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Łazienka2"}'
+    action: mqtt.publish
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Łazienka3"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Repeater1"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Repeater2"}'
+    action: mqtt.publish
+    enabled: false
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Repeater_Kuchnia"}'
+    action: mqtt.publish
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Repeater_Łazienka"}'
+    action: mqtt.publish
+    enabled: false
+  - data:
+      topic: zigbee2mqtt/bridge/request/device/interview
+      payload: '{"id":"Repeater_Pokój"}'
+    action: mqtt.publish
+    enabled: true
+  - delay: 00:00:10
+  - data:
+      topic: zigbee2mqtt/bridge/request/networkmap
+      payload: '{"type":"raw"}'
+    action: mqtt.publish
+  mode: single
+- id: '1758689853000'
+  alias: Roborock S8 Dom 5h
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - delay:
+      hours: 5
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - type: turn_off
+    device_id: 71ba8b9414376ba23484e079ca5f81f0
+    entity_id: 1451fbe387c65854db5dcee053a821c2
+    domain: switch
+  - device_id: 71ba8b9414376ba23484e079ca5f81f0
+    domain: button
+    entity_id: 74306fca8bb39598791b34921c9d8891
+    type: press
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - device_id: 71ba8b9414376ba23484e079ca5f81f0
+    domain: button
+    entity_id: 4f5003e0b61c75c2d7c4c1ef17d61267
+    type: press
+  - delay:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
+  - device_id: 71ba8b9414376ba23484e079ca5f81f0
+    domain: button
+    entity_id: 4f5003e0b61c75c2d7c4c1ef17d61267
+    type: press
+  - delay:
+      hours: 3
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - type: turn_on
+    device_id: 71ba8b9414376ba23484e079ca5f81f0
+    entity_id: 1451fbe387c65854db5dcee053a821c2
+    domain: switch
+  mode: restart
+- id: lazienka_sync_switch_group
+  alias: Łazienka 1-3 ON OFF
+  triggers:
+  - entity_id:
+    - switch.lazienka1
+    - switch.lazienka3
+    to:
+    - 'on'
+    - 'off'
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state is not none\n   and trigger.to_state.state
+      in ['on','off']\n   and (trigger.from_state is none or trigger.to_state.state
+      != trigger.from_state.state)\n   and (\n        trigger.to_state.context.parent_id
+      is none\n        or trigger.to_state.context.parent_id != this.context.id\n
+      \      )\n   and not (\n        expand(state_attr('switch.lazienka_1_3', 'entity_id'))\n
+      \       | selectattr('state', 'ne', trigger.to_state.state)\n        | list\n
+      \       | length == 0\n       )\n}}\n"
+  actions:
+  - alias: Zmienne pomocnicze
+    variables:
+      desired: '{{ trigger.to_state.state }}'
+      members: '{{ state_attr(''switch.lazienka_1_3'',''entity_id'') }}'
+  - alias: Ustaw stan grupy przełączników
+    action: switch.turn_{{ desired }}
+    target:
+      entity_id: switch.lazienka_1_3
+  - alias: Czekaj aż wszystkie członki dogonią
+    wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n   |
+      list\n   | length == (members | count) }}\n"
+    timeout: 00:00:0020
+    continue_on_timeout: true
+    enabled: false
+  - alias: Retry gdy coś nie doszło
+    choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ expand(members)\n   | selectattr('state','ne', desired)\n
+          \  | list\n   | length > 0 }}\n"
+      sequence:
+      - action: switch.turn_{{ desired }}
+        target:
+          entity_id: switch.lazienka_1_3
+  mode: queued
+  max_exceeded: silent
+- id: mama_location_change
+  alias: MAMA LOCATION CHANGE
+  description: Wysyła powiadomienie, gdy lokalizacja Mamy zmieni się o więcej niż
+    100 metrów
+  triggers:
+  - entity_id: device_tracker.xiaomianna
+    trigger: state
+  actions:
+  - variables:
+      old_lat: '{{ trigger.from_state.attributes.latitude }}'
+      old_lon: '{{ trigger.from_state.attributes.longitude }}'
+      new_lat: '{{ trigger.to_state.attributes.latitude }}'
+      new_lon: '{{ trigger.to_state.attributes.longitude }}'
+      is_data_valid: "{{ old_lat is not none and old_lon is not none and\n   new_lat
+        is not none and new_lon is not none }}"
+  - condition: template
+    value_template: "{# Sprawdzamy najpierw, czy mamy wszystkie koordynaty, a potem
+      liczymy dystans #} {% if is_data_valid %}\n  {{ distance(old_lat, old_lon, new_lat,
+      new_lon) > 0.1}}\n{% else %}\n  false\n{% endif %}"
+  - data:
+      data:
+        tag: MAMA LOCATION CHANGE
+        ttl: 0
+        priority: high
+      message: "\U0001F4CDMAMA LOCATION CHANGE  {{ states('sensor.xiaomianna_geocoded_location')
+        }}"
+    action: notify.mobile_app_xiaomihmi15
+  - enabled: true
+    data:
+      message: MAMA LOCATION CHANGE {{ states('sensor.xiaomianna_geocoded_location')
+        }}
+    action: notify.html5
+  mode: single
+- id: '1769112369962'
+  alias: Łazienka 1-3 sync
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.lazienka1
+    - switch.lazienka3
+    to:
+    - 'on'
+    - 'off'
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.from_state is not none\n   and trigger.to_state.state
+      != trigger.from_state.state\n   and trigger.to_state.context.parent_id != this.context.id
+      }}\n"
+  actions:
+  - target:
+      entity_id:
+      - switch.lazienka1
+      - switch.lazienka3
+    action: switch.turn_{{ trigger.to_state.state }}
+  mode: restart
+- id: '1770981460160'
+  alias: LGTV ON 08:10
+  description: ''
+  triggers:
+  - trigger: time
+    at: 08:10:00
+    weekday:
+    - mon
+    - tue
+    - thu
+    - fri
+  conditions:
+  - condition: device
+    type: is_off
+    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    domain: switch
+  actions:
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.lgtv_yt_watchlater_play
+  - action: script.lgtv_picture_mode
+    data:
+      picture_mode: filmMaker
+  mode: single
+- id: vpn_refresh_on_toggle
+  alias: 'VPN: Odświeżanie statusu po zmianie'
+  description: Wymusza odświeżenie sensora statusu po przełączeniu VPN
+  triggers:
+  - entity_id:
+    - switch.vpn_dom_global_2
+    - switch.vpn_dom_select_2
+    - switch.vpn_dostawca_p_w_2
+    trigger: state
+  actions:
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.vpn_status_serwer_2
+    data:
+      entity_id:
+      - sensor.vpn_status_serwer_2
+  mode: restart
+- id: vpn_sync_file_list
+  alias: 'VPN: Synchronizuj listę plików'
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    hours: /23
+  actions:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.vpn_sync_active
+  - action: shell_command.fetch_vpn_list
+    response_variable: raw_list
+  - action: input_select.set_options
+    target:
+      entity_id: input_select.vpn_countries
+    data:
+      options: "{% if raw_list is defined and raw_list['stdout'] is defined %}\n  {%
+        set files = raw_list['stdout'].split('\\n') | map('trim') | select('ne', '')
+        | list %}\n  {{ files if files | length > 0 else ['Brak plików'] }}\n{% else
+        %}\n  ['Błąd połączenia SSH']\n{% endif %}"
+  - delay: 00:00:05
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.vpn_sync_active
+- id: vpn_auto_apply_country
+  alias: 'VPN: Auto-zastosuj kraj po wyborze'
+  triggers:
+  - entity_id: input_select.vpn_countries
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.vpn_sync_active
+    state: 'off'
+  - condition: template
+    value_template: '{{ trigger.from_state is not none and trigger.from_state.state
+      != trigger.to_state.state }}'
+  - condition: template
+    value_template: '{{ states(''input_select.vpn_countries'') not in [''Pobieranie
+      listy...'', ''Brak plików .conf'', ''unknown'', ''unavailable''] }}'
+  actions:
+  - data:
+      country: '{{ states(''input_select.vpn_countries'') }}'
+    action: shell_command.apply_vpn_config
+- id: '1775118669859'
+  alias: Odświeżanie statusu baterii MSPOS + Xiaomi15
+  description: Wymusza aktualizację sensorów
+  triggers:
+  - minutes: /30
+    trigger: time_pattern
+  actions:
+  - action: notify.mobile_app_msposhmi
+    data:
+      message: request_location_update
+  - action: notify.mobile_app_xiaomihmi15
+    data:
+      message: request_location_update
