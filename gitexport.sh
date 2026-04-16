@@ -7,8 +7,8 @@ cd /root/ha-project
 echo "=== git status ==="
 git status
 
-# Usuń z indeksu git to, co jest w .gitignore (bez usuwania z dysku)
-git rm --cached config/hassio/*.log*
+# Usuń z indeksu git to, co jest w .gitignore (bez usuwania z dysku), trzeba podać co
+# git rm --cached config/hassio/*.log*
 
 # Odkomentuj poniższe, by sprawdzić sekrety przed commitem:
 # echo "=== sprawdzam sekrety w diff ==="
