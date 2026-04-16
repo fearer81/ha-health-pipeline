@@ -23,6 +23,7 @@ config/hassio/deps/
 config/hassio/tts/
 config/hassio/image/
 config/hassio/zigbee2mqtt/state.json
+config/hassio/custom_components/
 
 # SSH SECURITY
 .ssh/
