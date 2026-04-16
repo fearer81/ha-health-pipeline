@@ -18,6 +18,7 @@ config/hassio/html5_push_registrations.conf
 # HOME ASSISTANT — DANE RUNTIME (BAZY I CACHE)
 config/hassio/*.db*
 config/hassio/**/*.db*
+config/hassio/*.log*
 config/hassio/**/*.log*
 config/hassio/.storage/
 config/hassio/deps/
