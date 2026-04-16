@@ -7,6 +7,9 @@ cd /root/ha-project
 echo "=== git status ==="
 git status
 
+# Usuń z indeksu git to, co jest w .gitignore (bez usuwania z dysku)
+git rm --cached -r --ignore-unmatch config/hassio/custom_components/
+
 # Odkomentuj poniższe, by sprawdzić sekrety przed commitem:
 # echo "=== sprawdzam sekrety w diff ==="
 # git diff | grep -i -E "pass|token|key|secret"
