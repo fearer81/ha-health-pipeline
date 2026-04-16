@@ -8,7 +8,7 @@ echo "=== git status ==="
 git status
 
 # Usuń z indeksu git to, co jest w .gitignore (bez usuwania z dysku), trzeba podać co
-# git rm --cached config/hassio/*.log*
+git rm -r --cached .
 
 # Odkomentuj poniższe, by sprawdzić sekrety przed commitem:
 # echo "=== sprawdzam sekrety w diff ==="
