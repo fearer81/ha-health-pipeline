@@ -16,21 +16,6 @@ columns:
         }
         return t.replace('.2026', '');
       })()
-  - name: 💢<br>PP
-    data: rows
-    modify: |-
-      (function(){
-        if (!x.pressure) return '---';
-        var p = x.pressure.split('/');
-        var s = parseInt(p[0]);
-        var d = parseInt(p[1]);
-        var pp = s - d;
-        if (pp >= 60) return pp + ' 🔴';
-        if (pp >= 50) return pp + ' 🟡';
-        if (pp >= 40) return pp + ' 🟢';
-        return pp + ' 💚';
-      })()
-    align: center
   - name: 🩺<br>Ciśnie.
     data: rows
     modify: x.pressure && x.pressure.replace(' mmHg','')
@@ -42,12 +27,27 @@ columns:
         if (!x.pressure) return '---';
         var p = x.pressure.split('/');
         var s = parseInt(p[0]); var d = parseInt(p[1]);
-        if (s >= 180 || d >= 110) return '⛔ S3';
-        if (s >= 160 || d >= 100) return '🔴 S2';
-        if (s >= 140 || d >=  90) return '🟠 S1';
-        if (s >= 130 || d >=  85) return '🟡 S0';
-        if (s >= 120 || d >=  80) return '🔵 Pr';
+        if (s >= 180 || d >= 110) return '⛔S3';
+        if (s >= 160 || d >= 100) return '🔴S2';
+        if (s >= 140 || d >=  90) return '🟠S1';
+        if (s >= 130 || d >=  85) return '🟡S0';
+        if (s >= 120 || d >=  80) return '🔵Pr';
         return '🟢 Pr';
+      })()
+    align: center
+  - name: 💢<br>PP
+    data: rows
+    modify: |-
+      (function(){
+        if (!x.pressure) return '---';
+        var p = x.pressure.split('/');
+        var s = parseInt(p[0]);
+        var d = parseInt(p[1]);
+        var pp = s - d;
+        if (pp >= 60) return pp + '🔴';
+        if (pp >= 50) return pp + '🟡';
+        if (pp >= 40) return pp + '🟢';
+        return pp + ' 💚';
       })()
     align: center
   - name: ❤️<br>Tęt
@@ -84,7 +84,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 💤<br>RhR
+  - name: 💤<br>Hs
     data: rows
     modify: |-
       (function(){
@@ -131,7 +131,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: ⚖️<br>Waga
+  - name: ⚖️<br>W
     data: rows
     modify: |-
       (function(){
@@ -168,7 +168,7 @@ card_mod:
       -webkit-user-select: text !important;
     }
     ha-card table {
-      width: 99% !important;
+      width: 100% !important;
       border-collapse: collapse;
       table-layout: auto;
     }

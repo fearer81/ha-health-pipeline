@@ -342,7 +342,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: RIGHT
@@ -351,7 +351,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: ENTER
@@ -457,7 +457,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 300
+      milliseconds: 600
     enabled: false
   - data:
       entity_id: media_player.lg_tv
@@ -467,7 +467,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
@@ -476,7 +476,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
@@ -485,7 +485,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
@@ -494,7 +494,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
@@ -503,7 +503,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
@@ -512,7 +512,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: RIGHT
@@ -521,7 +521,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: RIGHT
@@ -530,7 +530,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: ENTER
@@ -539,7 +539,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 600
   - data:
       entity_id: media_player.lg_tv
       button: ENTER
