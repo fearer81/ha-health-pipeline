@@ -1,9 +1,9 @@
 {
-  "ts": 1776409880,
-  "time": "17.04 09:11",
-  "age_sec": 80,
-  "age_min": 1,
+  "ts": 1776593386,
+  "time": "19.04 12:09",
+  "age_sec": 226,
+  "age_min": 3,
   "status": "OK",
-  "measured_at": "17.04.2026 09:10",
-  "pressure": "138/94 mmHg"
+  "measured_at": "19.04.2026 12:06",
+  "pressure": "134/100 mmHg"
 }
