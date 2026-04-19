@@ -81,8 +81,8 @@ def main():
         "stress": stress,
         "bb": bb,
         "rhr": rhr,
-        "ss": sleep_score,   # Zmienione z sleep_score na ss
-        "sh": sleep_hours,   # Zmienione z sleep_hours na sh
+        "ss": ss,   # Zmienione z sleep_score na ss
+        "sh": sh,   # Zmienione z sleep_hours na sh
         "ls": last_sync,     # Zmienione z time na ls (musi zawierać datę z 'T', np. 2026-04-18T23:06:41)
         "message": f"Sync: {last_sync}"
     }
