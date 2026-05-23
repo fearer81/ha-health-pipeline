@@ -2,16 +2,71 @@
   {
     "name": "880-872-138",
     "id": "0ae91a033a9d49e7a2b14824f4dda2c0",
-    "complete": false
+    "complete": true
   },
   {
     "name": "513-532-299",
     "id": "f8ca340547d94f0d829bb83a3c3bb28e",
-    "complete": false
+    "complete": true
   },
   {
     "name": "+39-329-155-33-59",
     "id": "44a61ecc7a9040ea9a0c88af947d4b10",
+    "complete": true
+  },
+  {
+    "name": "200 g bananów (kawałki)",
+    "id": "1a33f82cac454a898ebaff0493494bd2",
+    "complete": false
+  },
+  {
+    "name": "80 g cukru",
+    "id": "5cd388b8c3d84f19a36c3f6e5ccc8fbe",
+    "complete": false
+  },
+  {
+    "name": "100 ml mleka",
+    "id": "6753248add504824aaf86cfac1553e5a",
+    "complete": false
+  },
+  {
+    "name": "100 ml śmietany 30-38%",
+    "id": "c5ef821fdf6843f8bfecfd2960e575db",
+    "complete": false
+  },
+  {
+    "name": "1 łyżka soku z cytryny",
+    "id": "6f68d01a31964f788bf7da9ec847e5bb",
+    "complete": false
+  },
+  {
+    "name": "--------------------",
+    "id": "5988898d69b242b1b503b60f019d13e3",
+    "complete": false
+  },
+  {
+    "name": "2 laski wanilii Bourbon",
+    "id": "b42fff8e1c87483e818bf7d713fbb6a8",
+    "complete": false
+  },
+  {
+    "name": "250 ml mleka",
+    "id": "2737cbe0c52c47bd8c2420a74026e9b8",
+    "complete": false
+  },
+  {
+    "name": "100 g cukru",
+    "id": "97dbc604eaba4ee9b3d32eb406811366",
+    "complete": false
+  },
+  {
+    "name": "200 ml śmietany 30-38%",
+    "id": "fbac76f4d74743d9ac39035dd4b121ec",
+    "complete": false
+  },
+  {
+    "name": "1 szczypta soli",
+    "id": "7bb311d4628445a69a09ea0255bb7e12",
     "complete": false
   }
 ]

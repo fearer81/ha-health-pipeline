@@ -547,3 +547,19 @@ lgtv_on_yt:
   alias: LGTV ON YT
   mode: restart
   description: ''
+saros_silent_guard:
+  alias: Saros Silent Guard
+  sequence:
+  - target:
+      entity_id: number.saros_10_volume
+    data:
+      value: '0.0'
+    action: number.set_value
+saros_restore_volume:
+  alias: Saros Restore Volume
+  sequence:
+  - target:
+      entity_id: number.saros_10_volume
+    data:
+      value: '50.0'
+    action: number.set_value

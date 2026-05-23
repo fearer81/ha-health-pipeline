@@ -1,9 +1,9 @@
 {
-  "ts": 1776594215,
-  "time": "19.04 12:23",
-  "age_sec": 1055,
-  "age_min": 17,
-  "status": "OK",
-  "measured_at": "19.04.2026 12:06",
-  "pressure": "134/100 mmHg"
+  "ts": 1779562069,
+  "time": "23.05 20:47",
+  "age_sec": 2800309,
+  "age_min": 46671,
+  "status": "DEAD",
+  "measured_at": "21.04.2026 10:56",
+  "pressure": "154/91 mmHg"
 }

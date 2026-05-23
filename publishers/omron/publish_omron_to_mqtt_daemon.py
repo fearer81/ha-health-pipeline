@@ -19,7 +19,7 @@ MQTT_PASS = os.getenv("MQTT_PASS")
 MQTT_TOPIC = "homeassistant/sensor/omron_history/state"
 MQTT_DISCOVERY_TOPIC = "homeassistant/sensor/omron_history/config"
 
-HISTORY_SIZE = int(os.getenv("HISTORY_SIZE", "100"))
+HISTORY_SIZE = int(os.getenv("HISTORY_SIZE", "1000"))
 
 # Okno czasowe sesji w sekundach (12 min = 10 min spec Omron M4 + 2 min margines)
 # Omron: "Średnia z ostatnich 2 lub 3 odczytów dokonanych w odstępie 10 minut"

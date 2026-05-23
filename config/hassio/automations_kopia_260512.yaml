@@ -1,5 +1,5 @@
 - id: '1724313766518'
-  alias: Pokój ON 20:10 - 00:30
+  alias: Pokój ON 19:55 - 00:30
   description: ''
   triggers:
   - type: occupied
@@ -20,7 +20,7 @@
   - condition: and
     conditions:
     - condition: time
-      after: '20:10:00'
+      after: '19:55:00'
       before: 00:30:00
       weekday:
       - mon
@@ -93,13 +93,14 @@
       entity_id: input_boolean.pokoj_manual
       state: 'off'
   actions:
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
       title: Pokój OFF 3m
       message: ' '
+      data:
+        tag: Pokój OFF 3m
+        ttl: 0
+        priority: high
+    action: notify.mobile_app_xiaomihmi15
   - delay:
       hours: 0
       minutes: 3
@@ -120,21 +121,25 @@
       device_id: d36e7b1056abfdb139090057df440135
       entity_id: 719e637226eb5009d8932bd1daf8290a
       domain: switch
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         title: Pokój OFF
         message: ' '
+        data:
+          tag: Pokój OFF
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: true
     else:
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         title: Pokój will stay ON
         message: ' '
+        data:
+          tag: Pokój will stay ON
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: true
   mode: single
 - id: '1724313838302'
   alias: Przedpokój1 ON 16:00 - 23:00
@@ -195,7 +200,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 20:10 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 19:55 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -215,7 +220,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -236,7 +241,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -256,7 +261,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -306,7 +311,7 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 20:10 - 23:00 (Weekend 02:00)
+  alias: Salon ON 19:55 - 23:00 (Weekend 02:00)
   description: ''
   triggers:
   - type: occupied
@@ -331,7 +336,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:10:00'
+          after: '19:55:00'
           before: '23:00:00'
           weekday:
           - sun
@@ -342,7 +347,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:10:00'
+          after: '19:55:00'
           weekday:
           - fri
           - sat
@@ -591,6 +596,7 @@
           data: {}
           target:
             device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 046972e0b2024c83e920cb6b90b96d3b
           enabled: false
         - action: switch.toggle
@@ -637,6 +643,7 @@
           data: {}
           target:
             device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
@@ -680,6 +687,7 @@
           data: {}
           target:
             device_id:
+            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
@@ -769,7 +777,7 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
@@ -789,13 +797,14 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.leave_locked
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
+      - action: notify.mobile_app_xiaomihmi15
         data:
           title: Arrive - Włącz Przedpokój 1 i Pokój
           message: ' '
+          data:
+            tag: arrive_home
+            ttl: 0
+            priority: high
       - action: switch.turn_on
         target:
           device_id:
@@ -846,13 +855,14 @@
           target:
             device_id:
             - a7ad34cd864d362d63128c70dddccbb3
-        - action: notify.send_message
-          metadata: {}
-          target:
-            entity_id: notify.xiaomihmi15
+        - action: notify.mobile_app_xiaomihmi15
           data:
-            message: ' '
             title: Leave - Wyłącz światła i wiatrak
+            message: ' '
+            data:
+              tag: leave_home
+              ttl: 0
+              priority: high
         - action: automation.turn_on
           target:
             entity_id:
@@ -950,7 +960,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 20:10 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 19:55 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -976,7 +986,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -996,7 +1006,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -1016,7 +1026,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:10:00'
+        after: '19:55:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1261,13 +1271,14 @@
       - condition: template
         value_template: '{{ trigger.id == ''mspos'' }}'
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: ' '
+      - data:
           title: MSPOS HMI 100%
+          message: ' '
+          data:
+            tag: MSPOS HMI 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: MSPOS HMI 100%
           message: ' '
@@ -1276,13 +1287,14 @@
       - condition: template
         value_template: '{{ trigger.id == ''xiaomi'' }}'
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: ' '
+      - data:
           title: Xiaomi 15 100%
+          message: ' '
+          data:
+            tag: Xiaomi 15 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: Xiaomi 15 100%
           message: ' '
@@ -1600,13 +1612,14 @@
       metadata: {}
       data:
         message: LGTV OFF 5m
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         message: ' '
+        data:
+          tag: LGTV OFF 5m
+          ttl: 0
+          priority: high
         title: LGTV OFF 5m
+      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 4
@@ -1617,13 +1630,14 @@
       metadata: {}
       data:
         message: LGTV OFF 1m
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         message: ' '
+        data:
+          tag: LGTV OFF 1m
+          ttl: 0
+          priority: high
         title: LGTV OFF 1m
+      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 1
@@ -1687,13 +1701,14 @@
       trigger: numeric_state
     timeout: 04:00:00
     continue_on_timeout: false
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
       message: ' '
+      data:
+        tag: Pranie gotowe
+        ttl: 0
+        priority: high
       title: '!!! Pranie gotowe !!!'
+    action: notify.mobile_app_xiaomihmi15
   - data:
       title: '!!! Pranie gotowe !!!'
       message: ' '
@@ -1998,12 +2013,14 @@
         - leave_home
       sequence:
       - delay: '{{ ''00:00:02'' if trigger.event == ''leave'' else ''00:00:00'' }}'
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: '  {{ message }} '
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: ' '
           message: ' {{ message }} '
@@ -2012,12 +2029,14 @@
       - condition: trigger
         id: enter_okolica2
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
+      - data:
+          title: ' '
           message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: ' '
           message: ' {{ message }} '
@@ -2305,13 +2324,14 @@
     value_template: "{# Sprawdzamy najpierw, czy mamy wszystkie koordynaty, a potem
       liczymy dystans #} {% if is_data_valid %}\n  {{ distance(old_lat, old_lon, new_lat,
       new_lon) > 0.1}}\n{% else %}\n  false\n{% endif %}"
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
+      data:
+        tag: MAMA LOCATION CHANGE
+        ttl: 0
+        priority: high
       message: "\U0001F4CDMAMA LOCATION CHANGE  {{ states('sensor.xiaomianna_geocoded_location')
         }}"
+    action: notify.mobile_app_xiaomihmi15
   - enabled: true
     data:
       message: MAMA LOCATION CHANGE {{ states('sensor.xiaomianna_geocoded_location')
@@ -2436,16 +2456,10 @@
   - minutes: /30
     trigger: time_pattern
   actions:
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
+  - action: notify.mobile_app_msposhmi
     data:
       message: request_location_update
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.msposhmi
+  - action: notify.mobile_app_xiaomihmi15
     data:
       message: request_location_update
 - id: '1777394600831'

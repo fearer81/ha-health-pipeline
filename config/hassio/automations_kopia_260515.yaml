@@ -93,13 +93,14 @@
       entity_id: input_boolean.pokoj_manual
       state: 'off'
   actions:
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
       title: Pokój OFF 3m
       message: ' '
+      data:
+        tag: Pokój OFF 3m
+        ttl: 0
+        priority: high
+    action: notify.mobile_app_xiaomihmi15
   - delay:
       hours: 0
       minutes: 3
@@ -120,21 +121,25 @@
       device_id: d36e7b1056abfdb139090057df440135
       entity_id: 719e637226eb5009d8932bd1daf8290a
       domain: switch
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         title: Pokój OFF
         message: ' '
+        data:
+          tag: Pokój OFF
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: true
     else:
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         title: Pokój will stay ON
         message: ' '
+        data:
+          tag: Pokój will stay ON
+          ttl: 0
+          priority: high
+      action: notify.mobile_app_xiaomihmi15
+      enabled: true
   mode: single
 - id: '1724313838302'
   alias: Przedpokój1 ON 16:00 - 23:00
@@ -1261,13 +1266,14 @@
       - condition: template
         value_template: '{{ trigger.id == ''mspos'' }}'
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: ' '
+      - data:
           title: MSPOS HMI 100%
+          message: ' '
+          data:
+            tag: MSPOS HMI 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: MSPOS HMI 100%
           message: ' '
@@ -1276,13 +1282,14 @@
       - condition: template
         value_template: '{{ trigger.id == ''xiaomi'' }}'
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: ' '
+      - data:
           title: Xiaomi 15 100%
+          message: ' '
+          data:
+            tag: Xiaomi 15 100%
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: Xiaomi 15 100%
           message: ' '
@@ -1600,13 +1607,14 @@
       metadata: {}
       data:
         message: LGTV OFF 5m
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         message: ' '
+        data:
+          tag: LGTV OFF 5m
+          ttl: 0
+          priority: high
         title: LGTV OFF 5m
+      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 4
@@ -1617,13 +1625,14 @@
       metadata: {}
       data:
         message: LGTV OFF 1m
-    - action: notify.send_message
-      metadata: {}
-      target:
-        entity_id: notify.xiaomihmi15
-      data:
+    - data:
         message: ' '
+        data:
+          tag: LGTV OFF 1m
+          ttl: 0
+          priority: high
         title: LGTV OFF 1m
+      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 1
@@ -1687,13 +1696,14 @@
       trigger: numeric_state
     timeout: 04:00:00
     continue_on_timeout: false
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
       message: ' '
+      data:
+        tag: Pranie gotowe
+        ttl: 0
+        priority: high
       title: '!!! Pranie gotowe !!!'
+    action: notify.mobile_app_xiaomihmi15
   - data:
       title: '!!! Pranie gotowe !!!'
       message: ' '
@@ -1998,12 +2008,14 @@
         - leave_home
       sequence:
       - delay: '{{ ''00:00:02'' if trigger.event == ''leave'' else ''00:00:00'' }}'
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          message: '  {{ message }} '
+      - data:
+          title: ' '
+          message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: ' '
           message: ' {{ message }} '
@@ -2012,12 +2024,14 @@
       - condition: trigger
         id: enter_okolica2
       sequence:
-      - action: notify.send_message
-        metadata: {}
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
+      - data:
+          title: ' '
           message: ' {{ message }} '
+          data:
+            tag: MAMA STATUS
+            ttl: 0
+            priority: high
+        action: notify.mobile_app_xiaomihmi15
       - data:
           title: ' '
           message: ' {{ message }} '
@@ -2305,13 +2319,14 @@
     value_template: "{# Sprawdzamy najpierw, czy mamy wszystkie koordynaty, a potem
       liczymy dystans #} {% if is_data_valid %}\n  {{ distance(old_lat, old_lon, new_lat,
       new_lon) > 0.1}}\n{% else %}\n  false\n{% endif %}"
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
-    data:
+  - data:
+      data:
+        tag: MAMA LOCATION CHANGE
+        ttl: 0
+        priority: high
       message: "\U0001F4CDMAMA LOCATION CHANGE  {{ states('sensor.xiaomianna_geocoded_location')
         }}"
+    action: notify.mobile_app_xiaomihmi15
   - enabled: true
     data:
       message: MAMA LOCATION CHANGE {{ states('sensor.xiaomianna_geocoded_location')
@@ -2436,16 +2451,10 @@
   - minutes: /30
     trigger: time_pattern
   actions:
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.xiaomihmi15
+  - action: notify.mobile_app_msposhmi
     data:
       message: request_location_update
-  - action: notify.send_message
-    metadata: {}
-    target:
-      entity_id: notify.msposhmi
+  - action: notify.mobile_app_xiaomihmi15
     data:
       message: request_location_update
 - id: '1777394600831'

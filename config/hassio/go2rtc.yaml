@@ -1,10 +1,15 @@
-# Startuj strumienie od razu (szybszy “pierwszy kadr”)
-preload:
-  kamera: "video"
-  kamera2: "video"
-
 streams:
   kamera:
-    - 'echo:curl -fsSL --connect-timeout 2 --max-time 5 http://supervisor/core/api/camera_stream_source/camera.kamera -H "Authorization: Bearer ${SUPERVISOR_TOKEN}"'
+    - rtsp://thingino:Strach1a...@192.168.1.17:554/ch0#input=rtsp/udp
+  kamera_sd:
+    - rtsp://thingino:Strach1a...@192.168.1.17/ch1#input=rtsp/udp
   kamera2:
-    - 'echo:curl -fsSL --connect-timeout 2 --max-time 5 http://supervisor/core/api/camera_stream_source/camera.kamera2 -H "Authorization: Bearer ${SUPERVISOR_TOKEN}"'
+    - rtsp://thingino:Strach1a...@192.168.1.39:554/ch0#input=rtsp/udp
+  kamera2_sd:
+    - rtsp://thingino:Strach1a...@192.168.1.39:554/ch1#input=rtsp/udp    
+  kamera3:
+    - rtsp://thingino:Strach1a...@192.168.1.51:554/ch0#input=rtsp/udp
+  kamera3_sd:
+    - rtsp://thingino:Strach1a...@192.168.1.51:554/ch1#input=rtsp/udp    
+  saros_10_camera:
+    - roborock://mqtt-eu-3.roborock.com:8883?u=5l7w7VxTWzE4qgzEohJZkd&s=EABeR9&k=kd3qZ6ce&did=1bag8b7psvBpRJcm9Q3qYX&key=D26EIwlxagsLg9Ok&pin=1234

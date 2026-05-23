@@ -8,7 +8,7 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-mqtt: !include mqtt.yaml
+binary_sensor: !include binary_sensors.yaml
 command_line: !include command_line.yaml
 
 # Wiatrak przeniesiony do sekcji template poniżej.
@@ -189,7 +189,7 @@ shell_command:
   fetch_vpn_list: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 'ls -1 /root/vpn-configs/*.conf | xargs -n 1 basename | sed \"s/.conf//\"'"
   # Odpala skrypt z wybranym krajem
   apply_vpn_config: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 '/root/apply-vpn.sh /root/vpn-configs/{{ country }}.conf'"
-  
+
 # HassControl
 group:
   garmin:

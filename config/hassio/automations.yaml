@@ -1,21 +1,23 @@
 - id: '1724313766518'
-  alias: Pokój ON 19:55 - 00:30
+  alias: Pokój ON 20:50 - 00:30
   description: ''
   triggers:
   - type: occupied
     device_id: 6a0e20a679995b318aed2b445f08855d
     entity_id: a7a1603fa9734c9a390584ac02273592
     domain: binary_sensor
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
     trigger: device
+  - type: motion
+    device_id: d0a7ff6b543280e60bd2f13df3398f72
+    entity_id: d7c357a3bf89a16481345fee4c499adf
+    domain: binary_sensor
+    trigger: device
+    enabled: true
   conditions:
   - condition: and
     conditions:
     - condition: time
-      after: '19:55:00'
+      after: '20:50:00'
       before: 00:30:00
       weekday:
       - mon
@@ -33,7 +35,7 @@
       for:
         hours: 0
         minutes: 0
-        seconds: 1
+        seconds: 5
     - condition: state
       entity_id: input_boolean.pokoj_manual
       state: 'off'
@@ -63,9 +65,19 @@
     domain: binary_sensor
     for:
       hours: 0
-      minutes: 6
+      minutes: 9
       seconds: 45
     trigger: device
+  - type: no_motion
+    device_id: d0a7ff6b543280e60bd2f13df3398f72
+    entity_id: d7c357a3bf89a16481345fee4c499adf
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 8
+      seconds: 45
+    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -78,14 +90,13 @@
       entity_id: input_boolean.pokoj_manual
       state: 'off'
   actions:
-  - data:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.xiaomihmi15
+    data:
       title: Pokój OFF 3m
       message: ' '
-      data:
-        tag: Pokój OFF 3m
-        ttl: 0
-        priority: high
-    action: notify.mobile_app_xiaomihmi15
   - delay:
       hours: 0
       minutes: 3
@@ -99,35 +110,31 @@
       domain: binary_sensor
       for:
         hours: 0
-        minutes: 6
+        minutes: 9
         seconds: 45
     then:
     - type: turn_off
       device_id: d36e7b1056abfdb139090057df440135
       entity_id: 719e637226eb5009d8932bd1daf8290a
       domain: switch
-    - data:
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id: notify.xiaomihmi15
+      data:
         title: Pokój OFF
         message: ' '
-        data:
-          tag: Pokój OFF
-          ttl: 0
-          priority: high
-      action: notify.mobile_app_xiaomihmi15
-      enabled: false
     else:
-    - data:
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id: notify.xiaomihmi15
+      data:
         title: Pokój will stay ON
         message: ' '
-        data:
-          tag: Pokój will stay ON
-          ttl: 0
-          priority: high
-      action: notify.mobile_app_xiaomihmi15
-      enabled: false
   mode: single
 - id: '1724313838302'
-  alias: Przedpokój1 ON 16:00 - 23:00
+  alias: Przedpokój1 ON 19:00 - 23:00
   description: Włącza światło w przedpokoju, gdy jest ruch i odpowiednia pora
   triggers:
   - type: occupied
@@ -135,17 +142,18 @@
     entity_id: 32ddeda54c126b8c0cc710242c97a9ac
     domain: binary_sensor
     trigger: device
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 1
   conditions:
   - condition: time
-    after: '16:00:00'
+    after: '19:00:00'
     before: '23:00:00'
   - condition: state
     entity_id: switch.przedpokoj1_1b
-    state: 'off'
+    state:
+    - 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
   - condition: state
     entity_id: input_boolean.przedpokoj1_manual
     state: 'off'
@@ -168,7 +176,9 @@
     entity_id: 32ddeda54c126b8c0cc710242c97a9ac
     domain: binary_sensor
     for:
-      seconds: 25
+      hours: 0
+      minutes: 0
+      seconds: 35
     trigger: device
   conditions:
   - condition: and
@@ -189,7 +199,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 19:55 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 20:50 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -200,16 +210,25 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 1
+      seconds: 0
   conditions:
   - condition: state
     entity_id: input_boolean.przedpokoj2_manual
     state: 'off'
+  - condition: device
+    type: is_off
+    device_id: 89f70f1df25e47c9084e6cbdc04db268
+    entity_id: 2cb0e806bc0a6d81df602215b17568ed
+    domain: switch
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
   actions:
   - choose:
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -230,7 +249,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -250,7 +269,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -280,7 +299,7 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 25
+      seconds: 35
     trigger: device
   conditions:
   - condition: and
@@ -290,6 +309,10 @@
       device_id: 89f70f1df25e47c9084e6cbdc04db268
       entity_id: 2cb0e806bc0a6d81df602215b17568ed
       domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
     - condition: state
       entity_id: input_boolean.przedpokoj2_manual
       state: 'off'
@@ -300,18 +323,24 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 19:55 - 23:00 (Weekend 02:00)
+  alias: Salon ON 20:50 - 23:00 (Weekend 02:00)
   description: ''
   triggers:
   - type: occupied
     device_id: 499116c5d163d2646cf98ddcde70d6e7
     entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
     domain: binary_sensor
+    trigger: device
+  - type: motion
+    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
+    entity_id: 8a0c3268cd39728337bcb973317fa5da
+    domain: binary_sensor
+    trigger: device
     for:
       hours: 0
       minutes: 0
-      seconds: 1
-    trigger: device
+      seconds: 3
+    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -320,7 +349,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '19:55:00'
+          after: '20:50:00'
           before: '23:00:00'
           weekday:
           - sun
@@ -331,7 +360,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '19:55:00'
+          after: '20:50:00'
           weekday:
           - fri
           - sat
@@ -344,22 +373,21 @@
           - sun
     - condition: device
       type: is_off
-      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      device_id: 8cebb71e415e431ddada2cac66240610
+      entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
       for:
         hours: 0
         minutes: 0
-        seconds: 1
-      enabled: true
+        seconds: 5
     - condition: state
       entity_id: input_boolean.salon_manual
       state: 'off'
   actions:
   - type: turn_on
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
     domain: switch
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     enabled: true
   - delay:
       hours: 0
@@ -385,22 +413,34 @@
       minutes: 6
       seconds: 45
     trigger: device
+  - type: no_motion
+    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
+    entity_id: 8a0c3268cd39728337bcb973317fa5da
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 6
+      seconds: 45
+    enabled: false
   conditions:
   - condition: and
     conditions:
     - condition: device
       type: is_on
-      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      device_id: 8cebb71e415e431ddada2cac66240610
+      entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
     - condition: state
       entity_id: input_boolean.salon_manual
       state: 'off'
   actions:
-  - action: notify.html5
+  - action: html5.send_message
     metadata: {}
+    target:
+      device_id:
+      - 7611aa941ad22424ddd155f818b85d06
     data:
-      message: ' '
       title: Salon OFF 15s
   - if:
     - condition: device
@@ -429,10 +469,12 @@
         minutes: 6
         seconds: 45
     then:
-    - action: notify.html5
+    - action: html5.send_message
       metadata: {}
+      target:
+        device_id:
+        - 7611aa941ad22424ddd155f818b85d06
       data:
-        message: ' '
         title: 'Salon OFF '
     - if:
       - condition: device
@@ -446,14 +488,16 @@
         data:
           message: Salon OFF
     - type: turn_off
-      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      device_id: 8cebb71e415e431ddada2cac66240610
+      entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
     else:
-    - action: notify.html5
+    - action: html5.send_message
       metadata: {}
+      target:
+        device_id:
+        - 7611aa941ad22424ddd155f818b85d06
       data:
-        message: ' '
         title: Salon will stay ON
     - if:
       - condition: device
@@ -469,25 +513,28 @@
   mode: single
 - id: '1724413289298'
   alias: Kamera REC ON
-  description: Kamera REC ON scene when no motion
+  description: ''
   triggers:
-  - type: not_occupied
-    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
-    entity_id: a0ee0b90899607043991272bc0f0c2e8
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 30
-      seconds: 0
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera_motion_alarm
+    to:
+    - 'off'
+    from:
+    - 'on'
   conditions: []
   actions:
+  - delay:
+      hours: 6
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
   - action: automation.turn_on
     metadata: {}
     data: {}
     target:
       entity_id: automation.kamera_rec
-  mode: single
+  mode: restart
 - id: '1724493397494'
   alias: Włącznik2
   description: Obsługa przycisku Włącznik2 dla akcji single i double
@@ -513,11 +560,11 @@
       - target:
           device_id:
           - 89f70f1df25e47c9084e6cbdc04db268
-          - 56c7b2aa9ca7aa42122015593e9b11ab
           - 1ff9b911c0d913696269646267fc72f8
           - 8e39c2ee99a9d37c629cc334429edbf1
           - 33ce06e7dbdd679c65eeb79fe0ccf387
           - 23e63d02839ff85f2dcc874249a6779c
+          - 8cebb71e415e431ddada2cac66240610
         action: switch.turn_off
         data: {}
   mode: restart
@@ -568,13 +615,12 @@
           data: {}
           target:
             device_id:
-            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 046972e0b2024c83e920cb6b90b96d3b
           enabled: false
         - action: switch.toggle
           metadata: {}
           target:
-            device_id: 56c7b2aa9ca7aa42122015593e9b11ab
+            device_id: 8cebb71e415e431ddada2cac66240610
           data: {}
     - conditions:
       - condition: template
@@ -602,11 +648,11 @@
         - target:
             device_id:
             - 89f70f1df25e47c9084e6cbdc04db268
-            - 56c7b2aa9ca7aa42122015593e9b11ab
             - 1ff9b911c0d913696269646267fc72f8
             - d36e7b1056abfdb139090057df440135
             - 33ce06e7dbdd679c65eeb79fe0ccf387
             - 2c553901da2c148c5f8f3a35806aac52
+            - 8cebb71e415e431ddada2cac66240610
           action: switch.turn_off
           data: {}
           enabled: true
@@ -615,11 +661,11 @@
           data: {}
           target:
             device_id:
-            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
             - 046972e0b2024c83e920cb6b90b96d3b
+            - b20082bbd5f4f37d76f70dd48b1c1a64
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == ''hold'' }}'
@@ -646,11 +692,11 @@
         - target:
             device_id:
             - 89f70f1df25e47c9084e6cbdc04db268
-            - 56c7b2aa9ca7aa42122015593e9b11ab
             - 1ff9b911c0d913696269646267fc72f8
             - d36e7b1056abfdb139090057df440135
             - 33ce06e7dbdd679c65eeb79fe0ccf387
             - 2c553901da2c148c5f8f3a35806aac52
+            - 8cebb71e415e431ddada2cac66240610
           action: switch.turn_off
           data: {}
           enabled: true
@@ -659,70 +705,69 @@
           data: {}
           target:
             device_id:
-            - 25b09a8e5f6f06ef11c7c402cfaa2591
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
             - 046972e0b2024c83e920cb6b90b96d3b
+            - b20082bbd5f4f37d76f70dd48b1c1a64
   - target:
       entity_id: input_boolean.lgtv_film_mode_set
     action: input_boolean.turn_off
     data: {}
   mode: restart
 - id: '1725632338648'
-  alias: Kamera2 REC
-  description: Kamera REC2 no motion
+  alias: Kamera REC2
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
   triggers:
-  - type: occupied
-    device_id: 499116c5d163d2646cf98ddcde70d6e7
-    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera2_motion_alarm
+    from:
+    - 'off'
+    to:
+    - 'on'
   conditions: []
   actions:
-  - delay:
-      seconds: 2
   - data:
-      duration: 60
-      lookback: 3
-      filename: /media/K2{{ now().strftime("%Y%m%d-%H%M%S") }}.mp4
+      duration: 1
+      lookback: 5
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K2_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K2_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
     target:
-      entity_id: camera.kamera2
+      entity_id: camera.kamera2_profile_0
     action: camera.record
   - delay:
-      minutes: 1
-      seconds: 30
-  - data:
-      device_id:
-      - 93b79537147e98d04a2a0c5eb117945a
-    action: homeassistant.disable_device
-  - delay:
-      seconds: 2
-  - data:
-      device_id:
-      - 93b79537147e98d04a2a0c5eb117945a
-    action: homeassistant.enable_device
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
   - data:
       stop_actions: true
     target:
       entity_id: automation.kamera2_rec
     action: automation.turn_off
-  mode: restart
+    enabled: true
+  mode: single
 - id: '1725632828518'
   alias: Kamera2 REC ON
-  description: Kamera2 REC ON when Salon ON
+  description: ''
   triggers:
-  - type: not_occupied
-    device_id: 499116c5d163d2646cf98ddcde70d6e7
-    entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera2_motion_alarm
+    to:
+    - 'off'
+    from:
+    - 'on'
   conditions: []
   actions:
+  - delay:
+      hours: 6
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
   - action: automation.turn_on
     metadata: {}
     data: {}
@@ -731,34 +776,18 @@
   mode: single
 - id: '1727207087145'
   alias: Home Alone - Arrive i Leave
-  description: 'Stabilna automatyzacja z krótszymi czasami, bez błędnej logiki last_changed.
-
-    '
+  description: Triggery oparte na zone, z walidacją GPS i podwójnym potwierdzeniem.
   triggers:
-  - entity_id:
-    - device_tracker.xiaomihmi15
-    to:
-    - home
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
+  - trigger: zone
+    entity_id: device_tracker.xiaomihmi15
+    zone: zone.home
+    event: enter
     id: arrive
-    trigger: state
-    from:
-    - not_home
-  - entity_id:
-    - device_tracker.xiaomihmi15
-    from:
-    - home
-    to:
-    - not_home
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
+  - trigger: zone
+    entity_id: device_tracker.xiaomihmi15
+    zone: zone.home
+    event: leave
     id: leave
-    trigger: state
   conditions: []
   actions:
   - choose:
@@ -766,24 +795,33 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:30:00'
+      - condition: template
+        value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
+          %} {{ acc is not none and acc < 80 }}
+
+          '
       - condition: template
         value_template: "{% set last = states('input_datetime.last_leave_home') %}
           {% if last in ('unknown','unavailable','') %}\n  false\n{% else %}\n  {{
           (as_timestamp(now()) - as_timestamp(last)) > 1800 }}\n{% endif %}\n"
       sequence:
+      - delay:
+          minutes: 3
+      - condition: state
+        entity_id: device_tracker.xiaomihmi15
+        state: home
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.leave_locked
-      - action: notify.mobile_app_xiaomihmi15
+      - action: notify.send_message
+        metadata: {}
+        target:
+          entity_id: notify.xiaomihmi15
         data:
           title: Arrive - Włącz Przedpokój 1 i Pokój
           message: ' '
-          data:
-            tag: arrive_home
-            ttl: 0
-            priority: high
       - action: switch.turn_on
         target:
           device_id:
@@ -799,7 +837,18 @@
       - condition: state
         entity_id: input_boolean.leave_locked
         state: 'off'
+      - condition: template
+        value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
+          %} {{ acc is not none and acc < 100 }}
+
+          '
       sequence:
+      - delay:
+          minutes: 5
+      - condition: template
+        value_template: '{{ states(''device_tracker.xiaomihmi15'') != ''home'' }}
+
+          '
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.leave_locked
@@ -814,23 +863,28 @@
             device_id:
             - 177a4f2f1b1e5790f9242f5dc0384b2f
             - 89f70f1df25e47c9084e6cbdc04db268
-            - 56c7b2aa9ca7aa42122015593e9b11ab
             - d36e7b1056abfdb139090057df440135
             - 1ff9b911c0d913696269646267fc72f8
             - 33ce06e7dbdd679c65eeb79fe0ccf387
             - 2c553901da2c148c5f8f3a35806aac52
+            - 8cebb71e415e431ddada2cac66240610
         - action: fan.turn_off
           target:
             device_id:
             - a7ad34cd864d362d63128c70dddccbb3
-        - action: notify.mobile_app_xiaomihmi15
+        - action: notify.send_message
+          metadata: {}
+          target:
+            entity_id: notify.xiaomihmi15
           data:
-            title: Leave - Wyłącz światła i wiatrak
             message: ' '
-            data:
-              tag: leave_home
-              ttl: 0
-              priority: high
+            title: Leave - Wyłącz światła i wiatrak
+        - action: automation.turn_on
+          target:
+            entity_id:
+            - automation.kamera_rec
+            - automation.kamera2_rec
+            - automation.kamera_rec3
   mode: single
 - id: '1728343000978'
   alias: PGE_1 ON OFF 08:00-02:00 (Pon-Pt) PGE_2 08:00-18:00 (bez Śr,Sb,Nd)
@@ -922,7 +976,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 19:55 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 20:50 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -930,19 +984,45 @@
     entity_id: a0ee0b90899607043991272bc0f0c2e8
     domain: binary_sensor
     trigger: device
+  - type: motion
+    device_id: b8d8aa05fc925818d65590ba9f4c1f97
+    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
+    domain: binary_sensor
+    trigger: device
+    enabled: false
     for:
       hours: 0
       minutes: 0
-      seconds: 1
+      seconds: 3
   conditions:
   - condition: state
     entity_id: input_boolean.kuchnia_manual
     state: 'off'
+  - condition: or
+    conditions:
+    - condition: device
+      type: is_off
+      device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+      entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
+    - condition: device
+      type: is_off
+      device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+      entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
   actions:
   - choose:
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -962,7 +1042,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -982,7 +1062,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '19:55:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1032,7 +1112,17 @@
     for:
       hours: 0
       minutes: 0
+      seconds: 35
+  - type: no_motion
+    device_id: b8d8aa05fc925818d65590ba9f4c1f97
+    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 0
       seconds: 25
+    enabled: false
   conditions:
   - condition: and
     conditions:
@@ -1051,6 +1141,15 @@
     - condition: state
       entity_id: input_boolean.kuchnia_manual
       state: 'off'
+    - condition: device
+      type: is_off
+      device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
+      entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
   actions:
   - type: turn_off
     device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
@@ -1060,147 +1159,6 @@
     device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
     entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
     domain: switch
-  mode: single
-- id: '1729354082847'
-  alias: Home Alone - Światło OFF zależnie od Pokoju 19:55 - 08:00
-  description: Jeśli Pokój zostanie włączony, wyłącz pozostałe urządzenia, a jeśli
-    którykolwiek z pozostałych zostanie włączony i Pokój jest włączony, wyłącz Pokój.
-    Ograniczenie raz na 5 minut działa tylko przy option 2.
-  triggers:
-  - device_id: d36e7b1056abfdb139090057df440135
-    domain: switch
-    entity_id: 719e637226eb5009d8932bd1daf8290a
-    type: turned_on
-    id: pokoj_on
-    trigger: device
-  - device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
-    domain: switch
-    entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
-    type: turned_on
-    id: other_on
-    trigger: device
-  - device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
-    domain: switch
-    entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
-    type: turned_on
-    id: other_on
-    trigger: device
-  - device_id: 1ff9b911c0d913696269646267fc72f8
-    domain: switch
-    entity_id: 1b6dbf68e8f5a3110059c22c291d8229
-    type: turned_on
-    id: other_on
-    trigger: device
-  - device_id: 89f70f1df25e47c9084e6cbdc04db268
-    domain: switch
-    entity_id: 2cb0e806bc0a6d81df602215b17568ed
-    type: turned_on
-    id: other_on
-    trigger: device
-  - device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    domain: switch
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
-    type: turned_on
-    id: other_on
-    trigger: device
-  - type: turned_on
-    device_id: 25b09a8e5f6f06ef11c7c402cfaa2591
-    entity_id: 21a45c49e9b9499a2688ed2ea255ef25
-    domain: light
-    trigger: device
-    id: other_on
-  - type: turned_on
-    device_id: 046972e0b2024c83e920cb6b90b96d3b
-    entity_id: 7d89da94efd271d27ea53137945890d0
-    domain: light
-    trigger: device
-    id: other_on
-  - device_id: 2c553901da2c148c5f8f3a35806aac52
-    domain: switch
-    entity_id: 2c5cfc2d543a7f70c5a3ce0cb1bc2f23
-    type: turned_on
-    id: other_on
-    trigger: device
-  conditions:
-  - condition: time
-    after: '19:55:00'
-    before: 08:00:00
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
-    - sat
-    - sun
-  actions:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: pokoj_on
-      sequence:
-      - target:
-          device_id:
-          - 33ce06e7dbdd679c65eeb79fe0ccf387
-        action: switch.turn_off
-        data: {}
-      - target:
-          device_id: 1ff9b911c0d913696269646267fc72f8
-        action: switch.turn_off
-        data: {}
-      - target:
-          device_id: 89f70f1df25e47c9084e6cbdc04db268
-        action: switch.turn_off
-        data: {}
-      - target:
-          device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-        action: switch.turn_off
-        data: {}
-      - target:
-          device_id:
-          - 25b09a8e5f6f06ef11c7c402cfaa2591
-        action: light.turn_off
-        data: {}
-      - action: light.turn_off
-        data: {}
-        target:
-          device_id: 046972e0b2024c83e920cb6b90b96d3b
-      - target:
-          device_id: 2c553901da2c148c5f8f3a35806aac52
-        action: switch.turn_off
-        data: {}
-      - target:
-          entity_id: input_datetime.last_home_alone_run
-        action: input_datetime.set_datetime
-        data:
-          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
-    - conditions:
-      - condition: trigger
-        id: other_on
-      - condition: device
-        device_id: d36e7b1056abfdb139090057df440135
-        domain: switch
-        entity_id: 719e637226eb5009d8932bd1daf8290a
-        type: is_on
-      - condition: state
-        entity_id: input_boolean.pokoj_manual
-        state: 'off'
-      - condition: template
-        value_template: "{% set last = states('input_datetime.last_home_alone_run')
-          %} {% if last == 'unknown' or last == '' %}\n  true\n{% else %}\n  {% set
-          last_dt = as_timestamp(last) %}\n  {% set now_dt = as_timestamp(now()) %}\n
-          \ {{ (now_dt - last_dt) > 300 }}\n{% endif %}\n"
-      sequence:
-      - target:
-          device_id: d36e7b1056abfdb139090057df440135
-        action: switch.turn_off
-        data: {}
-      - target:
-          entity_id: input_datetime.last_home_alone_run
-        action: input_datetime.set_datetime
-        data:
-          datetime: '{{ (now() - timedelta(minutes=8)).strftime(''%Y-%m-%d %H:%M:%S'')
-            }}'
   mode: single
 - id: '1732520506811'
   alias: PGE_3 ON OFF 05:00-05:05
@@ -1358,34 +1316,40 @@
       - condition: template
         value_template: '{{ trigger.id == ''mspos'' }}'
       sequence:
-      - data:
-          title: MSPOS HMI 100%
+      - action: notify.send_message
+        metadata: {}
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
           message: ' '
-          data:
-            tag: MSPOS HMI 100%
-            ttl: 0
-            priority: high
-        action: notify.mobile_app_xiaomihmi15
-      - data:
           title: MSPOS HMI 100%
-          message: ' '
-        action: notify.html5
+      - action: html5.send_message
+        metadata: {}
+        target:
+          device_id:
+          - ca48c02aeb58cb0a92d53fa1b454f5c3
+          - 7611aa941ad22424ddd155f818b85d06
+        data:
+          title: MSPOS HMI 100%
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''xiaomi'' }}'
       sequence:
-      - data:
-          title: Xiaomi 15 100%
+      - action: notify.send_message
+        metadata: {}
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
           message: ' '
-          data:
-            tag: Xiaomi 15 100%
-            ttl: 0
-            priority: high
-        action: notify.mobile_app_xiaomihmi15
-      - data:
           title: Xiaomi 15 100%
-          message: ' '
-        action: notify.html5
+      - action: html5.send_message
+        metadata: {}
+        target:
+          device_id:
+          - ca48c02aeb58cb0a92d53fa1b454f5c3
+          - 7611aa941ad22424ddd155f818b85d06
+        data:
+          title: Xiaomi 15 100%
   mode: parallel
   max: 2
 - id: '1734111657838'
@@ -1515,6 +1479,16 @@
       hours: 0
       minutes: 5
       seconds: 0
+  - type: no_motion
+    device_id: b8d8aa05fc925818d65590ba9f4c1f97
+    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -1565,6 +1539,16 @@
       hours: 0
       minutes: 5
       seconds: 0
+  - type: no_motion
+    device_id: d0a7ff6b543280e60bd2f13df3398f72
+    entity_id: d7c357a3bf89a16481345fee4c499adf
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -1604,13 +1588,22 @@
       hours: 0
       minutes: 5
       seconds: 0
+  - type: no_motion
+    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
+    entity_id: 8a0c3268cd39728337bcb973317fa5da
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   conditions:
   - condition: and
     conditions:
     - condition: device
       type: is_on
-      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      device_id: 8cebb71e415e431ddada2cac66240610
+      entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
     - condition: state
       entity_id: input_boolean.salon_manual
@@ -1626,8 +1619,8 @@
     target:
       entity_id: input_boolean.salon_manual
   - type: turn_off
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     domain: switch
   mode: single
 - id: '1734179058969'
@@ -1658,8 +1651,8 @@
   - if:
     - condition: device
       type: is_off
-      device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-      entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+      device_id: 8cebb71e415e431ddada2cac66240610
+      entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
       for:
         hours: 0
@@ -1670,14 +1663,13 @@
       metadata: {}
       data:
         message: LGTV OFF 5m
-    - data:
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id: notify.xiaomihmi15
+      data:
         message: ' '
-        data:
-          tag: LGTV OFF 5m
-          ttl: 0
-          priority: high
         title: LGTV OFF 5m
-      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 4
@@ -1688,14 +1680,13 @@
       metadata: {}
       data:
         message: LGTV OFF 1m
-    - data:
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id: notify.xiaomihmi15
+      data:
         message: ' '
-        data:
-          tag: LGTV OFF 1m
-          ttl: 0
-          priority: high
         title: LGTV OFF 1m
-      action: notify.mobile_app_xiaomihmi15
     - delay:
         hours: 0
         minutes: 1
@@ -1719,8 +1710,8 @@
   conditions:
   - condition: device
     type: is_off
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     domain: switch
   actions:
   - action: script.lgtv_picture_mode
@@ -1759,18 +1750,20 @@
       trigger: numeric_state
     timeout: 04:00:00
     continue_on_timeout: false
-  - data:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.xiaomihmi15
+    data:
       message: ' '
-      data:
-        tag: Pranie gotowe
-        ttl: 0
-        priority: high
       title: '!!! Pranie gotowe !!!'
-    action: notify.mobile_app_xiaomihmi15
-  - data:
+  - action: html5.send_message
+    metadata: {}
+    target:
+      device_id:
+      - 7611aa941ad22424ddd155f818b85d06
+    data:
       title: '!!! Pranie gotowe !!!'
-      message: ' '
-    action: notify.html5
   - target:
       device_id: 2c553901da2c148c5f8f3a35806aac52
     action: switch.turn_on
@@ -1868,6 +1861,26 @@
       \     )\n   and not (\n        expand(state_attr('switch.przedpokoj1_1b', 'entity_id'))\n
       \       | selectattr('state', 'ne', trigger.to_state.state)\n        | list\n
       \       | length == 0\n      )\n}}\n"
+  - condition: or
+    conditions:
+    - condition: device
+      type: is_off
+      device_id: 1ff9b911c0d913696269646267fc72f8
+      entity_id: 1b6dbf68e8f5a3110059c22c291d8229
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
+    - condition: device
+      type: is_off
+      device_id: 8e39c2ee99a9d37c629cc334429edbf1
+      entity_id: c8846f154064f2a94575a262c92d11df
+      domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
   actions:
   - alias: Zmienne pomocnicze
     variables:
@@ -1995,14 +2008,14 @@
   description: Sterowanie input_boolean.salon_manual jednym przełącznikiem
   triggers:
   - id: switch_on
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     domain: switch
     type: turned_on
     trigger: device
   - id: switch_off
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     domain: switch
     type: turned_off
     trigger: device
@@ -2071,88 +2084,70 @@
         - leave_home
       sequence:
       - delay: '{{ ''00:00:02'' if trigger.event == ''leave'' else ''00:00:00'' }}'
-      - data:
-          title: ' '
+      - action: notify.send_message
+        metadata: {}
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
+          message: '  {{ message }} '
+      - action: html5.send_message
+        metadata: {}
+        target:
+          device_id: 7611aa941ad22424ddd155f818b85d06
+        data:
           message: ' {{ message }} '
-          data:
-            tag: MAMA STATUS
-            ttl: 0
-            priority: high
-        action: notify.mobile_app_xiaomihmi15
-      - data:
-          title: ' '
-          message: ' {{ message }} '
-        action: notify.html5
     - conditions:
       - condition: trigger
         id: enter_okolica2
       sequence:
-      - data:
-          title: ' '
-          message: ' {{ message }} '
-          data:
-            tag: MAMA STATUS
-            ttl: 0
-            priority: high
-        action: notify.mobile_app_xiaomihmi15
-      - data:
-          title: ' '
-          message: ' {{ message }} '
-        action: notify.html5
-      - target:
-          entity_id:
-          - automation.test_lokalizacja_leave
-          - automation.home_alone_kuchnia_salon_lazienka_przedpokoj_off
+      - action: notify.send_message
+        metadata: {}
+        target:
+          entity_id: notify.xiaomihmi15
         data:
-          stop_actions: true
-        action: automation.turn_off
-        enabled: true
+          message: ' {{ message }} '
+      - action: html5.send_message
+        metadata: {}
+        target:
+          device_id: 7611aa941ad22424ddd155f818b85d06
+        data:
+          message: ' {{ message }} '
   mode: single
 - id: '1750469114566'
   alias: Kamera REC
-  description: Kamera REC2 no motion
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
   triggers:
-  - type: occupied
-    device_id: ce4fd20ad6d7ae605142f27d345d2c8b
-    entity_id: a0ee0b90899607043991272bc0f0c2e8
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera_motion_alarm
+    from:
+    - 'off'
+    to:
+    - 'on'
   conditions: []
   actions:
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 2
-      milliseconds: 0
   - data:
       duration: 60
-      lookback: 3
-      filename: /media/K1{{ now().strftime("%Y%m%d-%H%M%S") }}.mp4
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K1_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K1_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
+      lookback: 5
     target:
-      device_id: a6c7542a0f5e1b619b84f9bc43c71b2f
+      entity_id: camera.kamera_profile_0
     action: camera.record
-  - delay:
-      minutes: 1
-      seconds: 30
-  - data:
-      device_id:
-      - a6c7542a0f5e1b619b84f9bc43c71b2f
-    action: homeassistant.disable_device
   - delay:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 15
       milliseconds: 0
   - data:
-      device_id:
-      - a6c7542a0f5e1b619b84f9bc43c71b2f
-    action: homeassistant.enable_device
-  - data:
       stop_actions: true
-    action: automation.turn_off
     target:
       entity_id: automation.kamera_rec
-  mode: restart
+    action: automation.turn_off
+    enabled: true
+  mode: single
 - id: '1753345844850'
   alias: Zigbee - Interview wszystkich urządzeń o 22:00 w środę
   description: Codziennie o 22:00 otwiera sieć, robi ponowny interview urządzeń i
@@ -2311,51 +2306,29 @@
     action: mqtt.publish
   mode: single
 - id: '1758689853000'
-  alias: Roborock S8 Dom 5h
+  alias: Roborock Saros 10 Dom 4h30m
   description: ''
   triggers: []
   conditions: []
   actions:
   - delay:
-      hours: 5
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - type: turn_off
-    device_id: 71ba8b9414376ba23484e079ca5f81f0
-    entity_id: 1451fbe387c65854db5dcee053a821c2
-    domain: switch
-  - device_id: 71ba8b9414376ba23484e079ca5f81f0
-    domain: button
-    entity_id: 74306fca8bb39598791b34921c9d8891
-    type: press
-  - delay:
-      hours: 1
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - device_id: 71ba8b9414376ba23484e079ca5f81f0
-    domain: button
-    entity_id: 4f5003e0b61c75c2d7c4c1ef17d61267
-    type: press
-  - delay:
-      hours: 0
+      hours: 4
       minutes: 30
       seconds: 0
       milliseconds: 0
-  - device_id: 71ba8b9414376ba23484e079ca5f81f0
+  - device_id: 8d15be71266bd86a527be15fc39ac3ec
     domain: button
-    entity_id: 4f5003e0b61c75c2d7c4c1ef17d61267
+    entity_id: 948fe61172a8aa2d71c96547a04a8c88
     type: press
   - delay:
-      hours: 3
-      minutes: 0
+      hours: 1
+      minutes: 45
       seconds: 0
       milliseconds: 0
-  - type: turn_on
-    device_id: 71ba8b9414376ba23484e079ca5f81f0
-    entity_id: 1451fbe387c65854db5dcee053a821c2
-    domain: switch
+  - device_id: 8d15be71266bd86a527be15fc39ac3ec
+    domain: button
+    entity_id: 671e49193ea9983b9e99b0d5dfa20031
+    type: press
   mode: restart
 - id: lazienka_sync_switch_group
   alias: Łazienka 1-3 ON OFF
@@ -2422,19 +2395,20 @@
     value_template: "{# Sprawdzamy najpierw, czy mamy wszystkie koordynaty, a potem
       liczymy dystans #} {% if is_data_valid %}\n  {{ distance(old_lat, old_lon, new_lat,
       new_lon) > 0.1}}\n{% else %}\n  false\n{% endif %}"
-  - data:
-      data:
-        tag: MAMA LOCATION CHANGE
-        ttl: 0
-        priority: high
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.xiaomihmi15
+    data:
       message: "\U0001F4CDMAMA LOCATION CHANGE  {{ states('sensor.xiaomianna_geocoded_location')
         }}"
-    action: notify.mobile_app_xiaomihmi15
-  - enabled: true
+  - action: html5.send_message
+    metadata: {}
+    target:
+      device_id: 7611aa941ad22424ddd155f818b85d06
     data:
       message: MAMA LOCATION CHANGE {{ states('sensor.xiaomianna_geocoded_location')
         }}
-    action: notify.html5
   mode: single
 - id: '1769112369962'
   alias: Łazienka 1-3 sync
@@ -2473,8 +2447,8 @@
   conditions:
   - condition: device
     type: is_off
-    device_id: 56c7b2aa9ca7aa42122015593e9b11ab
-    entity_id: 1d822833cb79e52cbf8187d9b5f8dfe6
+    device_id: 8cebb71e415e431ddada2cac66240610
+    entity_id: 440a4c2fe813e6110167b990e7934d52
     domain: switch
   actions:
   - action: script.turn_on
@@ -2554,9 +2528,91 @@
   - minutes: /30
     trigger: time_pattern
   actions:
-  - action: notify.mobile_app_msposhmi
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.xiaomihmi15
     data:
       message: request_location_update
-  - action: notify.mobile_app_xiaomihmi15
+  - action: notify.send_message
+    metadata: {}
+    target:
+      entity_id: notify.msposhmi
     data:
       message: request_location_update
+- id: '1777394600831'
+  alias: Naprawa downloads po starcie PC
+  triggers:
+  - entity_id: binary_sensor.fear_pc_status
+    from: 'off'
+    to: 'on'
+    trigger: state
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 20
+      milliseconds: 0
+  - data:
+      device_id: 907d30e9add818c4edddc899c0d306ff
+    action: hassio.mount_reload
+  mode: single
+- id: '1777543126025'
+  alias: Kamera3 REC ON
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera3_motion_alarm
+    to:
+    - 'off'
+    from:
+    - 'on'
+  conditions: []
+  actions:
+  - delay:
+      hours: 6
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.kamera_rec3
+  mode: single
+- id: '1777543235161'
+  alias: Kamera REC3
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.kamera3_motion_alarm
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - data:
+      duration: 60
+      lookback: 5
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K3_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K3_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
+    target:
+      entity_id: camera.kamera3_profile_0
+    action: camera.record
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - data:
+      stop_actions: true
+    target:
+      entity_id: automation.kamera_rec3
+    action: automation.turn_off
+    enabled: true
+  mode: single

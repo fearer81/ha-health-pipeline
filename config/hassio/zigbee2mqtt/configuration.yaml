@@ -94,17 +94,6 @@ devices:
         maximum_report_interval: 3600
         reportable_change: 1
     icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
-  '0x003c84fffed57c46':
-    friendly_name: Salon
-    availability: true
-    state_action: true
-    reporting:
-      - attribute: 778
-        cluster: genDiagnostics
-        minimum_report_interval: 30
-        maximum_report_interval: 3600
-        reportable_change: 1
-    icon: device_icons/9857692dab8a04d1ed30ddc2634f1d18.png
   '0xa4c138d9544b8e65':
     friendly_name: Przedpokój1
     availability: true
@@ -197,16 +186,18 @@ devices:
     friendly_name: PGE1
   '0xa4c13812b06df744':
     friendly_name: PGE_Pralka
-  '0xa4c1385d79929669':
-    friendly_name: Czujnik_Przedpokój2
   '0xa4c138ff44be0631':
     friendly_name: Czujnik_Kuchnia
-  '0xa4c138803c6eeffe':
-    friendly_name: Czujnik_Salon
   '0xa4c1381ca7bb066d':
     friendly_name: Czujnik_Pokój
+  '0x0cae5ffffed90ccf':
+    friendly_name: Salon
+  '0xa4c138803c6eeffe':
+    friendly_name: Czujnik_Salon
   '0xa4c138668b596a05':
     friendly_name: Czujnik_Przedpokój1
+  '0xa4c1385d79929669':
+    friendly_name: Czujnik_Przedpokój2
 availability:
   enabled: true
   active:

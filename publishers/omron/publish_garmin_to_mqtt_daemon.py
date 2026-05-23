@@ -62,7 +62,7 @@ def main():
                                     })
                             rows.sort(key=lambda x: x['ts'], reverse=True)
                             
-                            client.publish(TOPIC_HISTORY, json.dumps({"rows": rows[:200]}), retain=True)
+                            client.publish(TOPIC_HISTORY, json.dumps({"rows": rows[:1000]}), retain=True)
                             
                             if rows:
                                 latest = rows[0]
