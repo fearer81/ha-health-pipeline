@@ -17,27 +17,27 @@
   {
     "name": "200 g bananów (kawałki)",
     "id": "1a33f82cac454a898ebaff0493494bd2",
-    "complete": false
+    "complete": true
   },
   {
     "name": "80 g cukru",
     "id": "5cd388b8c3d84f19a36c3f6e5ccc8fbe",
-    "complete": false
+    "complete": true
   },
   {
     "name": "100 ml mleka",
     "id": "6753248add504824aaf86cfac1553e5a",
-    "complete": false
+    "complete": true
   },
   {
     "name": "100 ml śmietany 30-38%",
     "id": "c5ef821fdf6843f8bfecfd2960e575db",
-    "complete": false
+    "complete": true
   },
   {
     "name": "1 łyżka soku z cytryny",
     "id": "6f68d01a31964f788bf7da9ec847e5bb",
-    "complete": false
+    "complete": true
   },
   {
     "name": "--------------------",
@@ -68,5 +68,45 @@
     "name": "1 szczypta soli",
     "id": "7bb311d4628445a69a09ea0255bb7e12",
     "complete": false
+  },
+  {
+    "name": "ALTACET ŻEL / ALTACET DO SMAROWANIA",
+    "id": "e8213c83f37043809155d9e5aff8ad89",
+    "complete": true
+  },
+  {
+    "name": "--------------------------",
+    "id": "7192147bf95147f2a7a823b1ad804f5c",
+    "complete": false
+  },
+  {
+    "name": "ALTACET ŻEL / ALTACET DO SMAROWANIA",
+    "id": "57c8572378a444b4a92ff54c887d749c",
+    "complete": true
+  },
+  {
+    "name": "VENORUTON MAŚĆ",
+    "id": "a7f09e9ef99e4ca49e06988c3ce382c8",
+    "complete": true
+  },
+  {
+    "name": "BORASOL 2x",
+    "id": "5ec931acac0647f2809845d308eb4a21",
+    "complete": true
+  },
+  {
+    "name": "POLOPIRYNA S",
+    "id": "d8c289eedbb94b9a972f616c8830a755",
+    "complete": true
+  },
+  {
+    "name": "GAZA 0,5M 3x",
+    "id": "c4c205b117384d6b83f4c57853c9f7f3",
+    "complete": true
+  },
+  {
+    "name": "GAZA 1M 3x",
+    "id": "c636b5b79a3c45838c292965ccbe8e83",
+    "complete": true
   }
 ]

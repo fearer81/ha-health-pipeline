@@ -8,7 +8,7 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-binary_sensor: !include binary_sensors.yaml
+template: !include sensors.yaml
 command_line: !include command_line.yaml
 
 # Wiatrak przeniesiony do sekcji template poniżej.
@@ -123,8 +123,8 @@ template:
         unique_id: wiatrak_4_biegi_template
         speed_count: 4
         preset_modes:
-          - "Natural Wind"
-          - "Straight Wind"
+          - "Naturalna bryza"
+          - "Bezpośredni podmuch"
         state: "{{ states('fan.dmaker_p5_cfdc_fan') }}"
         oscillating: "{{ state_attr('fan.dmaker_p5_cfdc_fan', 'oscillating') | default(false) }}"
         preset_mode: "{{ state_attr('fan.dmaker_p5_cfdc_fan', 'preset_mode') }}"
@@ -189,6 +189,10 @@ shell_command:
   fetch_vpn_list: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 'ls -1 /root/vpn-configs/*.conf | xargs -n 1 basename | sed \"s/.conf//\"'"
   # Odpala skrypt z wybranym krajem
   apply_vpn_config: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 '/root/apply-vpn.sh /root/vpn-configs/{{ country }}.conf'"
+
+# Przenoszenie mp4 do Downloads\!Kamera
+  move_camera_files: >-
+    find /media -maxdepth 1 -type f \( -name "K1_*.mp4" -o -name "K2_*.mp4" -o -name "K3_*.mp4" \) -exec mv -f {} /media/downloads/!Kamera/ \;
 
 # HassControl
 group:

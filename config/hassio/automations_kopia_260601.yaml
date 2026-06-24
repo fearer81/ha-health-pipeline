@@ -1,5 +1,5 @@
 - id: '1724313766518'
-  alias: Pokój ON 21:10 - 00:30
+  alias: Pokój ON 20:50 - 00:30
   description: ''
   triggers:
   - type: occupied
@@ -12,12 +12,12 @@
     entity_id: d7c357a3bf89a16481345fee4c499adf
     domain: binary_sensor
     trigger: device
-    enabled: false
+    enabled: true
   conditions:
   - condition: and
     conditions:
     - condition: time
-      after: '21:10:00'
+      after: '20:50:00'
       before: 00:30:00
       weekday:
       - mon
@@ -32,6 +32,10 @@
       device_id: d36e7b1056abfdb139090057df440135
       entity_id: 719e637226eb5009d8932bd1daf8290a
       domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
     - condition: state
       entity_id: input_boolean.pokoj_manual
       state: 'off'
@@ -71,7 +75,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 9
+      minutes: 8
       seconds: 45
     enabled: true
   conditions:
@@ -146,6 +150,10 @@
     entity_id: switch.przedpokoj1_1b
     state:
     - 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
   - condition: state
     entity_id: input_boolean.przedpokoj1_manual
     state: 'off'
@@ -191,7 +199,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 21:10 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 20:50 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -199,6 +207,10 @@
     entity_id: 43a167995e5f805fce7d7f8ea2ced4fb
     domain: binary_sensor
     trigger: device
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
   conditions:
   - condition: state
     entity_id: input_boolean.przedpokoj2_manual
@@ -208,11 +220,15 @@
     device_id: 89f70f1df25e47c9084e6cbdc04db268
     entity_id: 2cb0e806bc0a6d81df602215b17568ed
     domain: switch
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
   actions:
   - choose:
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -233,7 +249,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -253,7 +269,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -307,7 +323,7 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 21:10 - 23:00 (Weekend 02:00)
+  alias: Salon ON 20:50 - 23:00 (Weekend 02:00)
   description: ''
   triggers:
   - type: occupied
@@ -320,7 +336,11 @@
     entity_id: 8a0c3268cd39728337bcb973317fa5da
     domain: binary_sensor
     trigger: device
-    enabled: false
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 3
+    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -329,7 +349,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '21:10:00'
+          after: '20:50:00'
           before: '23:00:00'
           weekday:
           - sun
@@ -340,7 +360,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '21:10:00'
+          after: '20:50:00'
           weekday:
           - fri
           - sat
@@ -356,6 +376,10 @@
       device_id: 8cebb71e415e431ddada2cac66240610
       entity_id: 440a4c2fe813e6110167b990e7934d52
       domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
     - condition: state
       entity_id: input_boolean.salon_manual
       state: 'off'
@@ -498,10 +522,6 @@
     - 'off'
     from:
     - 'on'
-    for:
-      hours: 2
-      minutes: 0
-      seconds: 0
   conditions: []
   actions:
   - delay:
@@ -509,7 +529,6 @@
       minutes: 0
       seconds: 0
       milliseconds: 0
-    enabled: false
   - action: automation.turn_on
     metadata: {}
     data: {}
@@ -698,7 +717,8 @@
   mode: restart
 - id: '1725632338648'
   alias: Kamera REC2
-  description: Zapis lokalnie na HA
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
   triggers:
   - trigger: state
     entity_id:
@@ -710,9 +730,11 @@
   conditions: []
   actions:
   - data:
-      duration: 60
-      filename: /media/K2_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
+      duration: 1
       lookback: 5
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K2_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K2_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
     target:
       entity_id: camera.kamera2_profile_0
     action: camera.record
@@ -739,10 +761,6 @@
     - 'off'
     from:
     - 'on'
-    for:
-      hours: 2
-      minutes: 0
-      seconds: 0
   conditions: []
   actions:
   - delay:
@@ -750,7 +768,6 @@
       minutes: 0
       seconds: 0
       milliseconds: 0
-    enabled: false
   - action: automation.turn_on
     metadata: {}
     data: {}
@@ -778,7 +795,7 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
@@ -791,10 +808,7 @@
           (as_timestamp(now()) - as_timestamp(last)) > 1800 }}\n{% endif %}\n"
       sequence:
       - delay:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
+          minutes: 3
       - condition: state
         entity_id: device_tracker.xiaomihmi15
         state: home
@@ -830,10 +844,7 @@
           '
       sequence:
       - delay:
-          hours: 0
-          minutes: 2
-          seconds: 0
-          milliseconds: 0
+          minutes: 5
       - condition: template
         value_template: '{{ states(''device_tracker.xiaomihmi15'') != ''home'' }}
 
@@ -891,12 +902,6 @@
   - at: 02:00:00
     trigger: time
     id: stop_pge1
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
   conditions: []
   actions:
   - choose:
@@ -907,7 +912,6 @@
       - action: switch.turn_on
         target:
           device_id: 7ff08f995e4b4dd774a49cc4c65cda25
-        data: {}
       - condition: template
         value_template: '{{ now().weekday() in [0,1,3,4] }}'
       - action: switch.turn_on
@@ -922,7 +926,6 @@
       - action: switch.turn_off
         target:
           device_id: 084241f6a5087e5984c7cbdc37bc55c0
-        data: {}
     - conditions:
       - condition: trigger
         id: stop_pge1
@@ -930,7 +933,6 @@
       - action: switch.turn_off
         target:
           device_id: 7ff08f995e4b4dd774a49cc4c65cda25
-        data: {}
   mode: restart
 - id: '1728343069217'
   alias: PGE_1 ON OFF 11:00 - 03:00 Sb-Nd
@@ -974,7 +976,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 21:10 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 20:50 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -1003,16 +1005,24 @@
       device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
       entity_id: 52eba4a261e17c20798b0f5fa6d2fac3
       domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
     - condition: device
       type: is_off
       device_id: 33ce06e7dbdd679c65eeb79fe0ccf387
       entity_id: 9b8c99fd9eef26b1c299eebc82c7bdd1
       domain: switch
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 5
   actions:
   - choose:
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -1032,7 +1042,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -1052,7 +1062,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '21:10:00'
+        after: '20:50:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1383,7 +1393,7 @@
         data: {}
   mode: single
 - id: '1734119519822'
-  alias: Przedpokój2 OF 10m
+  alias: Przedpokój2 OF 5m
   description: ''
   triggers:
   - type: not_occupied
@@ -1393,7 +1403,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   conditions:
   - condition: and
@@ -1418,7 +1428,7 @@
     domain: switch
   mode: single
 - id: '1734119682839'
-  alias: Przedpokój1 OF 10m
+  alias: Przedpokój1 OF 5m
   description: ''
   triggers:
   - type: not_occupied
@@ -1428,7 +1438,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   conditions:
   - condition: and
@@ -1457,7 +1467,7 @@
     data: {}
   mode: single
 - id: '1734120016994'
-  alias: Kuchnia OF 10m
+  alias: Kuchnia OF 5m
   description: ''
   triggers:
   - type: not_occupied
@@ -1467,7 +1477,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   - type: no_motion
     device_id: b8d8aa05fc925818d65590ba9f4c1f97
@@ -1476,7 +1486,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
     enabled: true
   conditions:
@@ -1517,7 +1527,7 @@
     domain: switch
   mode: single
 - id: '1734120233781'
-  alias: Pokój OF 10m
+  alias: Pokój OF 5m
   description: ''
   triggers:
   - type: not_occupied
@@ -1527,7 +1537,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   - type: no_motion
     device_id: d0a7ff6b543280e60bd2f13df3398f72
@@ -1536,7 +1546,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
     enabled: true
   conditions:
@@ -1566,7 +1576,7 @@
     domain: switch
   mode: single
 - id: '1734120340602'
-  alias: Salon OF 10m
+  alias: Salon OF 5m
   description: ''
   triggers:
   - type: not_occupied
@@ -1576,7 +1586,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   - type: no_motion
     device_id: edc1f3bca0bdbbfd66e395530dfd17cb
@@ -1585,7 +1595,7 @@
     trigger: device
     for:
       hours: 0
-      minutes: 10
+      minutes: 5
       seconds: 0
   conditions:
   - condition: and
@@ -2105,7 +2115,8 @@
   mode: single
 - id: '1750469114566'
   alias: Kamera REC
-  description: Zapis lokalnie na HA
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
   triggers:
   - trigger: state
     entity_id:
@@ -2117,8 +2128,10 @@
   conditions: []
   actions:
   - data:
-      filename: /media/K1_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
       duration: 60
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K1_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K1_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
       lookback: 5
     target:
       entity_id: camera.kamera_profile_0
@@ -2530,17 +2543,19 @@
 - id: '1777394600831'
   alias: Naprawa downloads po starcie PC
   triggers:
-  - trigger: state
-    entity_id: sensor.fear_pc_is_active
-    to: Unlocked
+  - entity_id: binary_sensor.fear_pc_status
+    from: 'off'
+    to: 'on'
+    trigger: state
   actions:
-  - action: hassio.mount_reload
-    data:
-      device_id: 907d30e9add818c4edddc899c0d306ff
   - delay:
-      minutes: 1
-  - action: shell_command.move_camera_files
-    data: {}
+      hours: 0
+      minutes: 0
+      seconds: 20
+      milliseconds: 0
+  - data:
+      device_id: 907d30e9add818c4edddc899c0d306ff
+    action: hassio.mount_reload
   mode: single
 - id: '1777543126025'
   alias: Kamera3 REC ON
@@ -2553,18 +2568,13 @@
     - 'off'
     from:
     - 'on'
-    for:
-      hours: 2
-      minutes: 0
-      seconds: 0
   conditions: []
   actions:
   - delay:
-      hours: 2
+      hours: 6
       minutes: 0
       seconds: 0
       milliseconds: 0
-    enabled: false
   - action: automation.turn_on
     metadata: {}
     data: {}
@@ -2573,7 +2583,8 @@
   mode: single
 - id: '1777543235161'
   alias: Kamera REC3
-  description: Zapis lokalnie na HA
+  description: 'Zapis na Windows E: (przez SMB) jeśli PC działa, w przeciwnym razie
+    lokalnie na HA'
   triggers:
   - trigger: state
     entity_id:
@@ -2585,9 +2596,11 @@
   conditions: []
   actions:
   - data:
-      filename: /media/K3_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
       duration: 60
       lookback: 5
+      filename: "{% if is_state('binary_sensor.fear_pc_status', 'on')%}\n/media/downloads/K3_{{
+        now().strftime(\"%Y%m%d-%H%M%S\") }}.mp4\n{% else %} /media/K3_{{ now().strftime(\"%Y%m%d-%H%M%S\")
+        }}.mp4 \n{% endif %}"
     target:
       entity_id: camera.kamera3_profile_0
     action: camera.record
@@ -2602,68 +2615,4 @@
       entity_id: automation.kamera_rec3
     action: automation.turn_off
     enabled: true
-  mode: single
-- id: '1780310224382'
-  alias: Przedpokój1 ON OFF Manual TEST
-  description: Po ręcznym naciśnięciu włącznika synchronizuje drugi (grupa) oraz ustawia
-    flagę manual.
-  triggers:
-  - entity_id:
-    - switch.przedpokoj1
-    - switch.przedpokoj1b
-    to:
-    - 'on'
-    - 'off'
-    trigger: state
-  conditions:
-  - condition: template
-    value_template: "{{ trigger.to_state is not none\n   and trigger.to_state.state
-      in ['on','off']\n   and (trigger.from_state is none or trigger.to_state.state
-      != trigger.from_state.state)\n   and (\n        trigger.to_state.context.parent_id
-      is none\n        or trigger.to_state.context.parent_id != this.context.id\n
-      \     )\n   and not (\n        expand(state_attr('switch.przedpokoj1_1b', 'entity_id'))\n
-      \       | selectattr('state', 'ne', trigger.to_state.state)\n        | list\n
-      \       | length == 0\n      )\n}}\n"
-  actions:
-  - alias: Zmienne pomocnicze
-    variables:
-      desired: '{{ trigger.to_state.state }}'
-      members: '{{ state_attr(''switch.przedpokoj1_1b'', ''entity_id'') }}'
-  - alias: Wymuś stan na grupie
-    action: switch.turn_{{ desired }}
-    target:
-      entity_id: switch.przedpokoj1_1b
-  - alias: Czekaj na potwierdzenie stanu
-    wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n   |
-      list\n   | length == (members | count) }}\n"
-    timeout: 00:00:01
-    continue_on_timeout: true
-  - alias: Retry gdy brak potwierdzenia
-    choose:
-    - conditions:
-      - condition: template
-        value_template: "{{ expand(members)\n   | selectattr('state','ne', desired)\n
-          \  | list\n   | length > 0 }}\n"
-      sequence:
-      - action: switch.turn_{{ desired }}
-        target:
-          entity_id: switch.przedpokoj1_1b
-      - wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n
-          \  | list\n   | length == (members | count) }}\n"
-        timeout: 00:00:01
-        continue_on_timeout: true
-  - alias: Ustaw flagę manual zgodnie ze stanem
-    action: input_boolean.turn_{{ desired }}
-    target:
-      entity_id: input_boolean.przedpokoj1_manual
-  mode: queued
-  max_exceeded: silent
-- id: '1782251978521'
-  alias: Kamera - przenieś nagrania na SMB
-  description: ''
-  triggers:
-  - trigger: time_pattern
-    minutes: /5
-  actions:
-  - action: shell_command.move_camera_files
   mode: single

@@ -224,7 +224,7 @@ wyciszenieonn:
 clear_log:
   alias: Clear LOG
   sequence:
-  - action: shell_command.clear_log
+  - action: system_log.clear
     data: {}
   mode: single
   icon: mdi:eraser-variant
@@ -283,7 +283,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: UP
@@ -292,7 +292,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: UP
@@ -301,7 +301,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: ENTER
@@ -310,7 +310,7 @@ lgtv_yt_watchlater_play:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       command: system.launcher/launch
@@ -397,7 +397,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: UP
@@ -406,7 +406,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: UP
@@ -415,7 +415,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       button: ENTER
@@ -424,7 +424,7 @@ lgtv_on_yt:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 600
+      milliseconds: 800
   - data:
       entity_id: media_player.lg_tv
       command: system.launcher/launch
