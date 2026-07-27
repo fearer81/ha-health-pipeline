@@ -1,0 +1,15 @@
+[Unit]
+Description=Omron to Garmin Cloud Sync
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Environment=HOME=/root
+WorkingDirectory=/root/ha-project/publishers/omron
+ExecStart=/bin/bash /root/ha-project/jobs/omron/omron_loop.sh
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

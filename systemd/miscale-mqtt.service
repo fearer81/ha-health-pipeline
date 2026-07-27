@@ -1,0 +1,15 @@
+[Unit]
+Description=Miscale MQTT Daemon
+After=network-online.target export2garmin.service
+Requires=export2garmin.service
+
+[Service]
+# To jest kluczowe - ładuje hasło i resztę z Twojego pliku:
+EnvironmentFile=/etc/default/miscale-mqtt
+WorkingDirectory=/root/ha-project/publishers/miscale
+ExecStart=/root/ha-project/external/export2garmin/venv/bin/python /root/ha-project/publishers/miscale/publish_miscale_to_mqtt_daemon.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

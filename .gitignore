@@ -1,0 +1,87 @@
+# PYTHON & VIRTUAL ENVS
+__pycache__/
+*.pyc
+**/venv/
+
+# LOGI I PLIKI TYMCZASOWE
+*.log
+*.log.*
+pass.txt
+*.tmp
+*.swp
+*~
+
+# SEKRETY OGÓLNE
+.env
+*.key
+*.token
+*.pem
+*.p12
+*.pfx
+
+# SSH SECURITY
+.ssh/
+id_rsa*
+id_ed25519*
+id_ecdsa*
+known_hosts
+authorized_keys
+
+# HOME ASSISTANT — SEKRETY I KLUCZE
+config/hassio/secrets.yaml
+config/hassio/fearer-*.json
+config/hassio/html5_push_registrations.conf
+config/hassio/go2rtc.yaml
+
+# ZIGBEE2MQTT — KLUCZ SIECI (network_key) I HASŁO MQTT
+config/hassio/zigbee2mqtt/configuration*.yaml
+config/hassio/zigbee2mqtt/coordinator_backup.json
+config/hassio/zigbee2mqtt/state.json
+config/hassio/zigbee2mqtt/log/
+
+# GARMIN — TOKENY I KONFIGURACJA KONTA
+config/export2garmin/
+
+# HOME ASSISTANT — DANE RUNTIME (BAZY I CACHE)
+config/hassio/*.db*
+config/hassio/**/*.db*
+config/hassio/*.log*
+config/hassio/**/*.log*
+config/hassio/.storage/
+config/hassio/deps/
+config/hassio/tts/
+config/hassio/image/
+config/hassio/custom_components/
+config/hassio/www/community/
+
+# SEKRETY VPN
+config/router/vpn-configs/
+
+# SYMLINKI DO SYSTEMU
+# UWAGA: symlink to plik (mode 120000), NIE katalog —
+# wzorzec z ukośnikiem na końcu go NIE złapie
+/config/default
+/config/omramin
+/config/router/etc
+/config/router/config
+/external/omramin
+/user
+
+# REPOZYTORIA ZEWNĘTRZNE
+external/export2garmin/
+config/router/.cloudflared/
+
+# DANE ZDROWOTNE (odkomentuj, jeśli nie mają trafiać do repo)
+health/
+config/hassio/www/garmin.json
+
+# HISTORIA POWŁOKI (może zawierać hasła w poleceniach)
+.ash_history
+.bash_history
+config/router/.ash_history
+config/router/.config/
+
+# HA — CACHE IKON I PLIKI RUNTIME
+config/hassio/.cache/
+config/hassio/.ha_run.lock
+config/hassio/.shopping_list.json

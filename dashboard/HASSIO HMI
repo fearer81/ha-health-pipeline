@@ -1,0 +1,1218 @@
+views:
+  - title: HOME
+    cards: []
+    badges:
+      - type: entity
+        entity: switch.pokoj
+        display_type: complete
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: false
+        show_icon: true
+        entity: button.fear_pc
+        color: ""
+        name: FEAR_PC
+        tap_action:
+          action: toggle
+      - type: entity
+        entity: switch.lazienka3
+        display_type: complete
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.lazienka2
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.kuchnia_left
+        color: ""
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.kuchnia_right
+        color: ""
+        tap_action:
+          action: toggle
+      - type: entity
+        entity: switch.salon
+        display_type: complete
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: false
+        show_icon: true
+        entity: script.lgtv_script
+        tap_action:
+          action: toggle
+        name: LG ON
+      - type: entity
+        show_name: true
+        show_state: false
+        show_icon: true
+        entity: input_button.lgtv_manual2
+        name: LG OFF
+      - type: entity
+        show_name: true
+        show_state: false
+        show_icon: true
+        entity: script.lgtv_yt_watchlater_play
+        tap_action:
+          action: toggle
+        name: LG Twitch
+      - type: entity
+        show_name: true
+        show_state: false
+        show_icon: true
+        entity: script.lgtv_on_yt
+        name: LG YT
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.przedpokoj1
+        tap_action:
+          action: toggle
+        color: ""
+      - type: entity
+        entity: switch.przedpokoj2
+        display_type: complete
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.schowek
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.sypialnia
+        color: ""
+        tap_action:
+          action: toggle
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: fan.wiatrak_4_biegi
+        name: Wiatrak
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: fan.zhimi_m1_83f1_air_purifier
+        color: ""
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.pge1
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.pge2
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.pge3
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: switch.pge_pralka
+        name: PGE_Pralka
+    type: sections
+    subview: false
+    visible:
+      - user: 51baf306156e4414a5f8dfdd2f028332
+    max_columns: 5
+    dense_section_placement: true
+    sections:
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.termometr_temperature
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: sensor.termometr_humidity
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: daily
+            forecast_slots: 7
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:webrtc-camera
+                streams:
+                  - url: ""
+                  - url: kamera
+                  - url: kamera2
+                  - url: kamera3
+                  - url: saros_10_camera
+                ui: true
+                digital_ptz: true
+                background: false
+                intersection: 0.75
+                muted: true
+                shortcuts:
+                  - name: UCISZ SAROSA
+                    icon: mdi:volume-variant-off
+                    service: script.saros_silent_guard
+                  - name: PRZYWRÓĆ GŁOŚNOŚĆ
+                    icon: mdi:volume-high
+                    service: script.saros_restore_volume
+              - type: entities
+                entities:
+                  - entity: sensor.xiaomihmi15_battery_level
+                    name: XiaomiHMI Battery
+                  - entity: sensor.msposhmi_battery_level
+                    name: MsposHMI Battery
+                  - entity: sensor.garmin_device_battery_level
+                    name: Garmin Battery
+                  - entity: sensor.xiaomianna_battery_level
+                    name: XiaomiAnna Battery
+                  - entity: sensor.tineco_battery
+                  - entity: sensor.fresh_water_tank_status
+                    name: Tineco Fresh Water
+                  - entity: sensor.waste_water_tank_status
+          - type: entities
+            entities:
+              - entity: binary_sensor.czujnik_pokoj_occupancy
+                secondary_info: last-changed
+                name: Czujnik_Pokój
+              - entity: binary_sensor.czujnik_przedpokoj1_occupancy
+                secondary_info: last-changed
+                name: Czujnik_Przedpokój1
+              - entity: binary_sensor.czujnik_przedpokoj2_occupancy
+                secondary_info: last-changed
+                name: Czujnik_Przedpokój2
+              - entity: binary_sensor.czujnik_kuchnia_occupancy
+                secondary_info: last-changed
+                name: Czujnik_Kuchnia
+              - entity: binary_sensor.czujnik_salon_occupancy
+                secondary_info: last-changed
+                name: Czujnik_Salon
+              - entity: binary_sensor.kamera_motion_alarm
+              - entity: binary_sensor.kamera2_motion_alarm
+              - entity: binary_sensor.kamera3_motion_alarm
+            title: Czujniki Ruchu
+            state_color: true
+          - type: history-graph
+            entities:
+              - entity: sensor.xiaomihmi15_geocoded_location
+              - entity: sensor.xiaomianna_geocoded_location
+            hours_to_show: 1
+            title: Geolocation 8h
+            logarithmic_scale: false
+          - type: vertical-stack
+            cards:
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: switch.vpn_dom_global_2
+                    name: Cały Dom
+                    icon: mdi:earth
+                    show_state: true
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: switch.vpn_dom_select_2
+                    name: Tylko Domeny
+                    icon: mdi:filter-variant
+                    show_state: true
+                  - show_name: true
+                    show_icon: true
+                    type: button
+                    entity: switch.vpn_dostawca_p_w_2
+                    name: Proton / Warp
+                    icon: mdi:swap-horizontal
+                    show_state: true
+              - type: entities
+                entities:
+                  - entity: input_select.vpn_countries
+                    name: Aktywny Kraj (Proton)
+              - type: markdown
+                content: |
+                  <font size="2">
+                  {{ states('sensor.status_blokady_garmin') }}<br>
+                  {{ states('sensor.vpn_status_serwer_2') }}
+                  </font>
+      - type: grid
+        cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 1
+            name: Biuro0-4 jasność 1%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 20
+            name: Biuro0-4 jasność 20%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 40
+            name: Biuro0-4 jasność 40%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 60
+            name: Biuro0-4 jasność 60%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 75
+            name: Biuro0-4 jasność 75%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 100
+            name: Biuro0-4 jasność 100%
+            icon_height: 50px
+          - type: vertical-stack
+            cards:
+              - type: glance
+                show_header_toggle: false
+                show_state: false
+                entities:
+                  - entity: zone.home
+                    icon: mdi:restart
+                    name: Home Assistant Restart
+                    tap_action:
+                      action: call-service
+                      service: homeassistant.restart
+            grid_options:
+              rows: 2
+          - type: entities
+            entities:
+              - entity: input_boolean.pokoj_manual
+              - entity: input_boolean.przedpokoj1_manual
+              - entity: input_boolean.przedpokoj2_manual
+              - entity: input_boolean.kuchnia_manual
+              - entity: input_boolean.salon_manual
+          - square: false
+            type: grid
+            columns: 1
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.pokoj
+                  - entity: light.biuro0_lt
+                  - entity: light.biuro1_lt
+                  - entity: light.biuro2
+                  - entity: light.biuro3
+                  - entity: light.biuro4_lt
+                  - entity: light.yeelink_color2_a3e8_light
+                  - entity: light.biuro6_lt
+                title: Pokój
+          - type: entities
+            entities:
+              - entity: switch.przedpokoj1
+                secondary_info: last-changed
+              - entity: switch.przedpokoj2
+              - entity: switch.schowek
+            title: Przedpokój 1-2
+            state_color: true
+          - type: entities
+            entities:
+              - entity: switch.kuchnia_left
+                secondary_info: last-changed
+              - entity: switch.kuchnia_right
+                secondary_info: last-changed
+            title: Kuchnia
+          - type: tile
+            entity: automation.test_lokalizacja_leave
+            name: HA - Arrive & Leave
+            features_position: bottom
+            vertical: false
+            icon_tap_action:
+              action: toggle
+          - type: tile
+            entity: automation.mama_status
+            vertical: false
+            features_position: bottom
+          - type: tile
+            grid_options:
+              columns: 6
+              rows: 1
+            entity: automation.mama_location_change
+            name: MAMA L CHANGE
+            vertical: false
+            icon_tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: automation.oczyszczacz_of_03_00
+            grid_options:
+              columns: 6
+              rows: 1
+            features_position: bottom
+            vertical: false
+            icon_tap_action:
+              action: toggle
+            name: OCZYSZCZACZ ON OFF
+      - type: grid
+        cards:
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.pokoj
+                    secondary_info: last-changed
+                  - entity: button.fear_pc
+                  - entity: fan.zhimi_m1_83f1_air_purifier
+                  - entity: fan.dmaker_p5_cfdc_fan
+                  - entity: select.dmaker_p5_cfdc_horizontal_swing_included_angle
+                  - entity: switch.dmaker_p5_cfdc_horizontal_swing
+                  - entity: media_player.pokoj_tv_2
+                title: Pokój
+                state_color: true
+              - type: media-control
+                entity: media_player.pokoj_tv_2
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 1
+            name: Salon1-5 jasność 1%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 20
+            name: Salon1-5 jasność 20%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 40
+            name: Salon1-5 jasność 40%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 60
+            name: Salon1-5 jasność 60%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 75
+            name: Salon1-5 jasność 75%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.salon_0_5
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id:
+                  - light.salon_0_5
+              data:
+                brightness_pct: 100
+            name: Salon1-5 jasność 100%
+            icon_height: 50px
+            grid_options:
+              rows: 2
+          - type: entities
+            entities:
+              - entity: switch.salon
+              - entity: light.salon1
+              - entity: light.salon2_lt
+              - entity: light.salon3_lt
+              - entity: light.salon4_lt
+              - entity: light.salon5_lt
+              - entity: vacuum.saros_10
+              - entity: binary_sensor.saros_10_dock_clean_water_box
+              - entity: script.lgtv_script
+                name: LG ON
+              - entity: script.lgtv_yt_watchlater_play
+                name: LG Twitch
+              - entity: script.lgtv_on_yt
+                name: LG YT
+              - entity: script.lgtv_script_off
+                name: LG OFF
+            title: Salon
+            state_color: true
+          - type: tile
+            grid_options:
+              columns: full
+            entity: image.saros_10_map_0
+            name: Roborock Map
+            icon: mdi:map
+            show_entity_picture: true
+            vertical: false
+            features_position: bottom
+          - type: media-control
+            entity: media_player.lg_tv
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.omron_m4_history
+            columns:
+              - name: 🕒<br><small>Data i Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    let t = String(x.time);
+                    if (t.includes('-')) {
+                      let p = t.split(' ');
+                      let d = p[0].split('-');
+                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+                    }
+                    return t.replace('.2026', '');
+                  })()
+              - name: 🩺<br><small>Ciśnienie</small>
+                data: rows
+                modify: >-
+                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
+                  mmHg','') : '---')
+                align: center
+              - name: 🚦<br><small>S0-3</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]); var d = parseInt(p[1]);
+                    if (s >= 180 || d >= 110) return '⛔S3';
+                    if (s >= 160 || d >= 100) return '🔴S2';
+                    if (s >= 140 || d >=  90) return '🟠S1';
+                    if (s >= 130 || d >=  85) return '🟡S0';
+                    if (s >= 120 || d >=  80) return '🔵Pr';
+                    return '🟢 Pr';
+                  })()
+                align: center
+              - name: 💢<br><small>Ro-Sk</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]);
+                    var d = parseInt(p[1]);
+                    var pp = s - d;
+                    if (pp >= 60) return pp + '🔴';
+                    if (pp >= 50) return pp + '🟡';
+                    if (pp >= 40) return pp + '🟢';
+                    return pp + ' 💚';
+                  })()
+                align: center
+              - name: ❤️<br><small>Tętno</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    // Priorytet: puls z Omrona (pomiar mankietowy)
+                    if (x.pulse) return x.pulse.replace(' bpm','');
+                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr ? closest.rhr + '⌚' : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 💤<br><small>T.Spoczyn.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 100% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.omron_m4_history
+            columns:
+              - name: 🕒<br><small>Data i Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    let t = String(x.time);
+                    if (t.includes('-')) {
+                      let p = t.split(' ');
+                      let d = p[0].split('-');
+                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+                    }
+                    return t.replace('.2026', '');
+                  })()
+              - name: 🩺<br><small>Ciśnienie</small>
+                data: rows
+                modify: >-
+                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
+                  mmHg','') : '---')
+                align: center
+              - name: 🚦<br><small>S0-3</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]); var d = parseInt(p[1]);
+                    if (s >= 180 || d >= 110) return '⛔S3';
+                    if (s >= 160 || d >= 100) return '🔴S2';
+                    if (s >= 140 || d >=  90) return '🟠S1';
+                    if (s >= 130 || d >=  85) return '🟡S0';
+                    if (s >= 120 || d >=  80) return '🔵Pr';
+                    return '🟢 Pr';
+                  })()
+                align: center
+              - name: 💢<br><small>Ro-Sk</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]);
+                    var d = parseInt(p[1]);
+                    var pp = s - d;
+                    if (pp >= 60) return pp + '🔴';
+                    if (pp >= 50) return pp + '🟡';
+                    if (pp >= 40) return pp + '🟢';
+                    return pp + ' 💚';
+                  })()
+                align: center
+              - name: ❤️<br><small>Tęt.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    // Priorytet: puls z Omrona (pomiar mankietowy)
+                    if (x.pulse) return x.pulse.replace(' bpm','');
+                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr ? closest.rhr + '⌚' : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🧗<br><small>Str.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.stress || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: ⚡<br><small>BB</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.bb || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 💤<br><small>TSpo</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🛌<br><small>Sen</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+
+                      // Funkcja dopasowująca czas (ls musi istnieć w danych)
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+
+                      // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
+                      let score = (closest.ss !== undefined) ? closest.ss : '---';
+                      let hours = (closest.sh !== undefined) ? closest.sh : '0';
+                      return score + ' / ' + hours + 'h';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🔄<br><small>Sync</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      const ls = String(closest.ls);
+                      const timePart = ls.includes('T') ? ls.split('T')[1] : ls.split(' ')[1];
+                      return timePart ? timePart.substring(0, 5) : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: ⚖️<br><small>Waga</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
+                      const parsed = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))}));
+                      const last30 = parsed.filter(r => (Date.now()/1000 - r.t) <= (30*24*3600));
+                      return last30.length === 0 ? '---' : (last30.reduce((s, r) => s + r.w, 0) / last30.length).toFixed(1);
+                    } catch(e){ return '---'; }
+                  })()
+                align: center
+              - name: 📊<br><small>RW</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
+                      if (!hist || !hist.attributes || !hist.attributes.rows) return '';
+                      const sorted = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))})).sort((a,b) => b.t - a.t);
+                      if (sorted.length < 2) return '';
+                      const diff = sorted[0].w - sorted[1].w;
+                      return diff > 0.3 ? '⚠️↑' : (diff < -0.3 ? '✅↓' : '➖');
+                    } catch(e){ return ''; }
+                  })()
+                align: center
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 100% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
+      - type: grid
+        cards:
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.sypialnia
+                    secondary_info: last-changed
+                  - entity: media_player.aquos_tve19a_2
+                title: Sypialnia
+                state_color: true
+              - type: media-control
+                entity: media_player.aquos_tve19a_2
+          - type: entities
+            entities:
+              - entity: switch.lazienka1
+                secondary_info: last-changed
+              - entity: switch.lazienka2
+                secondary_info: last-changed
+              - entity: switch.lazienka3
+                secondary_info: last-changed
+              - entity: sensor.xiaomi_s400_weight
+            title: Łazienka
+            state_color: true
+          - type: entities
+            entities:
+              - entity: sensor.pge_monthly
+                secondary_info: last-updated
+              - entity: sensor.pge_all_moc
+              - entity: sensor.pge_pc_power
+              - entity: sensor.pge_tv_power
+              - entity: sensor.pge1_power
+              - entity: sensor.pge2_power
+              - entity: sensor.pge_pralka_power
+              - entity: sensor.pge_pc_current
+              - entity: sensor.pge_tv_current
+              - entity: sensor.pge1_current
+              - entity: sensor.pge2_current
+              - entity: sensor.pge_pralka_current
+            title: Wszystkie Gniazdka
+            state_color: true
+          - title: Wszystkie Gniazdka W (24h)
+            type: history-graph
+            hours_to_show: 24
+            entities:
+              - entity: sensor.pge_all_moc
+              - entity: sensor.pge_pc_power
+              - entity: sensor.pge_tv_power
+              - entity: sensor.pge1_power
+              - entity: sensor.pge2_power
+              - entity: sensor.pge3_power
+              - entity: sensor.pge_pralka_power
+            logarithmic_scale: false
+          - title: Wszystkie Gniazdka Monthly (7d)
+            type: history-graph
+            hours_to_show: 168
+            entities:
+              - entity: sensor.pge_monthly
+              - entity: sensor.pge_pc_monthly
+              - entity: sensor.pge_tv_monthly
+              - entity: sensor.pge1_monthly
+              - entity: sensor.pge2_monthly
+              - entity: sensor.pge3_monthly
+              - entity: sensor.pge_pralka_monthly
+            logarithmic_scale: false
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: switch.pokoj
+                secondary_info: last-changed
+              - entity: switch.przedpokoj1
+                secondary_info: last-changed
+              - entity: switch.sypialnia
+                secondary_info: last-changed
+              - entity: switch.przedpokoj2
+                secondary_info: last-changed
+              - entity: switch.schowek
+              - entity: switch.kuchnia_left
+                secondary_info: last-changed
+              - entity: switch.kuchnia_right
+                secondary_info: last-changed
+              - entity: switch.lazienka1
+                secondary_info: last-changed
+              - entity: switch.lazienka2
+                secondary_info: last-changed
+              - entity: switch.lazienka3
+                secondary_info: last-changed
+              - entity: switch.salon
+                secondary_info: last-changed
+              - entity: light.biuro0_lt
+              - entity: light.biuro1_lt
+              - entity: light.biuro2
+              - entity: light.biuro3
+              - entity: light.biuro4_lt
+              - entity: light.yeelink_color2_a3e8_light
+              - entity: light.biuro6_lt
+              - entity: light.salon1
+              - entity: light.salon2_lt
+              - entity: light.salon3_lt
+              - entity: light.salon4_lt
+              - entity: light.salon5_lt
+            title: Wszystkie Światła
+            state_color: true
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: entities
+                entities:
+                  - entity: sensor.brother_dcp_j152w_bk
+                  - entity: sensor.brother_dcp_j152w_c
+                  - entity: sensor.brother_dcp_j152w_m
+                  - entity: sensor.brother_dcp_j152w_y
+                  - entity: sensor.zhimi_m1_83f1_filter_life_level
+                title: Pokój reszta
+                state_color: true
+          - type: custom:flex-table-card
+            entities:
+              include:
+                - sensor.xiaomi_s400_history
+            columns:
+              - name: 🕒<br>Data & Czas
+                data: rows
+                modify: x.time
+                style: |
+                  white-space: nowrap;
+                  min-width: 130px;
+              - name: ⚖️<br>Waga (kg)
+                data: rows
+                modify: x.weight && parseFloat(x.weight).toFixed(1)
+                align: center
+              - name: 📉<br>Zrzuć (kg)
+                data: rows
+                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+                align: center
+              - name: Δ<br>Zm (kg)
+                data: rows
+                modify: x.change && parseFloat(x.change).toFixed(1)
+                align: center
+              - name: 🧍<br>BMI (kg_m2)
+                data: rows
+                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+                align: center
+              - name: 🟡<br>Tłuszcz (%)
+                data: rows
+                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+                align: center
+              - name: 💧<br>Woda (%)
+                data: rows
+                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+                align: center
+              - name: 🧠<br>Tłuszcz Trzewny
+                data: rows
+                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+                align: center
+              - name: 🔥<br>BMR (kcal)
+                data: rows
+                modify: x.bmr && Math.round(parseFloat(x.bmr))
+                align: center
+              - name: ⏳<br>Wiek metab.
+                data: rows
+                modify: >-
+                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
+                  Math.round(parseFloat(x.metabolic_age))
+                align: center
+            strict: true
+            clickable: false
+            view_layout:
+              column_span: 2
+            card_mod:
+              style: |
+                ha-card {
+                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  max-height: 480px;
+                  overflow-y: auto;       /* Przewijanie pionowe */
+                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  font-size: 12px; 
+                }
+                ha-card table {
+                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  border-collapse: collapse;
+                }
+                /* DANE: Zawsze w jednej linii */
+                ha-card td {
+                  white-space: nowrap !important;
+                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                }
+                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
+                ha-card thead th {
+                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  vertical-align: bottom;
+                  padding: 2px;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 10;
+                }
+      - type: grid
+        cards:
+          - title: Czujniki
+            type: history-graph
+            entities:
+              - entity: binary_sensor.czujnik_pokoj_occupancy
+              - entity: switch.pokoj
+              - entity: binary_sensor.czujnik_przedpokoj1_occupancy
+              - entity: switch.przedpokoj1
+              - entity: switch.przedpokoj1b
+              - entity: binary_sensor.czujnik_przedpokoj2_occupancy
+              - entity: switch.przedpokoj2
+              - entity: binary_sensor.czujnik_kuchnia_occupancy
+              - entity: switch.kuchnia_left
+              - entity: switch.kuchnia_right
+              - entity: binary_sensor.czujnik_salon_occupancy
+              - entity: binary_sensor.kamera_motion_alarm
+              - entity: switch.salon
+            hours_to_show: 1
+            logarithmic_scale: false
+            min_y_axis: 0
+            max_y_axis: 0
+            fit_y_data: false
+          - type: heading
+            heading: New section
+        visibility:
+          - condition: state
+            entity: sensor.status_blokady_garmin
+            state: ""
+  - type: sections
+    max_columns: 4
+    path: kamery
+    title: KAMERY
+    sections:
+      - type: grid
+        cards:
+          - type: custom:webrtc-camera
+            streams:
+              - url: kamera
+            ui: true
+            digital_ptz: true
+            muted: true
+            background: true
+            intersection: 0
+            double_tap_action:
+              action: navigate
+              navigation_path: /lovelace/kamera1_full
+          - type: custom:webrtc-camera
+            streams:
+              - url: kamera2
+            ui: true
+            digital_ptz: true
+            muted: true
+            background: true
+            intersection: 0
+            double_tap_action:
+              action: navigate
+              navigation_path: /lovelace/kamera2_full
+          - type: custom:webrtc-camera
+            streams:
+              - url: kamera3
+            ui: true
+            digital_ptz: true
+            muted: true
+            background: true
+            intersection: 0
+            double_tap_action:
+              action: navigate
+              navigation_path: /lovelace/kamera3_full
+          - type: custom:webrtc-camera
+            streams:
+              - url: saros_10_camera
+            ui: true
+            digital_ptz: true
+            background: false
+            intersection: 0.75
+            muted: true
+            double_tap_action:
+              action: navigate
+              navigation_path: /lovelace/saros_10_camera_full
+            shortcuts:
+              - name: UCISZ SAROSA
+                icon: mdi:volume-variant-off
+                service: script.saros_silent_guard
+        column_span: 4
+    cards: []
+    dense_section_placement: true
+    top_margin: false
+    subview: false

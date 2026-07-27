@@ -1,0 +1,17 @@
+[Unit]
+Description=Garmin Health Stats MQTT Publisher (Hubert Pipeline)
+After=network.target mosquitto.service
+
+[Service]
+Type=simple
+User=root
+# Wczytujemy Twoje hasła do zmiennych środowiskowych
+EnvironmentFile=-/etc/default/omron-mqtt
+ExecStart=/usr/bin/python3 -u /root/ha-project/publishers/omron/publish_garmin_to_mqtt_daemon.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/root/ha-project/external/export2garmin/user/tmp/temp.log
+StandardError=append:/root/ha-project/external/export2garmin/user/tmp/temp.log
+
+[Install]
+WantedBy=multi-user.target

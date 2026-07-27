@@ -1,0 +1,25 @@
+[Unit]
+Description=Publish Omron -> MQTT (HA discovery)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+Environment=CSV_FILE=/root/ha-project/external/export2garmin/user/omron_backup.csv
+WorkingDirectory=/root/ha-project/publishers/omron
+ExecStart=/root/ha-project/external/export2garmin/venv/bin/python -u /root/ha-project/publishers/omron/publish_omron_to_mqtt_daemon.py
+Restart=always
+RestartSec=10
+
+TimeoutStopSec=5s
+KillMode=mixed
+
+StandardOutput=journal
+StandardError=journal
+
+EnvironmentFile=-/etc/default/omron-mqtt
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,195 @@
+
+Edit configuration
+Saved
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+views:
+  - title: HOME
+    cards: []
+    type: sections
+    subview: false
+    visible:
+      - user: 51baf306156e4414a5f8dfdd2f028332
+    max_columns: 3
+    dense_section_placement: true
+    sections:
+      - type: grid
+        cards:
+          - type: tile
+            entity: switch.pokoj
+            name: Pokój
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: tile
+            entity: switch.lazienka3
+            name: Łazienka 3
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: tile
+            entity: switch.lazienka2
+            name: Łazienka 2
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: tile
+            grid_options:
+              columns: 6
+              rows: 1
+            entity: switch.kuchnia_left
+            name: Kuchnia 1
+            vertical: false
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            grid_options:
+              columns: 6
+              rows: 1
+            entity: switch.kuchnia_right
+            name: Kuchnia 2
+            vertical: false
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.salon
+            name: Salon
+            tap_action:
+              action: toggle
+            icon_tap_action:
+              action: toggle
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: tile
+            entity: switch.przedpokoj1
+            name: Przedpokój 1
+            tap_action:

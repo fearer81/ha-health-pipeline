@@ -1,0 +1,13 @@
+[Unit]
+Description=Export2Garmin service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ha-project/external/export2garmin
+ExecStart=/root/ha-project/external/export2garmin/import_data.sh -l
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
