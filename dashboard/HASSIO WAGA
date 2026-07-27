@@ -55,13 +55,13 @@ card_mod:
   style: |
     ha-card {
       user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
-      max-height: 360px;
+      max-height: 480px;
       overflow-y: auto;       /* Przewijanie pionowe */
       overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
       font-size: 12px; 
     }
     ha-card table {
-      width: 100% !important; /* Tabela trzyma się szerokości karty */
+      width: 99% !important; /* Tabela trzyma się szerokości karty */
       border-collapse: collapse;
     }
     /* DANE: Zawsze w jednej linii */

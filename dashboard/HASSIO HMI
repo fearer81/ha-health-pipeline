@@ -642,7 +642,7 @@ views:
                     if (pp >= 60) return pp + '🔴';
                     if (pp >= 50) return pp + '🟡';
                     if (pp >= 40) return pp + '🟢';
-                    return pp + ' 💚';
+                    return pp + '💚';
                   })()
                 align: center
               - name: ❤️<br><small>Tętno</small>
@@ -873,9 +873,12 @@ views:
                   (function(){
                     try {
                       const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-                      const parsed = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))}));
-                      const last30 = parsed.filter(r => (Date.now()/1000 - r.t) <= (30*24*3600));
-                      return last30.length === 0 ? '---' : (last30.reduce((s, r) => s + r.w, 0) / last30.length).toFixed(1);
+                      const rows = hist.attributes.rows;
+                      const target = x.ts * 1000;
+                      const closest = rows.reduce((p, c) =>
+                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
+                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '---';
+                      return parseFloat(String(closest.weight)).toFixed(1);
                     } catch(e){ return '---'; }
                   })()
                 align: center
@@ -885,10 +888,13 @@ views:
                   (function(){
                     try {
                       const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-                      if (!hist || !hist.attributes || !hist.attributes.rows) return '';
-                      const sorted = hist.attributes.rows.map(r => ({t: Number(r.ts), w: parseFloat(String(r.weight))})).sort((a,b) => b.t - a.t);
-                      if (sorted.length < 2) return '';
-                      const diff = sorted[0].w - sorted[1].w;
+                      const rows = hist.attributes.rows;
+                      const target = x.ts * 1000;
+                      const closest = rows.reduce((p, c) =>
+                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
+                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '';
+                      const diff = parseFloat(String(closest.change));
+                      if (isNaN(diff)) return '';
                       return diff > 0.3 ? '⚠️↑' : (diff < -0.3 ? '✅↓' : '➖');
                     } catch(e){ return ''; }
                   })()
