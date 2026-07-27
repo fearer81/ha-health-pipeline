@@ -1,0 +1,33 @@
+# ===== WAGA — Xiaomi S400 =====
+sensor:
+  - name: "Xiaomi S400 History"
+    unique_id: xiaomi_s400_history
+    state_topic: "hubert/scale_s400/history"
+    value_template: "{{ value_json.rows | count }}"
+    json_attributes_topic: "hubert/scale_s400/history"
+    icon: mdi:scale-bathroom
+
+  - name: "Xiaomi S400 State"
+    unique_id: xiaomi_s400_state
+    state_topic: "hubert/scale_s400/state"
+    value_template: "{{ value_json.weight }}"
+    unit_of_measurement: "kg"
+    device_class: weight
+    state_class: measurement
+    json_attributes_topic: "hubert/scale_s400/state"
+    icon: mdi:scale-bathroom
+
+# ===== GARMIN =====
+  - name: "Garmin History"
+    unique_id: garmin_history
+    state_topic: "hubert/garmin_stats/history"
+    value_template: "{{ value_json.rows | count }}"
+    json_attributes_topic: "hubert/garmin_stats/history"
+    icon: mdi:watch
+
+  - name: "Garmin Latest"
+    unique_id: garmin_latest
+    state_topic: "hubert/garmin_stats/latest"
+    value_template: "{{ value_json.bb | default('unknown') }}"
+    json_attributes_topic: "hubert/garmin_stats/latest"
+    icon: mdi:watch

@@ -8,8 +8,8 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+command_line: !include command_line.yaml
 mqtt: !include mqtt.yaml
-shell_command: !include_dir_named shell/
 
 # Wiatrak przeniesiony do sekcji template poniżej.
 # Jeśli masz tu inne wiatraki, odkomentuj linię, ale wyczyść "Wiatrak 4 biegi" z pliku fans.yaml
@@ -68,6 +68,22 @@ template:
             states('sensor.pge3_power') | float(0) +
             states('sensor.pge_pralka_power') | float(0)
           ) | round(0) }}
+          
+  - sensor:
+      - name: PGE Monthly
+        unique_id: pge_monthly_sum
+        device_class: energy
+        unit_of_measurement: "kWh"
+        state_class: total_increasing
+        state: >
+          {{ (
+            states('sensor.pge_pc_monthly') | float(0) +
+            states('sensor.pge_tv_monthly') | float(0) +
+            states('sensor.pge1_monthly') | float(0) +
+            states('sensor.pge2_monthly') | float(0) +
+            states('sensor.pge3_monthly') | float(0) +
+            states('sensor.pge_pralka_monthly') | float(0)
+          ) | round(3) }}          
 
       # G12 boolean - stawka dzienna i nocna
       - name: PGE_LT G12
@@ -107,8 +123,8 @@ template:
         unique_id: wiatrak_4_biegi_template
         speed_count: 4
         preset_modes:
-          - "Natural Wind"
-          - "Straight Wind"
+          - "Naturalna bryza"
+          - "Bezpośredni podmuch"
         state: "{{ states('fan.dmaker_p5_cfdc_fan') }}"
         oscillating: "{{ state_attr('fan.dmaker_p5_cfdc_fan', 'oscillating') | default(false) }}"
         preset_mode: "{{ state_attr('fan.dmaker_p5_cfdc_fan', 'preset_mode') }}"
@@ -153,6 +169,31 @@ template:
               {% elif p <= 75 %} 70
               {% else %} 100
               {% endif %}
+
+# 1. VPN -> Lista wyboru (Helper)
+input_boolean:
+  vpn_sync_active:
+    name: "Blokada aktualizacji listy VPN"
+    initial: off
+    
+input_select:
+  vpn_countries:
+    name: "Wybierz Kraj VPN"
+    options:
+      - "Pobieranie listy..."
+    icon: mdi:map-marker-radius
+
+# 2. VPN -> Polecenia SSH
+shell_command:
+  # Pobiera nazwy plików bez rozszerzenia .conf
+  fetch_vpn_list: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 'ls -1 /root/vpn-configs/*.conf | xargs -n 1 basename | sed \"s/.conf//\"'"
+  # Odpala skrypt z wybranym krajem
+  apply_vpn_config: "ssh -n -p 3022 -i /config/.ssh/id_rsa -o StrictHostKeyChecking=no root@192.168.1.1 '/root/apply-vpn.sh /root/vpn-configs/{{ country }}.conf'"
+
+# Przenoszenie mp4 do Downloads\!Kamera
+  check_downloads_mounted: "test -e /media/downloads/!Kamera/.mounted && echo ok || echo no"
+  move_camera_files: >-
+    find /media -maxdepth 1 -type f \( -name "K1_*.mp4" -o -name "K2_*.mp4" -o -name "K3_*.mp4" \) -exec mv -f {} /media/downloads/!Kamera/ \;
 
 # HassControl
 group:

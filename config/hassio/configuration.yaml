@@ -8,8 +8,8 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-template: !include sensors.yaml
 command_line: !include command_line.yaml
+mqtt: !include mqtt.yaml
 
 # Wiatrak przeniesiony do sekcji template poniżej.
 # Jeśli masz tu inne wiatraki, odkomentuj linię, ale wyczyść "Wiatrak 4 biegi" z pliku fans.yaml
