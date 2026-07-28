@@ -268,6 +268,77 @@ views:
             logarithmic_scale: false
       - type: grid
         cards:
+          - type: vertical-stack
+            cards:
+              - type: thermostat
+                entity: climate.klimatyzator
+                features:
+                  - type: climate-hvac-modes
+                    hvac_modes:
+                      - "off"
+                      - auto
+                      - cool
+                      - dry
+                      - fan_only
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: "off"
+                card:
+                  type: horizontal-stack
+                  cards:
+                    - type: button
+                      name: Quiet
+                      icon: mdi:volume-mute
+                      tap_action:
+                        action: call-service
+                        service: script.klimatyzator_quiet
+                    - type: button
+                      name: Sleep
+                      icon: mdi:bed-clock
+                      tap_action:
+                        action: call-service
+                        service: script.klimatyzator_sleep
+                    - type: button
+                      name: Swing Start
+                      icon: mdi:fan-auto
+                      tap_action:
+                        action: call-service
+                        service: remote.send_command
+                        target:
+                          entity_id: remote.broadlink_rm_mini_3
+                        data:
+                          command: >-
+                            b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUEhMSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
+                    - type: button
+                      name: Swing Stop
+                      icon: mdi:fan-off
+                      tap_action:
+                        action: call-service
+                        service: remote.send_command
+                        target:
+                          entity_id: remote.broadlink_rm_mini_3
+                        data:
+                          command: >-
+                            b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: "off"
+                card:
+                  type: tile
+                  entity: climate.klimatyzator
+                  name: ""
+                  features:
+                    - type: climate-fan-modes
+                      style: icons
+                      fan_modes:
+                        - auto
+                        - low
+                        - medium
+                        - high
           - type: grid
             square: false
             columns: 1
@@ -300,19 +371,21 @@ views:
             state_color: true
           - type: entities
             entities:
-              - entity: switch.kuchnia_left
-                secondary_info: last-changed
-              - entity: switch.kuchnia_right
-                secondary_info: last-changed
-            title: Kuchnia
-          - type: entities
-            entities:
               - entity: switch.salon
               - entity: light.salon_0_5
               - entity: vacuum.saros_10
               - entity: media_player.lg_tv
             title: Salon
             state_color: true
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: switch.kuchnia_left
+                secondary_info: last-changed
+              - entity: switch.kuchnia_right
+                secondary_info: last-changed
+            title: Kuchnia
           - type: grid
             square: false
             columns: 1
@@ -323,8 +396,6 @@ views:
                     secondary_info: last-changed
                 title: Sypialnia
                 state_color: true
-      - type: grid
-        cards:
           - show_name: true
             show_icon: true
             type: button

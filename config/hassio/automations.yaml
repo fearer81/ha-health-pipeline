@@ -2707,7 +2707,10 @@
       minutes: 5
     id: comfort_temp
     trigger: numeric_state
-  conditions: []
+  conditions:
+  - condition: time
+    before: '22:00:00'
+    after: 07:00:00
   actions:
   - choose:
     - conditions:
@@ -2743,9 +2746,6 @@
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
         below: 60
-      - condition: time
-        before: '22:00:00'
-        after: 07:00:00
       sequence:
       - action: notify.send_message
         target:

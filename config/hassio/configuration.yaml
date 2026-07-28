@@ -49,6 +49,18 @@ homeassistant:
   allowlist_external_dirs:
     - "/media"
 
+# KLIMATYZATOR
+smartir:
+
+climate:
+  - platform: smartir
+    name: "Klimatyzator"
+    unique_id: klimatyzator_v2
+    device_code: 11001
+    controller_data: remote.broadlink_rm_mini_3
+    temperature_sensor: sensor.termometr_temperature
+    humidity_sensor: sensor.termometr_humidity
+
 # NOWA KONFIGURACJA SZABLONÓW (Modern Format)
 template:
   - sensor:
