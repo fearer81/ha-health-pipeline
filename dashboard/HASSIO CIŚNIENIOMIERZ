@@ -4,7 +4,7 @@ entities:
   include:
     - sensor.omron_m4_history
 columns:
-  - name: 🕒<br>Data i Czas
+  - name: 🕒<br><small>Data i Czas</small>
     data: rows
     modify: |-
       (function(){
@@ -16,11 +16,11 @@ columns:
         }
         return t.replace('.2026', '');
       })()
-  - name: 🩺<br>Ciśnie.
+  - name: 🩺<br><small>Ciśnienie</small>
     data: rows
     modify: "x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace(' mmHg','') : '---')"
     align: center
-  - name: 🚦<br>S0-3
+  - name: 🚦<br><small>S0-3</small>
     data: rows
     modify: |-
       (function(){
@@ -31,11 +31,11 @@ columns:
         if (s >= 160 || d >= 100) return '🔴S2';
         if (s >= 140 || d >=  90) return '🟠S1';
         if (s >= 130 || d >=  85) return '🟡S0';
-        if (s >= 120 || d >=  80) return '🔵Pr';
+        if (s >= 120 || d >=  80) return '🔵 Pr';
         return '🟢 Pr';
       })()
     align: center
-  - name: 💢<br>P.Pres
+  - name: 💢<br><small>Ro-Sk</small>
     data: rows
     modify: |-
       (function(){
@@ -47,10 +47,10 @@ columns:
         if (pp >= 60) return pp + '🔴';
         if (pp >= 50) return pp + '🟡';
         if (pp >= 40) return pp + '🟢';
-        return pp + ' 💚';
+        return pp + '💚';
       })()
     align: center
-  - name: ❤️<br>Tęt
+  - name: ❤️<br><small>Tęt.</small>
     data: rows
     modify: |-
       (function(){
@@ -68,7 +68,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 🧗<br>Str
+  - name: 🧗<br><small>Str.</small>
     data: rows
     modify: |-
       (function(){
@@ -83,7 +83,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: ⚡<br>BB
+  - name: ⚡<br><small>BB</small>
     data: rows
     modify: |-
       (function(){
@@ -98,7 +98,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 💤<br>T.Sp
+  - name: 💤<br><small>TSpo</small>
     data: rows
     modify: |-
       (function(){
@@ -113,7 +113,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 🛌<br>Sen
+  - name: 🛌<br><small>Sen</small>
     data: rows
     modify: |-
       (function(){
@@ -131,11 +131,11 @@ columns:
           // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
           let score = (closest.ss !== undefined) ? closest.ss : '---';
           let hours = (closest.sh !== undefined) ? closest.sh : '0';
-          return score + ' / ' + hours + 'h';
+          return score + '/' + hours + 'h';
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 🔄<br>Sync
+  - name: 🔄<br><small>Sync</small>
     data: rows
     modify: |-
       (function(){
@@ -180,7 +180,7 @@ columns:
           if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '';
           const diff = parseFloat(String(closest.change));
           if (isNaN(diff)) return '';
-          return diff > 0.3 ? '⚠️↑' : (diff < -0.3 ? '✅↓' : '➖');
+          return diff >= 0.2 ? '⚠️' : (diff <= -0.2 ? '✅' : '➖');
         } catch(e){ return ''; }
       })()
     align: center

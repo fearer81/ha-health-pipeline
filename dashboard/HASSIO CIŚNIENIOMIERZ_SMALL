@@ -47,7 +47,7 @@ columns:
         if (pp >= 60) return pp + '🔴';
         if (pp >= 50) return pp + '🟡';
         if (pp >= 40) return pp + '🟢';
-        return pp + ' 💚';
+        return pp + '💚';
       })()
     align: center
   - name: ❤️<br><small>Tętno</small>

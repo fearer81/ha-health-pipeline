@@ -617,3 +617,33 @@ klimatyzator_sleep:
             entity_id: climate.klimatyzator
           data:
             fan_mode: sleep
+# --- TURBO COOL (Cool 16°C High) ---
+klimatyzator_turbo:
+  alias: Klimatyzator Turbo (Cool 16C High)
+  sequence:
+    - action: remote.send_command
+      target:
+        entity_id: remote.broadlink_rm_mini_3
+      data:
+        command: b64:JgDYAAABKJUTNxQ3ExITEhMSFBEUNxM3ExITEhQRFBEUEhMSEzcTEhQRFBEUERQSExITNxQ2FDcTEhMSExIUERQRFBEUEhMSExITEhMSFBEUERQ3ExITNxMSFBEUERQSExITEhMSExIUERQRFBEUEhMSEzcUERQRFBEUERQSExITEhMSExIUERQRFBITEhMSExITEhQRFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhM3FBEUERQRFBITEhM3ExIUERQRFDcTEhMSExITEhQ2FAANBQ==
+    - action: python_script.set_state
+      data:
+        entity_id: climate.klimatyzator
+        state: cool
+        fan_mode: high
+        temperature: 16
+# --- AUTO FULL (Auto 16°C) ---
+klimatyzator_auto_full:
+  alias: Klimatyzator Auto Full (Auto 16C)
+  sequence:
+    - action: remote.send_command
+      target:
+        entity_id: remote.broadlink_rm_mini_3
+      data:
+        command: b64:JgDYAAABKpAXNxM3ExITEhMSFBEUNxQ2EhMUERMSFBISExITEjgUERQRFBIUERMSExITNxQ3EzcTEhMSExITEhMTExISExITExITEhMSFBETExI4EzcUNhQSExITEhMSExITEhMSExMTEhITEhMSExMSFRATEhMTEhMTEhITExIUERMSFBIUERMSExISExMSFBEUEhITEjgTEhMSFBEUERQSEjgTEhITExIUERQSExISExITEhMTEhM4ExISExMSExISExQ2FBISExMSEzcUERMSFDcTEhM3FAANBQ==
+    - action: python_script.set_state
+      data:
+        entity_id: climate.klimatyzator
+        state: auto
+        fan_mode: auto
+        temperature: 16

@@ -2356,29 +2356,6 @@
       message: MAMA LOCATION CHANGE {{ states('sensor.xiaomianna_geocoded_location')
         }}
   mode: single
-- id: '1769112369962'
-  alias: '!DELETE? Łazienka 1-3 sync'
-  description: ''
-  triggers:
-  - entity_id:
-    - switch.lazienka1
-    - switch.lazienka3
-    to:
-    - 'on'
-    - 'off'
-    trigger: state
-  conditions:
-  - condition: template
-    value_template: "{{ trigger.from_state is not none\n   and trigger.to_state.state
-      != trigger.from_state.state\n   and trigger.to_state.context.parent_id != this.context.id
-      }}\n"
-  actions:
-  - target:
-      entity_id:
-      - switch.lazienka1
-      - switch.lazienka3
-    action: switch.turn_{{ trigger.to_state.state }}
-  mode: restart
 - id: '1770981460160'
   alias: LGTV ON 08:10
   description: ''
@@ -2685,9 +2662,9 @@
   - action: shell_command.move_camera_files
   mode: single
 - id: '1784810174807'
-  alias: Klimatyzacja - Powiadomienia
-  description: Wysyła powiadomienie o konieczności włączenia chłodzenia, osuszania
-    lub wyłączenia klimatyzatora.
+  alias: Klimatyzacja
+  description: Wysyła powiadomienie oraz automatycznie przełącza klimatyzator w tryb
+    chłodzenia, osuszania lub go wyłącza.
   triggers:
   - entity_id: sensor.termometr_temperature
     above: 25.5
@@ -2718,11 +2695,22 @@
         entity_id: sensor.termometr_temperature
         above: 25.5
       sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: cool
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          temperature: 16
+          hvac_mode: auto
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
-          title: ❄️ Włącz COOL
+          title: ❄️ Włączono COOL
           message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C  Wilgotność:
             {{ states(''sensor.termometr_humidity'') }}%'
     - conditions:
@@ -2733,11 +2721,16 @@
         entity_id: sensor.termometr_humidity
         above: 65
       sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: dry
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
-          title: "\U0001F4A7 WŁĄCZ DRY"
+          title: "\U0001F4A7 Włączono DRY"
           message: 'Wilgotność: {{ states(''sensor.termometr_humidity'') }}% Temperatura:
             {{ states(''sensor.termometr_temperature'') }}°C'
     - conditions:
@@ -2747,11 +2740,17 @@
         entity_id: sensor.termometr_humidity
         below: 60
       sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: 'off'
+        enabled: false
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
-          title: ✅ KLIMA OFF
+          title: ✅ Wyłączono KLIMĘ
           message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C  Wilgotność:
             {{ states(''sensor.termometr_humidity'') }}%'
   mode: single

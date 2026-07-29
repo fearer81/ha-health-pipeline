@@ -446,38 +446,148 @@ views:
             name: OCZYSZCZACZ ON OFF
           - type: vertical-stack
             cards:
-              - type: thermostat
-                entity: climate.klimatyzator
-                features:
-                  - type: climate-hvac-modes
-                    hvac_modes:
-                      - "off"
-                      - auto
-                      - cool
-                      - dry
-                      - fan_only
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: dry
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: fan_only
+                card:
+                  type: thermostat
+                  entity: climate.klimatyzator
+                  features:
+                    - type: climate-hvac-modes
+                      hvac_modes:
+                        - "off"
+                        - auto
+                        - cool
+                        - dry
+                        - fan_only
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state: dry
+                card:
+                  type: tile
+                  entity: climate.klimatyzator
+                  name: Osuszanie
+                  features:
+                    - type: climate-hvac-modes
+                      hvac_modes:
+                        - "off"
+                        - auto
+                        - cool
+                        - dry
+                        - fan_only
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state: fan_only
+                card:
+                  type: tile
+                  entity: climate.klimatyzator
+                  name: Nawiew
+                  features:
+                    - type: climate-hvac-modes
+                      hvac_modes:
+                        - "off"
+                        - auto
+                        - cool
+                        - dry
+                        - fan_only
               - type: conditional
                 conditions:
                   - condition: state
                     entity: climate.klimatyzator
                     state_not: "off"
                 card:
-                  type: horizontal-stack
+                  type: grid
+                  columns: 6
+                  square: false
                   cards:
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: quiet
+                          card:
+                            type: button
+                            name: Quiet
+                            show_name: false
+                            icon: mdi:volume-mute
+                            color: yellow
+                            tap_action:
+                              action: call-service
+                              service: script.klimatyzator_quiet
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: quiet
+                          card:
+                            type: button
+                            name: Quiet
+                            show_name: false
+                            icon: mdi:volume-mute
+                            tap_action:
+                              action: call-service
+                              service: script.klimatyzator_quiet
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: sleep
+                          card:
+                            type: button
+                            name: Sleep
+                            show_name: false
+                            icon: mdi:bed-clock
+                            color: yellow
+                            tap_action:
+                              action: call-service
+                              service: script.klimatyzator_sleep
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: sleep
+                          card:
+                            type: button
+                            name: Sleep
+                            show_name: false
+                            icon: mdi:bed-clock
+                            tap_action:
+                              action: call-service
+                              service: script.klimatyzator_sleep
                     - type: button
-                      name: Quiet
-                      icon: mdi:volume-mute
+                      name: Turbo Cool
+                      show_name: false
+                      icon: mdi:snowflake-alert
                       tap_action:
                         action: call-service
-                        service: script.klimatyzator_quiet
+                        service: script.klimatyzator_turbo
                     - type: button
-                      name: Sleep
-                      icon: mdi:bed-clock
+                      name: Auto Full
+                      show_name: false
+                      icon: mdi:home-thermometer-outline
                       tap_action:
                         action: call-service
-                        service: script.klimatyzator_sleep
+                        service: script.klimatyzator_auto_full
                     - type: button
                       name: Swing Start
+                      show_name: false
                       icon: mdi:fan-auto
                       tap_action:
                         action: call-service
@@ -486,9 +596,10 @@ views:
                           entity_id: remote.broadlink_rm_mini_3
                         data:
                           command: >-
-                            b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUEhMSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
+                            b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUERQSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
                     - type: button
                       name: Swing Stop
+                      show_name: false
                       icon: mdi:fan-off
                       tap_action:
                         action: call-service
@@ -498,23 +609,6 @@ views:
                         data:
                           command: >-
                             b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
-              - type: conditional
-                conditions:
-                  - condition: state
-                    entity: climate.klimatyzator
-                    state_not: "off"
-                card:
-                  type: tile
-                  entity: climate.klimatyzator
-                  name: ""
-                  features:
-                    - type: climate-fan-modes
-                      style: icons
-                      fan_modes:
-                        - auto
-                        - low
-                        - medium
-                        - high
       - type: grid
         cards:
           - type: grid
@@ -819,7 +913,7 @@ views:
                     if (s >= 160 || d >= 100) return '🔴S2';
                     if (s >= 140 || d >=  90) return '🟠S1';
                     if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵Pr';
+                    if (s >= 120 || d >=  80) return '🔵 Pr';
                     return '🟢 Pr';
                   })()
                 align: center
@@ -835,7 +929,7 @@ views:
                     if (pp >= 60) return pp + '🔴';
                     if (pp >= 50) return pp + '🟡';
                     if (pp >= 40) return pp + '🟢';
-                    return pp + ' 💚';
+                    return pp + '💚';
                   })()
                 align: center
               - name: ❤️<br><small>Tęt.</small>
@@ -919,7 +1013,7 @@ views:
                       // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
                       let score = (closest.ss !== undefined) ? closest.ss : '---';
                       let hours = (closest.sh !== undefined) ? closest.sh : '0';
-                      return score + ' / ' + hours + 'h';
+                      return score + '/' + hours + 'h';
                     } catch(e) { return '---'; }
                   })()
                 align: center
@@ -968,7 +1062,7 @@ views:
                       if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '';
                       const diff = parseFloat(String(closest.change));
                       if (isNaN(diff)) return '';
-                      return diff > 0.3 ? '⚠️↑' : (diff < -0.3 ? '✅↓' : '➖');
+                      return diff >= 0.2 ? '⚠️' : (diff <= -0.2 ? '✅' : '➖');
                     } catch(e){ return ''; }
                   })()
                 align: center

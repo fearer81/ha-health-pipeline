@@ -1,37 +1,147 @@
 type: vertical-stack
 cards:
-  - type: thermostat
-    entity: climate.klimatyzator
-    features:
-      - type: climate-hvac-modes
-        hvac_modes:
-          - "off"
-          - auto
-          - cool
-          - dry
-          - fan_only
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: climate.klimatyzator
+        state_not: dry
+      - condition: state
+        entity: climate.klimatyzator
+        state_not: fan_only
+    card:
+      type: thermostat
+      entity: climate.klimatyzator
+      features:
+        - type: climate-hvac-modes
+          hvac_modes:
+            - "off"
+            - auto
+            - cool
+            - dry
+            - fan_only
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: climate.klimatyzator
+        state: dry
+    card:
+      type: tile
+      entity: climate.klimatyzator
+      name: Osuszanie
+      features:
+        - type: climate-hvac-modes
+          hvac_modes:
+            - "off"
+            - auto
+            - cool
+            - dry
+            - fan_only
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: climate.klimatyzator
+        state: fan_only
+    card:
+      type: tile
+      entity: climate.klimatyzator
+      name: Nawiew
+      features:
+        - type: climate-hvac-modes
+          hvac_modes:
+            - "off"
+            - auto
+            - cool
+            - dry
+            - fan_only
   - type: conditional
     conditions:
       - condition: state
         entity: climate.klimatyzator
         state_not: "off"
     card:
-      type: horizontal-stack
+      type: grid
+      columns: 6
+      square: false
       cards:
+        - type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: climate.klimatyzator
+                  attribute: fan_mode
+                  state: quiet
+              card:
+                type: button
+                name: Quiet
+                show_name: false
+                icon: mdi:volume-mute
+                color: yellow
+                tap_action:
+                  action: call-service
+                  service: script.klimatyzator_quiet
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: climate.klimatyzator
+                  attribute: fan_mode
+                  state_not: quiet
+              card:
+                type: button
+                name: Quiet
+                show_name: false
+                icon: mdi:volume-mute
+                tap_action:
+                  action: call-service
+                  service: script.klimatyzator_quiet
+        - type: vertical-stack
+          cards:
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: climate.klimatyzator
+                  attribute: fan_mode
+                  state: sleep
+              card:
+                type: button
+                name: Sleep
+                show_name: false
+                icon: mdi:bed-clock
+                color: yellow
+                tap_action:
+                  action: call-service
+                  service: script.klimatyzator_sleep
+            - type: conditional
+              conditions:
+                - condition: state
+                  entity: climate.klimatyzator
+                  attribute: fan_mode
+                  state_not: sleep
+              card:
+                type: button
+                name: Sleep
+                show_name: false
+                icon: mdi:bed-clock
+                tap_action:
+                  action: call-service
+                  service: script.klimatyzator_sleep
         - type: button
-          name: Quiet
-          icon: mdi:volume-mute
+          name: Turbo Cool
+          show_name: false
+          icon: mdi:snowflake-alert
           tap_action:
             action: call-service
-            service: script.klimatyzator_quiet
+            service: script.klimatyzator_turbo
         - type: button
-          name: Sleep
-          icon: mdi:bed-clock
+          name: Auto Full
+          show_name: false
+          icon: mdi:home-thermometer-outline
           tap_action:
             action: call-service
-            service: script.klimatyzator_sleep
+            service: script.klimatyzator_auto_full
         - type: button
           name: Swing Start
+          show_name: false
           icon: mdi:fan-auto
           tap_action:
             action: call-service
@@ -40,9 +150,10 @@ cards:
               entity_id: remote.broadlink_rm_mini_3
             data:
               command: >-
-                b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUEhMSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
+                b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUERQSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
         - type: button
           name: Swing Stop
+          show_name: false
           icon: mdi:fan-off
           tap_action:
             action: call-service
@@ -52,20 +163,3 @@ cards:
             data:
               command: >-
                 b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
-  - type: conditional
-    conditions:
-      - condition: state
-        entity: climate.klimatyzator
-        state_not: "off"
-    card:
-      type: tile
-      entity: climate.klimatyzator
-      name: ""
-      features:
-        - type: climate-fan-modes
-          style: icons
-          fan_modes:
-            - auto
-            - low
-            - medium
-            - high
