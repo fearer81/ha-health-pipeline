@@ -621,29 +621,90 @@ klimatyzator_sleep:
 klimatyzator_turbo:
   alias: Klimatyzator Turbo (Cool 16C High)
   sequence:
-    - action: remote.send_command
+    - action: climate.set_hvac_mode
       target:
-        entity_id: remote.broadlink_rm_mini_3
-      data:
-        command: b64:JgDYAAABKJUTNxQ3ExITEhMSFBEUNxM3ExITEhQRFBEUEhMSEzcTEhQRFBEUERQSExITNxQ2FDcTEhMSExIUERQRFBEUEhMSExITEhMSFBEUERQ3ExITNxMSFBEUERQSExITEhMSExIUERQRFBEUEhMSEzcUERQRFBEUERQSExITEhMSExIUERQRFBITEhMSExITEhQRFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhM3FBEUERQRFBITEhM3ExIUERQRFDcTEhMSExITEhQ2FAANBQ==
-    - action: python_script.set_state
-      data:
         entity_id: climate.klimatyzator
-        state: cool
+      data:
+        hvac_mode: cool
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.klimatyzator
+      data:
         fan_mode: high
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.klimatyzator
+      data:
         temperature: 16
 # --- AUTO FULL (Auto 16°C) ---
 klimatyzator_auto_full:
   alias: Klimatyzator Auto Full (Auto 16C)
   sequence:
-    - action: remote.send_command
+    - action: climate.set_hvac_mode
       target:
-        entity_id: remote.broadlink_rm_mini_3
-      data:
-        command: b64:JgDYAAABKpAXNxM3ExITEhMSFBEUNxQ2EhMUERMSFBISExITEjgUERQRFBIUERMSExITNxQ3EzcTEhMSExITEhMTExISExITExITEhMSFBETExI4EzcUNhQSExITEhMSExITEhMSExMTEhITEhMSExMSFRATEhMTEhMTEhITExIUERMSFBIUERMSExISExMSFBEUEhITEjgTEhMSFBEUERQSEjgTEhITExIUERQSExISExITEhMTEhM4ExISExMSExISExQ2FBISExMSEzcUERMSFDcTEhM3FAANBQ==
-    - action: python_script.set_state
-      data:
         entity_id: climate.klimatyzator
-        state: auto
+      data:
+        hvac_mode: auto
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.klimatyzator
+      data:
         fan_mode: auto
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.klimatyzator
+      data:
         temperature: 16
+klimatyzator_wyslij_ponownie:
+  alias: Klimatyzator - wyślij ponownie
+  icon: mdi:sync-alert
+  mode: restart
+  sequence:
+    - variables:
+        tryb: "{{ states('climate.klimatyzator') }}"
+        temp: "{{ state_attr('climate.klimatyzator', 'temperature') | int(22) }}"
+        went: "{{ state_attr('climate.klimatyzator', 'fan_mode') | default('auto') }}"
+
+    - repeat:
+        count: 2
+        sequence:
+          - choose:
+              - conditions:
+                  - "{{ tryb == 'off' }}"
+                sequence:
+                  - action: climate.set_hvac_mode
+                    target:
+                      entity_id: climate.klimatyzator
+                    data:
+                      hvac_mode: "off"
+
+              - conditions:
+                  - "{{ tryb in ['cool', 'auto'] }}"
+                sequence:
+                  - action: climate.set_temperature
+                    target:
+                      entity_id: climate.klimatyzator
+                    data:
+                      temperature: "{{ temp }}"
+                      hvac_mode: "{{ tryb }}"
+                  - delay: "00:00:01"
+                  - action: climate.set_fan_mode
+                    target:
+                      entity_id: climate.klimatyzator
+                    data:
+                      fan_mode: "{{ went }}"
+
+            default:
+              - action: climate.set_hvac_mode
+                target:
+                  entity_id: climate.klimatyzator
+                data:
+                  hvac_mode: "{{ tryb }}"
+              - delay: "00:00:01"
+              - action: climate.set_fan_mode
+                target:
+                  entity_id: climate.klimatyzator
+                data:
+                  fan_mode: "{{ went }}"
+
+          - delay: "00:00:03"

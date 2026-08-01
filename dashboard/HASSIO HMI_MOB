@@ -233,18 +233,6 @@ views:
             entity: weather.forecast_home
             forecast_type: daily
             forecast_slots: 7
-          - type: tile
-            entity: sensor.termometr_temperature
-            name:
-              type: entity
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: sensor.termometr_humidity
-            name:
-              type: entity
-            vertical: false
-            features_position: bottom
           - type: vertical-stack
             cards:
               - type: glance
@@ -268,6 +256,23 @@ views:
             logarithmic_scale: false
       - type: grid
         cards:
+          - type: tile
+            entity: sensor.termometr_temperature
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: sensor.termometr_humidity
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: automation.klimatyzacja_powiadomienia
+            grid_options:
+              columns: 12
+              rows: 1
           - type: vertical-stack
             cards:
               - type: conditional
@@ -348,8 +353,11 @@ views:
                             icon: mdi:volume-mute
                             color: yellow
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_quiet
+                              action: perform-action
+                              perform_action: script.klimatyzator_quiet
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                         - type: conditional
                           conditions:
                             - condition: state
@@ -362,8 +370,11 @@ views:
                             show_name: false
                             icon: mdi:volume-mute
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_quiet
+                              action: perform-action
+                              perform_action: script.klimatyzator_quiet
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                     - type: vertical-stack
                       cards:
                         - type: conditional
@@ -379,8 +390,11 @@ views:
                             icon: mdi:bed-clock
                             color: yellow
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_sleep
+                              action: perform-action
+                              perform_action: script.klimatyzator_sleep
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                         - type: conditional
                           conditions:
                             - condition: state
@@ -393,22 +407,31 @@ views:
                             show_name: false
                             icon: mdi:bed-clock
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_sleep
+                              action: perform-action
+                              perform_action: script.klimatyzator_sleep
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Turbo Cool
                       show_name: false
                       icon: mdi:snowflake-alert
                       tap_action:
-                        action: call-service
-                        service: script.klimatyzator_turbo
+                        action: perform-action
+                        perform_action: script.klimatyzator_turbo
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Auto Full
                       show_name: false
                       icon: mdi:home-thermometer-outline
                       tap_action:
-                        action: call-service
-                        service: script.klimatyzator_auto_full
+                        action: perform-action
+                        perform_action: script.klimatyzator_auto_full
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Swing Start
                       show_name: false
@@ -433,6 +456,165 @@ views:
                         data:
                           command: >-
                             b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: "off"
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: auto
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: dry
+                  - condition: state
+                    entity: climate.klimatyzator
+                    attribute: fan_mode
+                    state_not: quiet
+                  - condition: state
+                    entity: climate.klimatyzator
+                    attribute: fan_mode
+                    state_not: sleep
+                card:
+                  type: grid
+                  columns: 3
+                  square: false
+                  cards:
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: low
+                          card:
+                            type: button
+                            name: Low
+                            show_name: false
+                            icon: mdi:fan-speed-1
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: low
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: low
+                          card:
+                            type: button
+                            name: Low
+                            show_name: false
+                            icon: mdi:fan-speed-1
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: low
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: medium
+                          card:
+                            type: button
+                            name: Medium
+                            show_name: false
+                            icon: mdi:fan-speed-2
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: medium
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: medium
+                          card:
+                            type: button
+                            name: Medium
+                            show_name: false
+                            icon: mdi:fan-speed-2
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: medium
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: high
+                          card:
+                            type: button
+                            name: High
+                            show_name: false
+                            icon: mdi:fan-speed-3
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: high
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: high
+                          card:
+                            type: button
+                            name: High
+                            show_name: false
+                            icon: mdi:fan-speed-3
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: high
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
           - type: grid
             square: false
             columns: 1
@@ -700,126 +882,6 @@ views:
               include:
                 - sensor.omron_m4_history
             columns:
-              - name: 🕒<br><small>Data i Czas</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    let t = String(x.time);
-                    if (t.includes('-')) {
-                      let p = t.split(' ');
-                      let d = p[0].split('-');
-                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
-                    }
-                    return t.replace('.2026', '');
-                  })()
-              - name: 🩺<br><small>Ciśnienie</small>
-                data: rows
-                modify: >-
-                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
-                  mmHg','') : '---')
-                align: center
-              - name: 🚦<br><small>S0-3</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔S3';
-                    if (s >= 160 || d >= 100) return '🔴S2';
-                    if (s >= 140 || d >=  90) return '🟠S1';
-                    if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵Pr';
-                    return '🟢 Pr';
-                  })()
-                align: center
-              - name: 💢<br><small>Ro-Sk</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]);
-                    var d = parseInt(p[1]);
-                    var pp = s - d;
-                    if (pp >= 60) return pp + '🔴';
-                    if (pp >= 50) return pp + '🟡';
-                    if (pp >= 40) return pp + '🟢';
-                    return pp + ' 💚';
-                  })()
-                align: center
-              - name: ❤️<br><small>Tętno</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    // Priorytet: puls z Omrona (pomiar mankietowy)
-                    if (x.pulse) return x.pulse.replace(' bpm','');
-                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr ? closest.rhr + '⌚' : '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 💤<br><small>T.Spoczyn.</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-            card_mod:
-              style: |
-                ha-card {
-                  max-height: 333px;
-                  overflow-y: auto;
-                  font-size: 12px;
-                  user-select: text !important;
-                  -webkit-user-select: text !important;
-                }
-                ha-card table {
-                  width: 100% !important;
-                  border-collapse: collapse;
-                  table-layout: auto;
-                }
-                ha-card thead th {
-                  text-align: center;
-                  vertical-align: bottom;
-                  padding: 2px 2px !important;
-                  line-height: 1.1;
-                  font-weight: bold;
-                  position: sticky;
-                  top: 0;
-                  background: var(--card-background-color);
-                  z-index: 2;
-                }
-                ha-card td {
-                  padding: 1px 2px !important;
-                  white-space: nowrap !important;
-                }
-                ha-card td:first-child,
-                ha-card th:first-child {
-                  width: 1px;
-                }
-          - type: custom:flex-table-card
-            sort_by: ts-
-            entities:
-              include:
-                - sensor.omron_m4_history
-            columns:
               - name: 🕒<br>Data i Czas
                 data: rows
                 modify: |-
@@ -1034,6 +1096,88 @@ views:
                 ha-card td:first-child,
                 ha-card th:first-child {
                   width: 1px;
+                }
+          - type: custom:flex-table-card
+            entities:
+              include:
+                - sensor.xiaomi_s400_history
+            columns:
+              - name: 🕒<br>Data & Czas
+                data: rows
+                modify: x.time
+                style: |
+                  white-space: nowrap;
+                  min-width: 130px;
+              - name: ⚖️<br>Waga (kg)
+                data: rows
+                modify: x.weight && parseFloat(x.weight).toFixed(1)
+                align: center
+              - name: 📉<br>Zrzuć (kg)
+                data: rows
+                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+                align: center
+              - name: Δ<br>Zm (kg)
+                data: rows
+                modify: x.change && parseFloat(x.change).toFixed(1)
+                align: center
+              - name: 🧍<br>BMI (kg_m2)
+                data: rows
+                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+                align: center
+              - name: 🟡<br>Tłuszcz (%)
+                data: rows
+                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+                align: center
+              - name: 💧<br>Woda (%)
+                data: rows
+                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+                align: center
+              - name: 🧠<br>Tłuszcz Trzewny
+                data: rows
+                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+                align: center
+              - name: 🔥<br>BMR (kcal)
+                data: rows
+                modify: x.bmr && Math.round(parseFloat(x.bmr))
+                align: center
+              - name: ⏳<br>Wiek metab.
+                data: rows
+                modify: >-
+                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
+                  Math.round(parseFloat(x.metabolic_age))
+                align: center
+            strict: true
+            clickable: false
+            view_layout:
+              column_span: 2
+            card_mod:
+              style: |
+                ha-card {
+                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  max-height: 480px;
+                  overflow-y: auto;       /* Przewijanie pionowe */
+                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  font-size: 12px; 
+                }
+                ha-card table {
+                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  border-collapse: collapse;
+                }
+                /* DANE: Zawsze w jednej linii */
+                ha-card td {
+                  white-space: nowrap !important;
+                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                }
+                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
+                ha-card thead th {
+                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  vertical-align: bottom;
+                  padding: 2px;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 10;
                 }
       - type: grid
         cards: []

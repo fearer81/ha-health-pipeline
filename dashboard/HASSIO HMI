@@ -149,18 +149,6 @@ views:
     sections:
       - type: grid
         cards:
-          - type: tile
-            entity: sensor.termometr_temperature
-            name:
-              type: entity
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: sensor.termometr_humidity
-            name:
-              type: entity
-            vertical: false
-            features_position: bottom
           - show_current: true
             show_forecast: true
             type: weather-forecast
@@ -392,7 +380,7 @@ views:
                   - entity: switch.pokoj
                   - entity: light.biuro0_lt
                   - entity: light.biuro1_lt
-                  - entity: light.biuro2
+                  - entity: light.biuro2_lt
                   - entity: light.biuro3
                   - entity: light.biuro4_lt
                   - entity: light.yeelink_color2_a3e8_light
@@ -425,16 +413,6 @@ views:
             vertical: false
             features_position: bottom
           - type: tile
-            grid_options:
-              columns: 6
-              rows: 1
-            entity: automation.mama_location_change
-            name: MAMA L CHANGE
-            vertical: false
-            icon_tap_action:
-              action: toggle
-            features_position: bottom
-          - type: tile
             entity: automation.oczyszczacz_of_03_00
             grid_options:
               columns: 6
@@ -444,6 +422,20 @@ views:
             icon_tap_action:
               action: toggle
             name: OCZYSZCZACZ ON OFF
+          - type: tile
+            entity: sensor.termometr_temperature
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: sensor.termometr_humidity
+            name:
+              type: entity
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: automation.klimatyzacja_powiadomienia
           - type: vertical-stack
             cards:
               - type: conditional
@@ -524,8 +516,11 @@ views:
                             icon: mdi:volume-mute
                             color: yellow
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_quiet
+                              action: perform-action
+                              perform_action: script.klimatyzator_quiet
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                         - type: conditional
                           conditions:
                             - condition: state
@@ -538,8 +533,11 @@ views:
                             show_name: false
                             icon: mdi:volume-mute
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_quiet
+                              action: perform-action
+                              perform_action: script.klimatyzator_quiet
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                     - type: vertical-stack
                       cards:
                         - type: conditional
@@ -555,8 +553,11 @@ views:
                             icon: mdi:bed-clock
                             color: yellow
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_sleep
+                              action: perform-action
+                              perform_action: script.klimatyzator_sleep
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                         - type: conditional
                           conditions:
                             - condition: state
@@ -569,22 +570,31 @@ views:
                             show_name: false
                             icon: mdi:bed-clock
                             tap_action:
-                              action: call-service
-                              service: script.klimatyzator_sleep
+                              action: perform-action
+                              perform_action: script.klimatyzator_sleep
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Turbo Cool
                       show_name: false
                       icon: mdi:snowflake-alert
                       tap_action:
-                        action: call-service
-                        service: script.klimatyzator_turbo
+                        action: perform-action
+                        perform_action: script.klimatyzator_turbo
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Auto Full
                       show_name: false
                       icon: mdi:home-thermometer-outline
                       tap_action:
-                        action: call-service
-                        service: script.klimatyzator_auto_full
+                        action: perform-action
+                        perform_action: script.klimatyzator_auto_full
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Swing Start
                       show_name: false
@@ -609,6 +619,165 @@ views:
                         data:
                           command: >-
                             b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: "off"
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: auto
+                  - condition: state
+                    entity: climate.klimatyzator
+                    state_not: dry
+                  - condition: state
+                    entity: climate.klimatyzator
+                    attribute: fan_mode
+                    state_not: quiet
+                  - condition: state
+                    entity: climate.klimatyzator
+                    attribute: fan_mode
+                    state_not: sleep
+                card:
+                  type: grid
+                  columns: 3
+                  square: false
+                  cards:
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: low
+                          card:
+                            type: button
+                            name: Low
+                            show_name: false
+                            icon: mdi:fan-speed-1
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: low
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: low
+                          card:
+                            type: button
+                            name: Low
+                            show_name: false
+                            icon: mdi:fan-speed-1
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: low
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: medium
+                          card:
+                            type: button
+                            name: Medium
+                            show_name: false
+                            icon: mdi:fan-speed-2
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: medium
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: medium
+                          card:
+                            type: button
+                            name: Medium
+                            show_name: false
+                            icon: mdi:fan-speed-2
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: medium
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state: high
+                          card:
+                            type: button
+                            name: High
+                            show_name: false
+                            icon: mdi:fan-speed-3
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: high
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: fan_mode
+                              state_not: high
+                          card:
+                            type: button
+                            name: High
+                            show_name: false
+                            icon: mdi:fan-speed-3
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_fan_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                fan_mode: high
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
       - type: grid
         cards:
           - type: grid
@@ -1193,7 +1362,7 @@ views:
                 secondary_info: last-changed
               - entity: light.biuro0_lt
               - entity: light.biuro1_lt
-              - entity: light.biuro2
+              - entity: light.biuro2_lt
               - entity: light.biuro3
               - entity: light.biuro4_lt
               - entity: light.yeelink_color2_a3e8_light

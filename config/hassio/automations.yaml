@@ -1739,6 +1739,7 @@
       - 7611aa941ad22424ddd155f818b85d06
     data:
       title: '!!! Pranie gotowe !!!'
+    enabled: false
   - target:
       device_id: 2c553901da2c148c5f8f3a35806aac52
     action: switch.turn_on
@@ -1789,81 +1790,6 @@
     action: input_boolean.turn_off
     data: {}
   mode: single
-- id: przedpokoj1_manual_sync
-  alias: Przedpokój1 ON OFF Manual
-  description: Po ręcznym naciśnięciu włącznika synchronizuje drugi (grupa) oraz ustawia
-    flagę manual.
-  triggers:
-  - entity_id:
-    - switch.przedpokoj1
-    - switch.przedpokoj1b
-    to:
-    - 'on'
-    - 'off'
-    trigger: state
-  conditions:
-  - condition: template
-    value_template: "{{ trigger.to_state is not none\n   and trigger.to_state.state
-      in ['on','off']\n   and (trigger.from_state is none or trigger.to_state.state
-      != trigger.from_state.state)\n   and (\n        trigger.to_state.context.parent_id
-      is none\n        or trigger.to_state.context.parent_id != this.context.id\n
-      \     )\n   and not (\n        expand(state_attr('switch.przedpokoj1_1b', 'entity_id'))\n
-      \       | selectattr('state', 'ne', trigger.to_state.state)\n        | list\n
-      \       | length == 0\n      )\n}}\n"
-  - condition: or
-    conditions:
-    - condition: device
-      type: is_off
-      device_id: 1ff9b911c0d913696269646267fc72f8
-      entity_id: 1b6dbf68e8f5a3110059c22c291d8229
-      domain: switch
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 5
-    - condition: device
-      type: is_off
-      device_id: 8e39c2ee99a9d37c629cc334429edbf1
-      entity_id: c8846f154064f2a94575a262c92d11df
-      domain: switch
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 5
-  actions:
-  - alias: Zmienne pomocnicze
-    variables:
-      desired: '{{ trigger.to_state.state }}'
-      members: '{{ state_attr(''switch.przedpokoj1_1b'', ''entity_id'') }}'
-  - alias: Wymuś stan na grupie
-    action: switch.turn_{{ desired }}
-    target:
-      entity_id: switch.przedpokoj1_1b
-  - alias: Czekaj na potwierdzenie stanu
-    wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n   |
-      list\n   | length == (members | count) }}\n"
-    timeout: 00:00:01
-    continue_on_timeout: true
-  - alias: Retry gdy brak potwierdzenia
-    choose:
-    - conditions:
-      - condition: template
-        value_template: "{{ expand(members)\n   | selectattr('state','ne', desired)\n
-          \  | list\n   | length > 0 }}\n"
-      sequence:
-      - action: switch.turn_{{ desired }}
-        target:
-          entity_id: switch.przedpokoj1_1b
-      - wait_template: "{{ expand(members)\n   | selectattr('state','eq', desired)\n
-          \  | list\n   | length == (members | count) }}\n"
-        timeout: 00:00:01
-        continue_on_timeout: true
-  - alias: Ustaw flagę manual zgodnie ze stanem
-    action: input_boolean.turn_{{ desired }}
-    target:
-      entity_id: input_boolean.przedpokoj1_manual
-  mode: queued
-  max_exceeded: silent
 - id: '1750461812065'
   alias: Kuchnia ON OFF Manual
   description: Sterowanie input_boolean.kuchnia_manual przez 2 przełączniki
@@ -2598,7 +2524,7 @@
     enabled: true
   mode: single
 - id: '1780310224382'
-  alias: Przedpokój1 ON OFF Manual TEST
+  alias: Przedpokój1 ON OFF Manual
   description: Po ręcznym naciśnięciu włącznika synchronizuje drugi (grupa) oraz ustawia
     flagę manual.
   triggers:
@@ -2663,69 +2589,203 @@
   mode: single
 - id: '1784810174807'
   alias: Klimatyzacja
-  description: Wysyła powiadomienie oraz automatycznie przełącza klimatyzator w tryb
-    chłodzenia, osuszania lub go wyłącza.
+  description: Bosch Cool 5000 (SmartIR/Broadlink). COOL, DRY, OFF z osobnymi progami
+    dla dnia i nocy. Retransmisja IR gdy chłodzenie nie daje efektu.
   triggers:
-  - entity_id: sensor.termometr_temperature
-    above: 25.5
+  - trigger: time_pattern
+    minutes: /15
+    id: recheck
+  - trigger: numeric_state
+    entity_id: sensor.termometr_temperature
+    above: 26
     for:
       minutes: 5
     id: high_temp
-    trigger: numeric_state
-  - entity_id: sensor.termometr_humidity
-    above: 65
-    for:
-      minutes: 5
-    id: high_humidity
-    trigger: numeric_state
-  - entity_id: sensor.termometr_temperature
-    below: 23.5
+  - trigger: numeric_state
+    entity_id: sensor.termometr_temperature
+    below: 24
     for:
       minutes: 5
     id: comfort_temp
-    trigger: numeric_state
+  - trigger: numeric_state
+    entity_id: sensor.termometr_humidity
+    above: 65
+    for:
+      minutes: 10
+    id: high_humidity
+  - trigger: numeric_state
+    entity_id: sensor.termometr_humidity
+    below: 60
+    for:
+      minutes: 10
+    id: low_humidity
+  - trigger: time
+    at: 07:00:00
+    id: dzien
+  - trigger: time
+    at: '22:00:00'
+    id: noc
   conditions:
-  - condition: time
-    before: '22:00:00'
-    after: 07:00:00
+  - alias: Czujniki i klimatyzator odpowiadają
+    condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.termometr_temperature
+      state:
+      - unavailable
+      - unknown
+    - condition: state
+      entity_id: sensor.termometr_humidity
+      state:
+      - unavailable
+      - unknown
+    - condition: state
+      entity_id: climate.klimatyzator
+      state:
+      - unavailable
+      - unknown
   actions:
   - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.termometr_temperature
-        above: 25.5
+    - alias: Nastała noc - wycisz chłodzenie
+      conditions:
+      - condition: trigger
+        id: noc
+      - condition: state
+        entity_id: climate.klimatyzator
+        state: cool
       sequence:
-      - action: climate.set_hvac_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          hvac_mode: cool
       - action: climate.set_temperature
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 16
-          hvac_mode: auto
+          temperature: 24
+          hvac_mode: cool
+      - delay:
+          seconds: 1
+      - action: climate.set_fan_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          fan_mode: sleep
+    - alias: Nastał dzień - przywróć moc
+      conditions:
+      - condition: trigger
+        id: dzien
+      - condition: state
+        entity_id: climate.klimatyzator
+        state: cool
+      sequence:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          temperature: 22
+          hvac_mode: cool
+      - delay:
+          seconds: 1
+      - action: climate.set_fan_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          fan_mode: high
+    - alias: Chłodzenie - dzień
+      conditions:
+      - condition: time
+        after: 07:00:00
+        before: '22:00:00'
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        above: 26
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: cool
+      sequence:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          temperature: 22
+          hvac_mode: cool
+      - delay:
+          seconds: 1
+      - action: climate.set_fan_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          fan_mode: high
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
           title: ❄️ Włączono COOL
-          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C  Wilgotność:
-            {{ states(''sensor.termometr_humidity'') }}%'
-    - conditions:
+          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
+            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
+    - alias: Chłodzenie - noc
+      conditions:
+      - condition: time
+        after: '22:00:00'
+        before: 07:00:00
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        below: 25.5
+        above: 27
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: cool
+      sequence:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          temperature: 24
+          hvac_mode: cool
+      - delay:
+          seconds: 1
+      - action: climate.set_fan_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          fan_mode: sleep
+    - alias: Retransmisja IR - chłodzi bez efektu
+      conditions:
+      - condition: trigger
+        id: recheck
+      - condition: state
+        entity_id: climate.klimatyzator
+        state: cool
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        above: 27.5
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.klimatyzator_wyslij_ponownie
+    - alias: Osuszanie
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        above: 24
+        below: 26
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
         above: 65
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: dry
       sequence:
       - action: climate.set_hvac_mode
         target:
           entity_id: climate.klimatyzator
         data:
           hvac_mode: dry
+      - condition: time
+        after: 07:00:00
+        before: '22:00:00'
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
@@ -2733,9 +2793,11 @@
           title: "\U0001F4A7 Włączono DRY"
           message: 'Wilgotność: {{ states(''sensor.termometr_humidity'') }}% Temperatura:
             {{ states(''sensor.termometr_temperature'') }}°C'
-    - conditions:
-      - condition: trigger
-        id: comfort_temp
+    - alias: Koniec osuszania - sucho
+      conditions:
+      - condition: state
+        entity_id: climate.klimatyzator
+        state: dry
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
         below: 60
@@ -2745,12 +2807,57 @@
           entity_id: climate.klimatyzator
         data:
           hvac_mode: 'off'
-        enabled: false
+    - alias: Wyłączenie - dzień
+      conditions:
+      - condition: time
+        after: 07:00:00
+        before: '22:00:00'
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        below: 24
+      - condition: numeric_state
+        entity_id: sensor.termometr_humidity
+        below: 62
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: 'off'
+      sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: 'off'
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
           title: ✅ Wyłączono KLIMĘ
-          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C  Wilgotność:
-            {{ states(''sensor.termometr_humidity'') }}%'
-  mode: single
+          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
+            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
+    - alias: Wyłączenie - noc
+      conditions:
+      - condition: time
+        after: '22:00:00'
+        before: 07:00:00
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        below: 25
+      - condition: numeric_state
+        entity_id: sensor.termometr_humidity
+        below: 62
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: 'off'
+      sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: 'off'
+  mode: queued
+  max: 5
+  max_exceeded: silent
