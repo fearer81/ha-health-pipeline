@@ -258,6 +258,88 @@ views:
                   {{ states('sensor.status_blokady_garmin') }}<br>
                   {{ states('sensor.vpn_status_serwer_2') }}
                   </font>
+          - type: custom:flex-table-card
+            entities:
+              include:
+                - sensor.xiaomi_s400_history
+            columns:
+              - name: 🕒<br>Data & Czas
+                data: rows
+                modify: x.time
+                style: |
+                  white-space: nowrap;
+                  min-width: 130px;
+              - name: ⚖️<br>Waga (kg)
+                data: rows
+                modify: x.weight && parseFloat(x.weight).toFixed(1)
+                align: center
+              - name: 📉<br>Zrzuć (kg)
+                data: rows
+                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+                align: center
+              - name: Δ<br>Zm (kg)
+                data: rows
+                modify: x.change && parseFloat(x.change).toFixed(1)
+                align: center
+              - name: 🧍<br>BMI (kg_m2)
+                data: rows
+                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+                align: center
+              - name: 🟡<br>Tłuszcz (%)
+                data: rows
+                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+                align: center
+              - name: 💧<br>Woda (%)
+                data: rows
+                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+                align: center
+              - name: 🧠<br>Tłuszcz Trzewny
+                data: rows
+                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+                align: center
+              - name: 🔥<br>BMR (kcal)
+                data: rows
+                modify: x.bmr && Math.round(parseFloat(x.bmr))
+                align: center
+              - name: ⏳<br>Wiek metab.
+                data: rows
+                modify: >-
+                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
+                  Math.round(parseFloat(x.metabolic_age))
+                align: center
+            strict: true
+            clickable: false
+            view_layout:
+              column_span: 2
+            card_mod:
+              style: |
+                ha-card {
+                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  max-height: 480px;
+                  overflow-y: auto;       /* Przewijanie pionowe */
+                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  font-size: 12px; 
+                }
+                ha-card table {
+                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  border-collapse: collapse;
+                }
+                /* DANE: Zawsze w jednej linii */
+                ha-card td {
+                  white-space: nowrap !important;
+                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                }
+                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
+                ha-card thead th {
+                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  vertical-align: bottom;
+                  padding: 2px;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 10;
+                }
       - type: grid
         cards:
           - show_name: true
@@ -423,6 +505,8 @@ views:
               action: toggle
             name: OCZYSZCZACZ ON OFF
           - type: tile
+            entity: automation.klimatyzacja_powiadomienia
+          - type: tile
             entity: sensor.termometr_temperature
             name:
               type: entity
@@ -434,8 +518,6 @@ views:
               type: entity
             vertical: false
             features_position: bottom
-          - type: tile
-            entity: automation.klimatyzacja_powiadomienia
           - type: vertical-stack
             cards:
               - type: conditional
@@ -1218,23 +1300,6 @@ views:
                     } catch(e){ return '---'; }
                   })()
                 align: center
-              - name: 📊<br><small>RW</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-                      const rows = hist.attributes.rows;
-                      const target = x.ts * 1000;
-                      const closest = rows.reduce((p, c) =>
-                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
-                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '';
-                      const diff = parseFloat(String(closest.change));
-                      if (isNaN(diff)) return '';
-                      return diff >= 0.2 ? '⚠️' : (diff <= -0.2 ? '✅' : '➖');
-                    } catch(e){ return ''; }
-                  })()
-                align: center
             card_mod:
               style: |
                 ha-card {
@@ -1245,7 +1310,7 @@ views:
                   -webkit-user-select: text !important;
                 }
                 ha-card table {
-                  width: 100% !important;
+                  width: 99% !important;
                   border-collapse: collapse;
                   table-layout: auto;
                 }
@@ -1335,6 +1400,20 @@ views:
               - entity: sensor.pge3_monthly
               - entity: sensor.pge_pralka_monthly
             logarithmic_scale: false
+          - type: statistics-graph
+            entities:
+              - sensor.termometr_humidity
+            days_to_show: 1
+            period: hour
+            chart_type: line
+            stat_types:
+              - mean
+            hide_legend: false
+            expand_legend: true
+            logarithmic_scale: false
+            grid_options:
+              columns: full
+              rows: 6
       - type: grid
         cards:
           - type: entities
@@ -1387,88 +1466,20 @@ views:
                   - entity: sensor.zhimi_m1_83f1_filter_life_level
                 title: Pokój reszta
                 state_color: true
-          - type: custom:flex-table-card
+          - type: statistics-graph
             entities:
-              include:
-                - sensor.xiaomi_s400_history
-            columns:
-              - name: 🕒<br>Data & Czas
-                data: rows
-                modify: x.time
-                style: |
-                  white-space: nowrap;
-                  min-width: 130px;
-              - name: ⚖️<br>Waga (kg)
-                data: rows
-                modify: x.weight && parseFloat(x.weight).toFixed(1)
-                align: center
-              - name: 📉<br>Zrzuć (kg)
-                data: rows
-                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
-                align: center
-              - name: Δ<br>Zm (kg)
-                data: rows
-                modify: x.change && parseFloat(x.change).toFixed(1)
-                align: center
-              - name: 🧍<br>BMI (kg_m2)
-                data: rows
-                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
-                align: center
-              - name: 🟡<br>Tłuszcz (%)
-                data: rows
-                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
-                align: center
-              - name: 💧<br>Woda (%)
-                data: rows
-                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
-                align: center
-              - name: 🧠<br>Tłuszcz Trzewny
-                data: rows
-                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
-                align: center
-              - name: 🔥<br>BMR (kcal)
-                data: rows
-                modify: x.bmr && Math.round(parseFloat(x.bmr))
-                align: center
-              - name: ⏳<br>Wiek metab.
-                data: rows
-                modify: >-
-                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
-                  Math.round(parseFloat(x.metabolic_age))
-                align: center
-            strict: true
-            clickable: false
-            view_layout:
-              column_span: 2
-            card_mod:
-              style: |
-                ha-card {
-                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
-                  max-height: 480px;
-                  overflow-y: auto;       /* Przewijanie pionowe */
-                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
-                  font-size: 12px; 
-                }
-                ha-card table {
-                  width: 99% !important; /* Tabela trzyma się szerokości karty */
-                  border-collapse: collapse;
-                }
-                /* DANE: Zawsze w jednej linii */
-                ha-card td {
-                  white-space: nowrap !important;
-                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
-                }
-                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
-                ha-card thead th {
-                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
-                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
-                  vertical-align: bottom;
-                  padding: 2px;
-                  position: sticky;
-                  top: 0;
-                  background: var(--card-background-color);
-                  z-index: 10;
-                }
+              - sensor.termometr_temperature
+            days_to_show: 1
+            period: hour
+            chart_type: line
+            stat_types:
+              - mean
+            hide_legend: false
+            expand_legend: true
+            logarithmic_scale: false
+            grid_options:
+              rows: 8
+              columns: full
       - type: grid
         cards:
           - title: Czujniki

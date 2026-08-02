@@ -167,23 +167,6 @@ columns:
         } catch(e){ return '---'; }
       })()
     align: center
-  - name: 📊<br><small>RW</small>
-    data: rows
-    modify: |-
-      (function(){
-        try {
-          const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-          const rows = hist.attributes.rows;
-          const target = x.ts * 1000;
-          const closest = rows.reduce((p, c) =>
-            Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
-          if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '';
-          const diff = parseFloat(String(closest.change));
-          if (isNaN(diff)) return '';
-          return diff >= 0.2 ? '⚠️' : (diff <= -0.2 ? '✅' : '➖');
-        } catch(e){ return ''; }
-      })()
-    align: center
 card_mod:
   style: |
     ha-card {
@@ -194,7 +177,7 @@ card_mod:
       -webkit-user-select: text !important;
     }
     ha-card table {
-      width: 100% !important;
+      width: 99% !important;
       border-collapse: collapse;
       table-layout: auto;
     }
