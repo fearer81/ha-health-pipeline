@@ -437,25 +437,21 @@ views:
                       show_name: false
                       icon: mdi:fan-auto
                       tap_action:
-                        action: call-service
-                        service: remote.send_command
-                        target:
-                          entity_id: remote.broadlink_rm_mini_3
-                        data:
-                          command: >-
-                            b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUERQSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
+                        action: perform-action
+                        perform_action: script.klimatyzator_swing_start
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
                     - type: button
                       name: Swing Stop
                       show_name: false
                       icon: mdi:fan-off
                       tap_action:
-                        action: call-service
-                        service: remote.send_command
-                        target:
-                          entity_id: remote.broadlink_rm_mini_3
-                        data:
-                          command: >-
-                            b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
+                        action: perform-action
+                        perform_action: script.klimatyzator_swing_stop
+                      hold_action:
+                        action: perform-action
+                        perform_action: script.klimatyzator_wyslij_ponownie
               - type: conditional
                 conditions:
                   - condition: state
@@ -653,6 +649,20 @@ views:
               - entity: media_player.lg_tv
             title: Salon
             state_color: true
+          - type: tile
+            entity: input_number.klima_cool_start
+          - type: tile
+            entity: input_number.klima_cool_stop
+          - type: tile
+            entity: input_number.klima_dry_start
+          - type: tile
+            entity: input_number.klima_dry_stop
+          - type: tile
+            entity: input_number.klima_cool_start_noc
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: input_number.klima_cool_stop_noc
       - type: grid
         cards:
           - type: entities

@@ -572,24 +572,23 @@ klimatyzator_quiet:
           attribute: fan_mode
           state: "quiet"
       then:
-        # Jeśli Quiet jest już włączony -> wróć do biegu LOW
-        - service: climate.set_fan_mode
+        - action: climate.set_fan_mode
           target:
             entity_id: climate.klimatyzator
           data:
             fan_mode: low
       else:
-        # Jeśli Quiet jest wyłączony -> ustaw COOL i tryb QUIET
-        - service: climate.set_hvac_mode
+        - action: climate.set_hvac_mode
           target:
             entity_id: climate.klimatyzator
           data:
             hvac_mode: cool
-        - service: climate.set_fan_mode
+        - action: climate.set_fan_mode
           target:
             entity_id: climate.klimatyzator
           data:
             fan_mode: quiet
+
 klimatyzator_sleep:
   alias: Klimatyzator Sleep (Toggle)
   sequence:
@@ -599,25 +598,23 @@ klimatyzator_sleep:
           attribute: fan_mode
           state: "sleep"
       then:
-        # Jeśli Sleep jest już włączony -> wróć do biegu LOW
-        - service: climate.set_fan_mode
+        - action: climate.set_fan_mode
           target:
             entity_id: climate.klimatyzator
           data:
             fan_mode: low
       else:
-        # Jeśli Sleep jest wyłączony -> ustaw COOL i tryb SLEEP
-        - service: climate.set_hvac_mode
+        - action: climate.set_hvac_mode
           target:
             entity_id: climate.klimatyzator
           data:
             hvac_mode: cool
-        - service: climate.set_fan_mode
+        - action: climate.set_fan_mode
           target:
             entity_id: climate.klimatyzator
           data:
             fan_mode: sleep
-# --- TURBO COOL (Cool 16°C High) ---
+
 klimatyzator_turbo:
   alias: Klimatyzator Turbo (Cool 16C High)
   sequence:
@@ -636,7 +633,7 @@ klimatyzator_turbo:
         entity_id: climate.klimatyzator
       data:
         temperature: 16
-# --- AUTO FULL (Auto 16°C) ---
+
 klimatyzator_auto_full:
   alias: Klimatyzator Auto Full (Auto 16C)
   sequence:
@@ -655,6 +652,7 @@ klimatyzator_auto_full:
         entity_id: climate.klimatyzator
       data:
         temperature: 16
+
 klimatyzator_wyslij_ponownie:
   alias: Klimatyzator - wyślij ponownie
   icon: mdi:sync-alert
@@ -706,5 +704,4 @@ klimatyzator_wyslij_ponownie:
                   entity_id: climate.klimatyzator
                 data:
                   fan_mode: "{{ went }}"
-
           - delay: "00:00:03"

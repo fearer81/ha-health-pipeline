@@ -258,254 +258,6 @@ views:
                   {{ states('sensor.status_blokady_garmin') }}<br>
                   {{ states('sensor.vpn_status_serwer_2') }}
                   </font>
-          - type: custom:flex-table-card
-            entities:
-              include:
-                - sensor.xiaomi_s400_history
-            columns:
-              - name: 🕒<br>Data & Czas
-                data: rows
-                modify: x.time
-                style: |
-                  white-space: nowrap;
-                  min-width: 130px;
-              - name: ⚖️<br>Waga (kg)
-                data: rows
-                modify: x.weight && parseFloat(x.weight).toFixed(1)
-                align: center
-              - name: 📉<br>Zrzuć (kg)
-                data: rows
-                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
-                align: center
-              - name: Δ<br>Zm (kg)
-                data: rows
-                modify: x.change && parseFloat(x.change).toFixed(1)
-                align: center
-              - name: 🧍<br>BMI (kg_m2)
-                data: rows
-                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
-                align: center
-              - name: 🟡<br>Tłuszcz (%)
-                data: rows
-                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
-                align: center
-              - name: 💧<br>Woda (%)
-                data: rows
-                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
-                align: center
-              - name: 🧠<br>Tłuszcz Trzewny
-                data: rows
-                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
-                align: center
-              - name: 🔥<br>BMR (kcal)
-                data: rows
-                modify: x.bmr && Math.round(parseFloat(x.bmr))
-                align: center
-              - name: ⏳<br>Wiek metab.
-                data: rows
-                modify: >-
-                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
-                  Math.round(parseFloat(x.metabolic_age))
-                align: center
-            strict: true
-            clickable: false
-            view_layout:
-              column_span: 2
-            card_mod:
-              style: |
-                ha-card {
-                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
-                  max-height: 480px;
-                  overflow-y: auto;       /* Przewijanie pionowe */
-                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
-                  font-size: 12px; 
-                }
-                ha-card table {
-                  width: 99% !important; /* Tabela trzyma się szerokości karty */
-                  border-collapse: collapse;
-                }
-                /* DANE: Zawsze w jednej linii */
-                ha-card td {
-                  white-space: nowrap !important;
-                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
-                }
-                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
-                ha-card thead th {
-                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
-                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
-                  vertical-align: bottom;
-                  padding: 2px;
-                  position: sticky;
-                  top: 0;
-                  background: var(--card-background-color);
-                  z-index: 10;
-                }
-      - type: grid
-        cards:
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 1
-            name: Biuro0-4 jasność 1%
-            icon_height: 50px
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 20
-            name: Biuro0-4 jasność 20%
-            icon_height: 50px
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 40
-            name: Biuro0-4 jasność 40%
-            icon_height: 50px
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 60
-            name: Biuro0-4 jasność 60%
-            icon_height: 50px
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 75
-            name: Biuro0-4 jasność 75%
-            icon_height: 50px
-          - show_name: true
-            show_icon: true
-            type: button
-            hold_action:
-              action: none
-            entity: light.biuro1_3
-            tap_action:
-              action: perform-action
-              perform_action: light.turn_on
-              target:
-                entity_id: light.biuro1_3
-              data:
-                brightness_pct: 100
-            name: Biuro0-4 jasność 100%
-            icon_height: 50px
-          - type: vertical-stack
-            cards:
-              - type: glance
-                show_header_toggle: false
-                show_state: false
-                entities:
-                  - entity: zone.home
-                    icon: mdi:restart
-                    name: Home Assistant Restart
-                    tap_action:
-                      action: call-service
-                      service: homeassistant.restart
-            grid_options:
-              rows: 2
-          - type: entities
-            entities:
-              - entity: input_boolean.pokoj_manual
-              - entity: input_boolean.przedpokoj1_manual
-              - entity: input_boolean.przedpokoj2_manual
-              - entity: input_boolean.kuchnia_manual
-              - entity: input_boolean.salon_manual
-          - square: false
-            type: grid
-            columns: 1
-            cards:
-              - type: entities
-                entities:
-                  - entity: switch.pokoj
-                  - entity: light.biuro0_lt
-                  - entity: light.biuro1_lt
-                  - entity: light.biuro2_lt
-                  - entity: light.biuro3
-                  - entity: light.biuro4_lt
-                  - entity: light.yeelink_color2_a3e8_light
-                  - entity: light.biuro6_lt
-                title: Pokój
-          - type: entities
-            entities:
-              - entity: switch.przedpokoj1
-                secondary_info: last-changed
-              - entity: switch.przedpokoj2
-              - entity: switch.schowek
-            title: Przedpokój 1-2
-            state_color: true
-          - type: entities
-            entities:
-              - entity: switch.kuchnia_left
-                secondary_info: last-changed
-              - entity: switch.kuchnia_right
-                secondary_info: last-changed
-            title: Kuchnia
-          - type: tile
-            entity: automation.test_lokalizacja_leave
-            name: HA - Arrive & Leave
-            features_position: bottom
-            vertical: false
-            icon_tap_action:
-              action: toggle
-          - type: tile
-            entity: automation.mama_status
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: automation.oczyszczacz_of_03_00
-            grid_options:
-              columns: 6
-              rows: 1
-            features_position: bottom
-            vertical: false
-            icon_tap_action:
-              action: toggle
-            name: OCZYSZCZACZ ON OFF
-          - type: tile
-            entity: automation.klimatyzacja_powiadomienia
           - type: tile
             entity: sensor.termometr_temperature
             name:
@@ -677,30 +429,96 @@ views:
                       hold_action:
                         action: perform-action
                         perform_action: script.klimatyzator_wyslij_ponownie
-                    - type: button
-                      name: Swing Start
-                      show_name: false
-                      icon: mdi:fan-auto
-                      tap_action:
-                        action: call-service
-                        service: remote.send_command
-                        target:
-                          entity_id: remote.broadlink_rm_mini_3
-                        data:
-                          command: >-
-                            b64:JgDYAAABKJUUNxM3ExITEhQRFBEUNxM3FBEUERQRFDcTNxQ2FDcTEhMSExIUERQRFBEUNxM3FDcTEhMSExITEhQRFBEUERQSExITEhMSExIUERQ3EzcTEhQRFBEUERQSExITEhMSFDYUEhMSExITEhMSFDYUEhMSExITEhMSFBEUERQRFBITEhMSExIUERQRFBEUEhMSEzcTEhQRFBEUERQSEzcUERQRFBITEhMSExITEhQRFBEUEhMSEzcTEhQRFBEUEhM3ExITNxQRFDcTNxQ2FDcTNxQ2FAANBQ==
-                    - type: button
-                      name: Swing Stop
-                      show_name: false
-                      icon: mdi:fan-off
-                      tap_action:
-                        action: call-service
-                        service: remote.send_command
-                        target:
-                          entity_id: remote.broadlink_rm_mini_3
-                        data:
-                          command: >-
-                            b64:JgDYAAABKZUTNxM2FREUEhMSExITNxQ3EzcTNxQ3EzcTNxQ2FDcTEhMSFBEUERQSExITNxQ2FDcTEhMSFBEUERQRFBITEhMSExIUERQRFBITEhM3FDYUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhMSEzcUERQRFBEUEhMSExITEhQRFBEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUERQSEzcUERQSExEUEhMSExITEhMSFBEUERQSEzcTEhQRFBEUEhM3ExIUERQRFDcTEhMSExIUERQRFAANBQ==
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state: "on"
+                          card:
+                            type: button
+                            name: Swing Start
+                            show_name: false
+                            icon: mdi:fan-auto
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: "on"
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state_not: "on"
+                          card:
+                            type: button
+                            name: Swing Start
+                            show_name: false
+                            icon: mdi:fan-auto
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: "on"
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state: "off"
+                          card:
+                            type: button
+                            name: Swing Stop
+                            show_name: false
+                            icon: mdi:fan-off
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: "off"
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state_not: "off"
+                          card:
+                            type: button
+                            name: Swing Stop
+                            show_name: false
+                            icon: mdi:fan-off
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: "off"
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
               - type: conditional
                 conditions:
                   - condition: state
@@ -860,6 +678,472 @@ views:
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
+          - type: tile
+            entity: input_number.klima_cool_start
+          - type: tile
+            entity: input_number.klima_cool_stop
+          - type: tile
+            entity: input_number.klima_dry_start
+          - type: tile
+            entity: input_number.klima_dry_stop
+          - type: tile
+            entity: input_number.klima_cool_start_noc
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: input_number.klima_cool_stop_noc
+      - type: grid
+        cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 1
+            name: Biuro0-4 jasność 1%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 20
+            name: Biuro0-4 jasność 20%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 40
+            name: Biuro0-4 jasność 40%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 60
+            name: Biuro0-4 jasność 60%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 75
+            name: Biuro0-4 jasność 75%
+            icon_height: 50px
+          - show_name: true
+            show_icon: true
+            type: button
+            hold_action:
+              action: none
+            entity: light.biuro1_3
+            tap_action:
+              action: perform-action
+              perform_action: light.turn_on
+              target:
+                entity_id: light.biuro1_3
+              data:
+                brightness_pct: 100
+            name: Biuro0-4 jasność 100%
+            icon_height: 50px
+          - type: vertical-stack
+            cards:
+              - type: glance
+                show_header_toggle: false
+                show_state: false
+                entities:
+                  - entity: zone.home
+                    icon: mdi:restart
+                    name: Home Assistant Restart
+                    tap_action:
+                      action: call-service
+                      service: homeassistant.restart
+            grid_options:
+              rows: 2
+          - type: entities
+            entities:
+              - entity: input_boolean.pokoj_manual
+              - entity: input_boolean.przedpokoj1_manual
+              - entity: input_boolean.przedpokoj2_manual
+              - entity: input_boolean.kuchnia_manual
+              - entity: input_boolean.salon_manual
+          - square: false
+            type: grid
+            columns: 1
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.pokoj
+                  - entity: light.biuro0_lt
+                  - entity: light.biuro1_lt
+                  - entity: light.biuro2_lt
+                  - entity: light.biuro3
+                  - entity: light.biuro4_lt
+                  - entity: light.yeelink_color2_a3e8_light
+                  - entity: light.biuro6_lt
+                title: Pokój
+          - type: entities
+            entities:
+              - entity: switch.przedpokoj1
+                secondary_info: last-changed
+              - entity: switch.przedpokoj2
+              - entity: switch.schowek
+            title: Przedpokój 1-2
+            state_color: true
+          - type: entities
+            entities:
+              - entity: switch.kuchnia_left
+                secondary_info: last-changed
+              - entity: switch.kuchnia_right
+                secondary_info: last-changed
+            title: Kuchnia
+          - type: tile
+            entity: automation.test_lokalizacja_leave
+            name: HA - Arrive & Leave
+            features_position: bottom
+            vertical: false
+            icon_tap_action:
+              action: toggle
+          - type: tile
+            entity: automation.mama_status
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: automation.oczyszczacz_of_03_00
+            grid_options:
+              columns: 6
+              rows: 1
+            features_position: bottom
+            vertical: false
+            icon_tap_action:
+              action: toggle
+            name: OCZYSZCZACZ ON OFF
+          - type: tile
+            entity: automation.klimatyzacja_powiadomienia
+          - type: custom:flex-table-card
+            entities:
+              include:
+                - sensor.xiaomi_s400_history
+            columns:
+              - name: 🕒<br>Data & Czas
+                data: rows
+                modify: x.time
+                style: |
+                  white-space: nowrap;
+                  min-width: 130px;
+              - name: ⚖️<br>Waga (kg)
+                data: rows
+                modify: x.weight && parseFloat(x.weight).toFixed(1)
+                align: center
+              - name: 📉<br>Zrzuć (kg)
+                data: rows
+                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+                align: center
+              - name: Δ<br>Zm (kg)
+                data: rows
+                modify: x.change && parseFloat(x.change).toFixed(1)
+                align: center
+              - name: 🧍<br>BMI (kg_m2)
+                data: rows
+                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+                align: center
+              - name: 🟡<br>Tłuszcz (%)
+                data: rows
+                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+                align: center
+              - name: 💧<br>Woda (%)
+                data: rows
+                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+                align: center
+              - name: 🧠<br>Tłuszcz Trzewny
+                data: rows
+                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+                align: center
+              - name: 🔥<br>BMR (kcal)
+                data: rows
+                modify: x.bmr && Math.round(parseFloat(x.bmr))
+                align: center
+              - name: ⏳<br>Wiek metab.
+                data: rows
+                modify: >-
+                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
+                  Math.round(parseFloat(x.metabolic_age))
+                align: center
+            strict: true
+            clickable: false
+            view_layout:
+              column_span: 2
+            card_mod:
+              style: |
+                ha-card {
+                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  max-height: 480px;
+                  overflow-y: auto;       /* Przewijanie pionowe */
+                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  font-size: 12px; 
+                }
+                ha-card table {
+                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  border-collapse: collapse;
+                }
+                /* DANE: Zawsze w jednej linii */
+                ha-card td {
+                  white-space: nowrap !important;
+                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                }
+                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
+                ha-card thead th {
+                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  vertical-align: bottom;
+                  padding: 2px;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 10;
+                }
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.omron_m4_history
+            columns:
+              - name: 🕒<br><small>Data i Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    let t = String(x.time);
+                    if (t.includes('-')) {
+                      let p = t.split(' ');
+                      let d = p[0].split('-');
+                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+                    }
+                    return t.replace('.2026', '');
+                  })()
+              - name: 🩺<br><small>Ciśnienie</small>
+                data: rows
+                modify: >-
+                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
+                  mmHg','') : '---')
+                align: center
+              - name: 🚦<br><small>S0-3</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]); var d = parseInt(p[1]);
+                    if (s >= 180 || d >= 110) return '⛔S3';
+                    if (s >= 160 || d >= 100) return '🔴S2';
+                    if (s >= 140 || d >=  90) return '🟠S1';
+                    if (s >= 130 || d >=  85) return '🟡S0';
+                    if (s >= 120 || d >=  80) return '🔵 Pr';
+                    return '🟢 Pr';
+                  })()
+                align: center
+              - name: 💢<br><small>Ro-Sk</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]);
+                    var d = parseInt(p[1]);
+                    var pp = s - d;
+                    if (pp >= 60) return pp + '🔴';
+                    if (pp >= 50) return pp + '🟡';
+                    if (pp >= 40) return pp + '🟢';
+                    return pp + '💚';
+                  })()
+                align: center
+              - name: ❤️<br><small>Tęt.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    // Priorytet: puls z Omrona (pomiar mankietowy)
+                    if (x.pulse) return x.pulse.replace(' bpm','');
+                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr ? closest.rhr + '⌚' : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🧗<br><small>Str.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.stress || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: ⚡<br><small>BB</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.bb || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 💤<br><small>TSpo</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🛌<br><small>Sen</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+
+                      // Funkcja dopasowująca czas (ls musi istnieć w danych)
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+
+                      // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
+                      let score = (closest.ss !== undefined) ? closest.ss : '---';
+                      let hours = (closest.sh !== undefined) ? closest.sh : '0';
+                      return score + '/' + hours + 'h';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🔄<br><small>Sync</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      const ls = String(closest.ls);
+                      const timePart = ls.includes('T') ? ls.split('T')[1] : ls.split(' ')[1];
+                      return timePart ? timePart.substring(0, 5) : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: ⚖️<br><small>Waga</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
+                      const rows = hist.attributes.rows;
+                      const target = x.ts * 1000;
+                      const closest = rows.reduce((p, c) =>
+                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
+                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '---';
+                      return parseFloat(String(closest.weight)).toFixed(1);
+                    } catch(e){ return '---'; }
+                  })()
+                align: center
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 99% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
       - type: grid
         cards:
           - type: grid
@@ -1129,210 +1413,6 @@ views:
                 ha-card th:first-child {
                   width: 1px;
                 }
-          - type: custom:flex-table-card
-            sort_by: ts-
-            entities:
-              include:
-                - sensor.omron_m4_history
-            columns:
-              - name: 🕒<br><small>Data i Czas</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    let t = String(x.time);
-                    if (t.includes('-')) {
-                      let p = t.split(' ');
-                      let d = p[0].split('-');
-                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
-                    }
-                    return t.replace('.2026', '');
-                  })()
-              - name: 🩺<br><small>Ciśnienie</small>
-                data: rows
-                modify: >-
-                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
-                  mmHg','') : '---')
-                align: center
-              - name: 🚦<br><small>S0-3</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔S3';
-                    if (s >= 160 || d >= 100) return '🔴S2';
-                    if (s >= 140 || d >=  90) return '🟠S1';
-                    if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵 Pr';
-                    return '🟢 Pr';
-                  })()
-                align: center
-              - name: 💢<br><small>Ro-Sk</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]);
-                    var d = parseInt(p[1]);
-                    var pp = s - d;
-                    if (pp >= 60) return pp + '🔴';
-                    if (pp >= 50) return pp + '🟡';
-                    if (pp >= 40) return pp + '🟢';
-                    return pp + '💚';
-                  })()
-                align: center
-              - name: ❤️<br><small>Tęt.</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    // Priorytet: puls z Omrona (pomiar mankietowy)
-                    if (x.pulse) return x.pulse.replace(' bpm','');
-                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr ? closest.rhr + '⌚' : '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🧗<br><small>Str.</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.stress || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: ⚡<br><small>BB</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.bb || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 💤<br><small>TSpo</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🛌<br><small>Sen</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-
-                      // Funkcja dopasowująca czas (ls musi istnieć w danych)
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-
-                      // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
-                      let score = (closest.ss !== undefined) ? closest.ss : '---';
-                      let hours = (closest.sh !== undefined) ? closest.sh : '0';
-                      return score + '/' + hours + 'h';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🔄<br><small>Sync</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      const ls = String(closest.ls);
-                      const timePart = ls.includes('T') ? ls.split('T')[1] : ls.split(' ')[1];
-                      return timePart ? timePart.substring(0, 5) : '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: ⚖️<br><small>Waga</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-                      const rows = hist.attributes.rows;
-                      const target = x.ts * 1000;
-                      const closest = rows.reduce((p, c) =>
-                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
-                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '---';
-                      return parseFloat(String(closest.weight)).toFixed(1);
-                    } catch(e){ return '---'; }
-                  })()
-                align: center
-            card_mod:
-              style: |
-                ha-card {
-                  max-height: 333px;
-                  overflow-y: auto;
-                  font-size: 12px;
-                  user-select: text !important;
-                  -webkit-user-select: text !important;
-                }
-                ha-card table {
-                  width: 99% !important;
-                  border-collapse: collapse;
-                  table-layout: auto;
-                }
-                ha-card thead th {
-                  text-align: center;
-                  vertical-align: bottom;
-                  padding: 2px 2px !important;
-                  line-height: 1.1;
-                  font-weight: bold;
-                  position: sticky;
-                  top: 0;
-                  background: var(--card-background-color);
-                  z-index: 2;
-                }
-                ha-card td {
-                  padding: 1px 2px !important;
-                  white-space: nowrap !important;
-                }
-                ha-card td:first-child,
-                ha-card th:first-child {
-                  width: 1px;
-                }
       - type: grid
         cards:
           - type: grid
@@ -1400,17 +1480,10 @@ views:
               - entity: sensor.pge3_monthly
               - entity: sensor.pge_pralka_monthly
             logarithmic_scale: false
-          - type: statistics-graph
+          - type: history-graph
             entities:
               - sensor.termometr_humidity
-            days_to_show: 1
-            period: hour
-            chart_type: line
-            stat_types:
-              - mean
-            hide_legend: false
-            expand_legend: true
-            logarithmic_scale: false
+            hours_to_show: 8
             grid_options:
               columns: full
               rows: 6
@@ -1466,20 +1539,13 @@ views:
                   - entity: sensor.zhimi_m1_83f1_filter_life_level
                 title: Pokój reszta
                 state_color: true
-          - type: statistics-graph
+          - type: history-graph
+            grid_options:
+              columns: full
+              rows: 8
             entities:
               - sensor.termometr_temperature
-            days_to_show: 1
-            period: hour
-            chart_type: line
-            stat_types:
-              - mean
-            hide_legend: false
-            expand_legend: true
-            logarithmic_scale: false
-            grid_options:
-              rows: 8
-              columns: full
+            hours_to_show: 8
       - type: grid
         cards:
           - title: Czujniki
