@@ -41,6 +41,10 @@ MQTT_PASS = os.getenv("MQTT_PASS")
 MQTT_TOPIC = "homeassistant/sensor/omron_history/state"
 MQTT_DISCOVERY_TOPIC = "homeassistant/sensor/omron_history/config"
 
+# Temat dla sensorów pojedynczych (systolic / diastolic / heart_rate).
+# Konfiguracje discovery tych encji już istnieją w brokerze i wskazują tutaj.
+STATE_TOPIC = os.getenv("OMRON_STATE_TOPIC", "hubert/omron_m4/state")
+
 HISTORY_SIZE = int(os.getenv("HISTORY_SIZE", "1000"))
 
 # Okno czasowe sesji w sekundach (12 min = 10 min spec Omron M4 + 2 min margines)
@@ -159,6 +163,10 @@ def aggregate_sessions(raw_rows, window=1800):
             "pressure": f"{avg_sys}/{avg_dia} mmHg",
             "pulse":    f"{avg_hr} bpm" if avg_hr else "",
             "n":        n,          # liczba pomiarów w sesji
+            # Wartości liczbowe — dla sensorów pojedynczych w HA
+            "sys":      avg_sys,
+            "dia":      avg_dia,
+            "hr":       avg_hr,
         }
 
         if n > 1:
@@ -314,12 +322,30 @@ def send_to_mqtt():
         info.wait_for_publish(timeout=15)
 
         if not info.is_published():
-            print("[MQTT] Publikacja nie potwierdzona w 15s")
+            print("[MQTT] Publikacja historii nie potwierdzona w 15s")
             return
 
         # Health liczymy od najnowszej PRAWDZIWEJ sesji, nie od zaślepki
         first_real = next((r for r in rows if r.get("n", 0) > 0), None)
         update_health(first_real)
+
+        # Sensory pojedyncze (systolic / diastolic / heart_rate) —
+        # osobny temat, płaski JSON z liczbami
+        if first_real:
+            state_payload = json.dumps({
+                "ts":         first_real["ts"],
+                "time":       first_real["time"],
+                "state":      "OK",
+                "systolic":   first_real.get("sys"),
+                "diastolic":  first_real.get("dia"),
+                "heart_rate": first_real.get("hr"),
+                "pressure":   first_real.get("pressure"),
+                "n":          first_real.get("n"),
+            })
+            info2 = client.publish(STATE_TOPIC, state_payload, retain=True)
+            info2.wait_for_publish(timeout=10)
+            if not info2.is_published():
+                print("[MQTT] Publikacja stanu nie potwierdzona w 10s")
 
         real_count = sum(1 for r in rows if r.get("n", 0) > 0)
         print(f"[OK] Wysłano {len(rows)} wierszy ({real_count} sesji + {len(rows) - real_count} zaślepek)")
