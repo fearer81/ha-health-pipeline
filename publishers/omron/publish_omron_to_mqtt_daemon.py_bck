@@ -8,27 +8,6 @@ import os
 from datetime import datetime
 import paho.mqtt.client as mqtt
 
-
-# ===== ENV FILE =====
-# UWAGA: musi być wczytany PRZED definicją stałych poniżej,
-# inaczej os.getenv() zwróci wartości domyślne zanim plik zostanie odczytany.
-def _load_env_file(path="/etc/default/omron-mqtt"):
-    if not os.path.exists(path):
-        return
-    try:
-        with open(path) as f:
-            for line in f:
-                line = line.strip()
-                if "=" in line and not line.startswith("#"):
-                    k, v = line.split("=", 1)
-                    os.environ.setdefault(k.strip(), v.strip().strip('"\''))
-    except Exception as e:
-        print(f"[ENV] read error: {e}", flush=True)
-
-
-_load_env_file()
-
-
 # ===== CONFIG =====
 CSV_PATH = os.getenv("CSV_FILE", "/root/ha-project/external/export2garmin/user/omron_backup.csv")
 GARMIN_CSV = os.getenv("GARMIN_CSV", "/root/ha-project/external/export2garmin/user/garmin_stats.csv")
@@ -192,23 +171,14 @@ def get_garmin_placeholder_rows(omron_rows):
 
     try:
         with open(GARMIN_CSV, encoding="utf-8") as f:
-            reader = csv.DictReader(f, delimiter=";")
-            for row in reader:
+            for line in f.readlines()[1:]:
+                p = line.strip().split(";")
+                if len(p) < 8:
+                    skipped += 1
+                    continue
                 # Preferuj Last Sync (po tym polu karta robi dopasowanie),
-                # fallback na Unix Time. Odczyt po nazwie kolumny zamiast
-                # po indeksie — odporny na zmianę układu CSV.
-                ls_raw = None
-                unix_raw = None
-                for k, v in row.items():
-                    if not k:
-                        continue
-                    key = k.strip().lower()
-                    if "last sync" in key or "lastsync" in key:
-                        ls_raw = v
-                    elif "unix" in key:
-                        unix_raw = v
-
-                ts = parse_ls(ls_raw or "") or safe_int(unix_raw)
+                # fallback na Unix Time
+                ts = parse_ls(p[7]) or safe_int(p[0])
                 if not ts:
                     skipped += 1
                     continue
@@ -291,7 +261,6 @@ def get_rows_from_csv():
 
 # ===== MQTT =====
 def send_to_mqtt():
-    client = None
     try:
         client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
@@ -299,9 +268,6 @@ def send_to_mqtt():
             client.username_pw_set(MQTT_USER, MQTT_PASS)
 
         client.connect(MQTT_SERVER, MQTT_PORT, 60)
-        # loop_start() jest KONIECZNY — bez pętli sieciowej duży payload
-        # nie zostanie wypchnięty przed disconnect()
-        client.loop_start()
 
         rows = get_rows_from_csv()
 
@@ -310,12 +276,7 @@ def send_to_mqtt():
             return
 
         payload = json.dumps({"rows": rows})
-        info = client.publish(MQTT_TOPIC, payload, retain=True)
-        info.wait_for_publish(timeout=15)
-
-        if not info.is_published():
-            print("[MQTT] Publikacja nie potwierdzona w 15s")
-            return
+        client.publish(MQTT_TOPIC, payload, retain=True)
 
         # Health liczymy od najnowszej PRAWDZIWEJ sesji, nie od zaślepki
         first_real = next((r for r in rows if r.get("n", 0) > 0), None)
@@ -323,21 +284,23 @@ def send_to_mqtt():
 
         real_count = sum(1 for r in rows if r.get("n", 0) > 0)
         print(f"[OK] Wysłano {len(rows)} wierszy ({real_count} sesji + {len(rows) - real_count} zaślepek)")
+        client.disconnect()
 
     except Exception as e:
         print(f"[MQTT] Error: {e}")
 
-    finally:
-        if client is not None:
-            try:
-                client.loop_stop()
-                client.disconnect()
-            except Exception:
-                pass
-
 
 # ===== MAIN =====
 def main():
+    env_file = "/etc/default/omron-mqtt"
+    if os.path.exists(env_file):
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if "=" in line and not line.startswith("#"):
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip('"\''))
+
     last_mtime = (0, 0)
 
     print(f"[START] Omron MQTT publisher (SESSION_WINDOW={SESSION_WINDOW}s, garmin placeholders: ON)")

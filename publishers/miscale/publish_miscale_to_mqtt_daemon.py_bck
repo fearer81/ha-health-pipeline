@@ -39,11 +39,9 @@ def format_history_row(p):
 
 def format_state_row(p):
     """Liczby pod sensory."""
-    fat_to_ideal = round(max(0, p["weight"] - TARGET_WEIGHT), 1) if p["weight"] else 0
     return {
         "ts": p["ts"],
         "time": time.strftime("%d.%m %H:%M", time.localtime(p["ts"])),
-        "state": "OK",
         "weight": p["weight"],
         "heart_rate": p["heart_rate"],
         "bmi": p["bmi"],
@@ -58,11 +56,7 @@ def format_state_row(p):
         "skeletal_muscle_mass": p["skeletal_muscle"],
         "physique_rating": p["physique_rating"],
         "zmiana": p["change"],
-        "tluszcz_do_idealu": fat_to_ideal,
-        # Aliasy angielskie — konfiguracje encji MQTT odwołują się do tych nazw
-        "protein": p["protein"],
-        "weight_change": p["change"],
-        "fat_mass_to_ideal": fat_to_ideal,
+        "tluszcz_do_idealu": round(max(0, p["weight"] - TARGET_WEIGHT), 1) if p["weight"] else 0,
         "note": "OK"
     }
 
@@ -86,28 +80,16 @@ def parse_row(r):
         "change": _to_float(r.get("Change [kg]"))
     }
 
-def connect_mqtt():
-    """Łączy z brokerem, ponawia w nieskończoność zamiast ubijać demona."""
-    while True:
-        try:
-            client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-            if MQTT_USER and MQTT_PASS:
-                client.username_pw_set(MQTT_USER, MQTT_PASS)
-            client.connect(MQTT_HOST, MQTT_PORT, 60)
-            client.loop_start()
-            print("[MQTT] Połączono", flush=True)
-            return client
-        except Exception as e:
-            print(f"[MQTT] Connect error: {e} — ponowna próba za 30s", flush=True)
-            time.sleep(30)
-
 def main():
-    client = connect_mqtt()
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    if MQTT_USER and MQTT_PASS:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+    try:
+        client.connect(MQTT_HOST, MQTT_PORT, 60)
+        client.loop_start()
+    except: return
 
     last_ts = 0
-    last_history_payload = None
-
-    os.makedirs(os.path.dirname(HEALTH_FILE), exist_ok=True)
 
     while True:
         if os.path.exists(CSV_FILE):
@@ -127,12 +109,7 @@ def main():
                     if parsed_rows:
                         # 1. Historia (Wszystkie klucze dla YAML)
                         history = [format_history_row(p) for p in parsed_rows]
-                        history_payload = json.dumps({"rows": history[:200]})
-                        # Publikuj tylko przy realnej zmianie — bez tego retain
-                        # leciałby co 10s i obciążał brokera oraz recorder HA
-                        if history_payload != last_history_payload:
-                            client.publish(HISTORY_TOPIC, history_payload, retain=True)
-                            last_history_payload = history_payload
+                        client.publish(HISTORY_TOPIC, json.dumps({"rows": history[:200]}), retain=True)
                         
                         # 2. Stan (Dla sensorów)
                         newest_raw = parsed_rows[0]

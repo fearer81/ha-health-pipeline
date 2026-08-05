@@ -16,26 +16,6 @@ python_script:
 # Jeśli masz tu inne wiatraki, odkomentuj linię, ale wyczyść "Wiatrak 4 biegi" z pliku fans.yaml
 # fan: !include fans.yaml
 
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 172.30.33.0/24
-    - 103.21.244.0/22
-    - 103.22.200.0/22
-    - 103.31.4.0/22
-    - 104.16.0.0/13
-    - 104.24.0.0/14
-    - 108.162.192.0/18
-    - 131.0.72.0/22
-    - 141.101.64.0/18
-    - 162.158.0.0/15
-    - 172.64.0.0/13
-    - 173.245.48.0/20
-    - 188.114.96.0/20
-    - 190.93.240.0/20
-    - 197.234.240.0/22
-    - 198.41.128.0/17
-
 google_assistant:
   project_id: fearer-40271
   service_account: !include fearer-40271-d97eebee866e.json
@@ -131,6 +111,44 @@ template:
             {{ (0.7273 + fixed) | round(4) }}
           {%- endif -%}
 
+# KLIMATYZATOR
+      - name: Klima próg COOL start
+        unique_id: klima_prog_cool_start
+        unit_of_measurement: "°C"
+        availability: "{{ states('input_number.klima_cool_start') | is_number }}"
+        state: "{{ (states('input_number.klima_cool_start') | float - 0.1) | round(1) }}"
+
+      - name: Klima próg COOL stop
+        unique_id: klima_prog_cool_stop
+        unit_of_measurement: "°C"
+        availability: "{{ states('input_number.klima_cool_stop') | is_number }}"
+        state: "{{ (states('input_number.klima_cool_stop') | float + 0.1) | round(1) }}"
+
+      - name: Klima próg COOL start noc
+        unique_id: klima_prog_cool_start_noc
+        unit_of_measurement: "°C"
+        availability: "{{ states('input_number.klima_cool_start_noc') | is_number }}"
+        state: "{{ (states('input_number.klima_cool_start_noc') | float - 0.1) | round(1) }}"
+
+      - name: Klima próg COOL stop noc
+        unique_id: klima_prog_cool_stop_noc
+        unit_of_measurement: "°C"
+        availability: "{{ states('input_number.klima_cool_stop_noc') | is_number }}"
+        state: "{{ (states('input_number.klima_cool_stop_noc') | float + 0.1) | round(1) }}"
+
+      - name: Klima próg DRY start
+        unique_id: klima_prog_dry_start
+        unit_of_measurement: "%"
+        availability: "{{ states('input_number.klima_dry_start') | is_number }}"
+        state: "{{ (states('input_number.klima_dry_start') | float - 0.1) | round(1) }}"
+
+      - name: Klima próg DRY stop
+        unique_id: klima_prog_dry_stop
+        unit_of_measurement: "%"
+        availability: "{{ states('input_number.klima_dry_stop') | is_number }}"
+        state: "{{ (states('input_number.klima_dry_stop') | float + 0.1) | round(1) }}"
+
+# WIATRAK
   - fan:
       - name: Wiatrak (4 biegi)
         unique_id: wiatrak_4_biegi_template

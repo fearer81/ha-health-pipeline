@@ -713,7 +713,6 @@
   - data:
       duration: 60
       filename: /media/K2_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
-      lookback: 5
     target:
       entity_id: camera.kamera2_profile_0
     action: camera.record
@@ -783,13 +782,13 @@
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
-          %} {{ acc is not none and acc < 80 }}
+          %} {{ acc is not none and acc < 100 }}
 
           '
       - condition: template
         value_template: "{% set last = states('input_datetime.last_leave_home') %}
           {% if last in ('unknown','unavailable','') %}\n  false\n{% else %}\n  {{
-          (as_timestamp(now()) - as_timestamp(last)) > 1800 }}\n{% endif %}\n"
+          (as_timestamp(now()) - as_timestamp(last)) > 1200 }}\n{% endif %}\n"
       sequence:
       - delay:
           hours: 0
@@ -802,6 +801,7 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.leave_locked
+        data: {}
       - action: notify.send_message
         metadata: {}
         target:
@@ -814,6 +814,7 @@
           device_id:
           - 1ff9b911c0d913696269646267fc72f8
           - d36e7b1056abfdb139090057df440135
+        data: {}
       - device_id: 82d438cb58cfac2ce0769bed5bbaa7bf
         domain: button
         entity_id: 6845bf109e857b8f1a442f48e047238b
@@ -842,6 +843,7 @@
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.leave_locked
+        data: {}
       - action: input_datetime.set_datetime
         target:
           entity_id: input_datetime.last_leave_home
@@ -2004,7 +2006,6 @@
   - data:
       filename: /media/K1_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
       duration: 60
-      lookback: 5
     target:
       entity_id: camera.kamera_profile_0
     action: camera.record
@@ -2184,8 +2185,8 @@
   conditions: []
   actions:
   - delay:
-      hours: 4
-      minutes: 30
+      hours: 3
+      minutes: 40
       seconds: 0
       milliseconds: 0
   - device_id: 8d15be71266bd86a527be15fc39ac3ec
@@ -2469,7 +2470,6 @@
   - data:
       filename: /media/K3_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
       duration: 60
-      lookback: 5
     target:
       entity_id: camera.kamera3_profile_0
     action: camera.record
@@ -2557,18 +2557,18 @@
   - trigger: time_pattern
     minutes: /15
     id: recheck
-    enabled: true
+    enabled: false
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_temperature
-    above: input_number.klima_cool_start
+    above: sensor.klima_prog_cool_start
     for:
       minutes: 3
     id: high_temp
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_temperature
-    above: input_number.klima_cool_start_noc
+    above: sensor.klima_prog_cool_start_noc
     for:
       minutes: 3
     id: high_temp_noc
@@ -2576,28 +2576,28 @@
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_temperature
-    below: input_number.klima_cool_stop
+    below: sensor.klima_prog_cool_stop
     for:
       minutes: 3
     id: comfort_temp
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_temperature
-    below: input_number.klima_cool_stop_noc
+    below: sensor.klima_prog_cool_stop_noc
     for:
       minutes: 3
     id: comfort_temp_noc
     enabled: false
   - trigger: numeric_state
     entity_id: sensor.termometr_humidity
-    above: input_number.klima_dry_start
+    above: sensor.klima_prog_dry_start
     for:
       minutes: 5
     id: high_humidity
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_humidity
-    below: input_number.klima_dry_stop
+    below: sensor.klima_prog_dry_stop
     for:
       minutes: 5
     id: low_humidity
@@ -2626,6 +2626,22 @@
       state:
       - unavailable
       - unknown
+  - condition: and
+    conditions:
+    - condition: zone.in_zone
+      target:
+        entity_id: person.hubert
+      options:
+        for:
+          hours: 0
+          minutes: 3
+          seconds: 0
+        zone: zone.home
+    - condition: template
+      value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
+        %} {{ acc is not none and acc < 100 }}
+
+        '
   actions:
   - choose:
     - alias: Nastał dzień - przywróć moc
@@ -2640,7 +2656,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 19
+          temperature: 16
           hvac_mode: cool
       - delay:
           seconds: 1
@@ -2657,7 +2673,7 @@
         before: '23:30:00'
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        above: input_number.klima_cool_start
+        above: sensor.klima_prog_cool_start
       - condition: not
         conditions:
         - condition: state
@@ -2668,7 +2684,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 19
+          temperature: 16
           hvac_mode: cool
       - delay:
           seconds: 1
@@ -2692,10 +2708,10 @@
         before: '23:30:00'
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        below: input_number.klima_cool_stop
+        below: sensor.klima_prog_cool_stop
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
-        above: input_number.klima_dry_start
+        above: sensor.klima_prog_dry_start
       - condition: not
         conditions:
         - condition: state
@@ -2721,7 +2737,7 @@
         state: dry
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
-        below: input_number.klima_dry_stop
+        below: sensor.klima_prog_dry_stop
       sequence:
       - action: climate.set_hvac_mode
         target:
@@ -2735,7 +2751,7 @@
         before: '23:30:00'
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        below: input_number.klima_cool_stop
+        below: sensor.klima_prog_cool_stop
       - condition: not
         conditions:
         - condition: state
@@ -2763,7 +2779,7 @@
         before: 07:00:00
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        above: input_number.klima_cool_start_noc
+        above: sensor.klima_prog_cool_start_noc
       - condition: not
         conditions:
         - condition: state
@@ -2774,7 +2790,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 21
+          temperature: 23
           hvac_mode: cool
         enabled: false
       - delay:
@@ -2817,7 +2833,7 @@
         before: 07:00:00
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        below: input_number.klima_cool_stop_noc
+        below: sensor.klima_prog_cool_stop_noc
       - condition: not
         conditions:
         - condition: state
