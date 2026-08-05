@@ -21,6 +21,22 @@ def _to_float(x):
     try: return float(str(x).replace(",", "."))
     except: return None
 
+def _parse_fat_to_ideal(x):
+    """'to_lose:11.9' / 'to_gain:2.3' -> 11.9 / -2.3"""
+    if not x:
+        return None
+    s = str(x).strip()
+    try:
+        if ":" in s:
+            kind, val = s.split(":", 1)
+            v = _to_float(val)
+            if v is None:
+                return None
+            return -v if "gain" in kind.lower() else v
+        return _to_float(s)
+    except Exception:
+        return None
+
 def format_history_row(p):
     """Formatowanie pod Twoją kartę YAML (musi mieć wszystkie klucze!)."""
     return {
@@ -39,7 +55,7 @@ def format_history_row(p):
 
 def format_state_row(p):
     """Liczby pod sensory."""
-    fat_to_ideal = round(max(0, p["weight"] - TARGET_WEIGHT), 1) if p["weight"] else 0
+    tluszcz_do_idealu = round(max(0, p["weight"] - TARGET_WEIGHT), 1) if p["weight"] else 0
     return {
         "ts": p["ts"],
         "time": time.strftime("%d.%m %H:%M", time.localtime(p["ts"])),
@@ -58,11 +74,16 @@ def format_state_row(p):
         "skeletal_muscle_mass": p["skeletal_muscle"],
         "physique_rating": p["physique_rating"],
         "zmiana": p["change"],
-        "tluszcz_do_idealu": fat_to_ideal,
-        # Aliasy angielskie — konfiguracje encji MQTT odwołują się do tych nazw
+        "tluszcz_do_idealu": tluszcz_do_idealu,
+        # Aliasy angielskie - konfiguracje encji MQTT odwolują się do tych nazw
         "protein": p["protein"],
         "weight_change": p["change"],
-        "fat_mass_to_ideal": fat_to_ideal,
+        # Wartości własne wagi (nie liczone z TARGET_WEIGHT)
+        "lbm": p["lbm"],
+        "ideal_weight": p["ideal_weight"],
+        "fat_mass_to_ideal": p["fat_mass_to_ideal"],
+        "impedance": p["impedance"],
+        "impedance_low": p["impedance_low"],
         "note": "OK"
     }
 
@@ -81,9 +102,16 @@ def parse_row(r):
         "muscle_mass": _to_float(r.get("Muscle Mass [kg]")),
         "bone_mass": _to_float(r.get("Bone Mass [kg]")),
         "protein": _to_float(r.get("Protein [%]")),
-        "skeletal_muscle": _to_float(r.get("Skeletal Muscle Mass [%]")),
+        "skeletal_muscle": _to_float(r.get("Skeletal Muscle Mass [kg]"))
+                           or _to_float(r.get("Skeletal Muscle Mass [%]")),
         "physique_rating": _to_float(r.get("Physique Rating")),
-        "change": _to_float(r.get("Change [kg]"))
+        "change": _to_float(r.get("Change [kg]")),
+        # UWAGA: "Ideal Wieght" - literówka jest w oryginalnym nagłówku CSV
+        "lbm": _to_float(r.get("LBM [kg]")),
+        "ideal_weight": _to_float(r.get("Ideal Wieght [kg]")) or _to_float(r.get("Ideal Weight [kg]")),
+        "fat_mass_to_ideal": _parse_fat_to_ideal(r.get("Fat Mass To Ideal [type:mass kg]")),
+        "impedance": _to_float(r.get("Impedance")),
+        "impedance_low": _to_float(r.get("Impedance Low"))
     }
 
 def connect_mqtt():
@@ -98,7 +126,7 @@ def connect_mqtt():
             print("[MQTT] Połączono", flush=True)
             return client
         except Exception as e:
-            print(f"[MQTT] Connect error: {e} — ponowna próba za 30s", flush=True)
+            print(f"[MQTT] Connect error: {e} - ponowna próba za 30s", flush=True)
             time.sleep(30)
 
 def main():
@@ -128,7 +156,7 @@ def main():
                         # 1. Historia (Wszystkie klucze dla YAML)
                         history = [format_history_row(p) for p in parsed_rows]
                         history_payload = json.dumps({"rows": history[:200]})
-                        # Publikuj tylko przy realnej zmianie — bez tego retain
+                        # Publikuj tylko przy realnej zmianie - bez tego retain
                         # leciałby co 10s i obciążał brokera oraz recorder HA
                         if history_payload != last_history_payload:
                             client.publish(HISTORY_TOPIC, history_payload, retain=True)
