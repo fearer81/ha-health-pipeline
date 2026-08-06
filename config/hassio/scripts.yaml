@@ -29,8 +29,8 @@ lgtv_picture_mode:
   - delay:
       hours: 0
       minutes: 0
-      seconds: 1
-      milliseconds: 0
+      seconds: 0
+      milliseconds: 400
   - action: webostv.button
     data:
       entity_id: media_player.lg_tv
@@ -43,8 +43,8 @@ lgtv_picture_mode:
       - delay:
           hours: 0
           minutes: 0
-          seconds: 1
-          milliseconds: 0
+          seconds: 0
+          milliseconds: 400
       - action: webostv.command
         data:
           entity_id: media_player.lg_tv
@@ -66,51 +66,52 @@ lgtv_picture_mode:
       - delay:
           hours: 0
           minutes: 0
-          seconds: 1
-          milliseconds: 0
+          seconds: 0
+          milliseconds: 400
       - action: webostv.button
         data:
           entity_id: media_player.lg_tv
           button: ENTER
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ picture_mode | lower in [''expert1'',''expert2''] }}
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ picture_mode | lower in [''expert1'',''expert2'']
+              }}
 
-          '
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 1
-          milliseconds: 0
-      - action: webostv.command
-        data:
-          entity_id: media_player.lg_tv
-          command: system.notifications/createAlert
-          payload:
-            message: Eye Comfort ON
-            modal: false
-            buttons:
-            - label: ok
-              focus: true
-              buttonType: ok
-              onClick: luna://com.webos.settingsservice/setSystemSettings
-              params:
-                category: picture
-                settings:
-                  eyeComfortMode: 'on'
-            type: confirm
-            isSysReq: true
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 1
-          milliseconds: 0
-      - action: webostv.button
-        data:
-          entity_id: media_player.lg_tv
-          button: ENTER
+              '
+          sequence:
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
+          - action: webostv.command
+            data:
+              entity_id: media_player.lg_tv
+              command: system.notifications/createAlert
+              payload:
+                message: Eye Comfort ON
+                modal: false
+                buttons:
+                - label: ok
+                  focus: true
+                  buttonType: ok
+                  onClick: luna://com.webos.settingsservice/setSystemSettings
+                  params:
+                    category: picture
+                    settings:
+                      eyeComfortMode: 'on'
+                type: confirm
+                isSysReq: true
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 0
+              milliseconds: 400
+          - action: webostv.button
+            data:
+              entity_id: media_player.lg_tv
+              button: ENTER
 lgtv_script:
   alias: LGTV_Script
   description: ''
@@ -144,6 +145,11 @@ fear_pc_script:
 lgtv_script_off:
   alias: LGTV_Script_OFF
   sequence:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.lgtv_film_mode_set
+    data: {}
   - action: input_button.press
     metadata: {}
     data: {}
@@ -566,58 +572,18 @@ saros_restore_volume:
 klimatyzator_quiet:
   alias: Klimatyzator Quiet (Toggle)
   sequence:
-    - if:
-        - condition: state
-          entity_id: climate.klimatyzator
-          attribute: fan_mode
-          state: "quiet"
-      then:
-        - action: climate.set_fan_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            fan_mode: low
-      else:
-        - action: climate.set_hvac_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            hvac_mode: cool
-        - action: climate.set_fan_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            fan_mode: quiet
-
-klimatyzator_sleep:
-  alias: Klimatyzator Sleep (Toggle)
-  sequence:
-    - if:
-        - condition: state
-          entity_id: climate.klimatyzator
-          attribute: fan_mode
-          state: "sleep"
-      then:
-        - action: climate.set_fan_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            fan_mode: low
-      else:
-        - action: climate.set_hvac_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            hvac_mode: cool
-        - action: climate.set_fan_mode
-          target:
-            entity_id: climate.klimatyzator
-          data:
-            fan_mode: sleep
-
-klimatyzator_turbo:
-  alias: Klimatyzator Turbo (Cool 16C High)
-  sequence:
+  - if:
+    - condition: state
+      entity_id: climate.klimatyzator
+      attribute: fan_mode
+      state: quiet
+    then:
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.klimatyzator
+      data:
+        fan_mode: low
+    else:
     - action: climate.set_hvac_mode
       target:
         entity_id: climate.klimatyzator
@@ -627,81 +593,119 @@ klimatyzator_turbo:
       target:
         entity_id: climate.klimatyzator
       data:
-        fan_mode: high
-    - action: climate.set_temperature
-      target:
-        entity_id: climate.klimatyzator
-      data:
-        temperature: 16
-
-klimatyzator_auto_full:
-  alias: Klimatyzator Auto Full (Auto 16C)
+        fan_mode: quiet
+klimatyzator_sleep:
+  alias: Klimatyzator Sleep (Toggle)
   sequence:
-    - action: climate.set_hvac_mode
-      target:
-        entity_id: climate.klimatyzator
-      data:
-        hvac_mode: auto
+  - if:
+    - condition: state
+      entity_id: climate.klimatyzator
+      attribute: fan_mode
+      state: sleep
+    then:
     - action: climate.set_fan_mode
       target:
         entity_id: climate.klimatyzator
       data:
-        fan_mode: auto
-    - action: climate.set_temperature
+        fan_mode: low
+    else:
+    - action: climate.set_hvac_mode
       target:
         entity_id: climate.klimatyzator
       data:
-        temperature: 16
-
+        hvac_mode: cool
+    - action: climate.set_fan_mode
+      target:
+        entity_id: climate.klimatyzator
+      data:
+        fan_mode: sleep
+klimatyzator_turbo:
+  alias: Klimatyzator Turbo (Cool 16C High)
+  sequence:
+  - action: climate.set_hvac_mode
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      hvac_mode: cool
+  - action: climate.set_fan_mode
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      fan_mode: high
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      temperature: 16
+klimatyzator_auto_full:
+  alias: Klimatyzator Auto Full (Auto 16C)
+  sequence:
+  - action: climate.set_hvac_mode
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      hvac_mode: auto
+  - action: climate.set_fan_mode
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      fan_mode: auto
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.klimatyzator
+    data:
+      temperature: 16
 klimatyzator_wyslij_ponownie:
   alias: Klimatyzator - wyślij ponownie
   icon: mdi:sync-alert
   mode: restart
   sequence:
-    - variables:
-        tryb: "{{ states('climate.klimatyzator') }}"
-        temp: "{{ state_attr('climate.klimatyzator', 'temperature') | int(22) }}"
-        went: "{{ state_attr('climate.klimatyzator', 'fan_mode') | default('auto') }}"
-
-    - repeat:
-        count: 2
-        sequence:
-          - choose:
-              - conditions:
-                  - "{{ tryb == 'off' }}"
-                sequence:
-                  - action: climate.set_hvac_mode
-                    target:
-                      entity_id: climate.klimatyzator
-                    data:
-                      hvac_mode: "off"
-
-              - conditions:
-                  - "{{ tryb in ['cool', 'auto'] }}"
-                sequence:
-                  - action: climate.set_temperature
-                    target:
-                      entity_id: climate.klimatyzator
-                    data:
-                      temperature: "{{ temp }}"
-                      hvac_mode: "{{ tryb }}"
-                  - delay: "00:00:01"
-                  - action: climate.set_fan_mode
-                    target:
-                      entity_id: climate.klimatyzator
-                    data:
-                      fan_mode: "{{ went }}"
-
-            default:
-              - action: climate.set_hvac_mode
-                target:
-                  entity_id: climate.klimatyzator
-                data:
-                  hvac_mode: "{{ tryb }}"
-              - delay: "00:00:01"
-              - action: climate.set_fan_mode
-                target:
-                  entity_id: climate.klimatyzator
-                data:
-                  fan_mode: "{{ went }}"
-          - delay: "00:00:03"
+  - variables:
+      tryb: '{{ states(''climate.klimatyzator'') }}'
+      temp: '{{ state_attr(''climate.klimatyzator'', ''temperature'') | int(22) }}'
+      went: '{{ state_attr(''climate.klimatyzator'', ''fan_mode'') | default(''auto'')
+        }}'
+  - repeat:
+      count: 2
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ tryb == ''off'' }}'
+          sequence:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: climate.klimatyzator
+            data:
+              hvac_mode: 'off'
+        - conditions:
+          - condition: template
+            value_template: '{{ tryb in [''cool'', ''auto''] }}'
+          sequence:
+          - action: climate.set_temperature
+            target:
+              entity_id: climate.klimatyzator
+            data:
+              temperature: '{{ temp }}'
+              hvac_mode: '{{ tryb }}'
+          - delay: 00:00:01
+          - action: climate.set_fan_mode
+            target:
+              entity_id: climate.klimatyzator
+            data:
+              fan_mode: '{{ went }}'
+            enabled: true
+        default:
+        - action: climate.set_hvac_mode
+          target:
+            entity_id: climate.klimatyzator
+          data:
+            hvac_mode: '{{ tryb }}'
+        - delay: 00:00:01
+        - action: climate.set_fan_mode
+          target:
+            entity_id: climate.klimatyzator
+          data:
+            fan_mode: '{{ went }}'
+          enabled: true
+      - delay: 00:00:03
