@@ -289,7 +289,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -306,7 +306,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -323,7 +323,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -332,7 +332,7 @@ views:
                 conditions:
                   - condition: state
                     entity: climate.klimatyzator
-                    state_not: "off"
+                    state_not: 'off'
                 card:
                   type: grid
                   columns: 6
@@ -432,31 +432,101 @@ views:
                       hold_action:
                         action: perform-action
                         perform_action: script.klimatyzator_wyslij_ponownie
-                    - type: button
-                      name: Swing Start
-                      show_name: false
-                      icon: mdi:fan-auto
-                      tap_action:
-                        action: perform-action
-                        perform_action: script.klimatyzator_swing_start
-                      hold_action:
-                        action: perform-action
-                        perform_action: script.klimatyzator_wyslij_ponownie
-                    - type: button
-                      name: Swing Stop
-                      show_name: false
-                      icon: mdi:fan-off
-                      tap_action:
-                        action: perform-action
-                        perform_action: script.klimatyzator_swing_stop
-                      hold_action:
-                        action: perform-action
-                        perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state: 'on'
+                          card:
+                            type: button
+                            name: Swing Start
+                            show_name: false
+                            icon: mdi:fan-auto
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: 'on'
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state_not: 'on'
+                          card:
+                            type: button
+                            name: Swing Start
+                            show_name: false
+                            icon: mdi:fan-auto
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: 'on'
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                    - type: vertical-stack
+                      cards:
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state: 'off'
+                          card:
+                            type: button
+                            name: Swing Stop
+                            show_name: false
+                            icon: mdi:fan-off
+                            color: yellow
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: 'off'
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
+                        - type: conditional
+                          conditions:
+                            - condition: state
+                              entity: climate.klimatyzator
+                              attribute: swing_mode
+                              state_not: 'off'
+                          card:
+                            type: button
+                            name: Swing Stop
+                            show_name: false
+                            icon: mdi:fan-off
+                            tap_action:
+                              action: perform-action
+                              perform_action: climate.set_swing_mode
+                              target:
+                                entity_id: climate.klimatyzator
+                              data:
+                                swing_mode: 'off'
+                            hold_action:
+                              action: perform-action
+                              perform_action: script.klimatyzator_wyslij_ponownie
               - type: conditional
                 conditions:
                   - condition: state
                     entity: climate.klimatyzator
-                    state_not: "off"
+                    state_not: 'off'
                   - condition: state
                     entity: climate.klimatyzator
                     state_not: auto
@@ -611,6 +681,14 @@ views:
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
+          - type: tile
+            entity: input_number.klima_cool_start
+          - type: tile
+            entity: input_number.klima_cool_stop
+          - type: tile
+            entity: input_number.klima_dry_start
+          - type: tile
+            entity: input_number.klima_dry_stop
           - type: grid
             square: false
             columns: 1
@@ -649,20 +727,6 @@ views:
               - entity: media_player.lg_tv
             title: Salon
             state_color: true
-          - type: tile
-            entity: input_number.klima_cool_start
-          - type: tile
-            entity: input_number.klima_cool_stop
-          - type: tile
-            entity: input_number.klima_dry_start
-          - type: tile
-            entity: input_number.klima_dry_stop
-          - type: tile
-            entity: input_number.klima_cool_start_noc
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: input_number.klima_cool_stop_noc
       - type: grid
         cards:
           - type: entities
@@ -1133,12 +1197,6 @@ views:
                 data: rows
                 modify: x.bmr && Math.round(parseFloat(x.bmr))
                 align: center
-              - name: ⏳<br>Wiek metab.
-                data: rows
-                modify: >-
-                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
-                  Math.round(parseFloat(x.metabolic_age))
-                align: center
             strict: true
             clickable: false
             view_layout:
@@ -1173,6 +1231,16 @@ views:
                   z-index: 10;
                 }
       - type: grid
-        cards: []
+        cards:
+          - type: tile
+            entity: input_number.klima_cool_start_noc
+            vertical: false
+            features_position: bottom
+          - type: tile
+            entity: input_number.klima_cool_stop_noc
+        visibility:
+          - condition: state
+            entity: sensor.status_blokady_garmin
+            state: ''
       - type: grid
         cards: []

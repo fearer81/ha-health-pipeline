@@ -41,12 +41,6 @@ columns:
     data: rows
     modify: x.bmr && Math.round(parseFloat(x.bmr))
     align: center
-  - name: ⏳<br>Wiek metab.
-    data: rows
-    modify: >-
-      x.metabolic_age && x.metabolic_age.replace(' y','') &&
-      Math.round(parseFloat(x.metabolic_age))
-    align: center
 strict: true
 clickable: false
 view_layout:

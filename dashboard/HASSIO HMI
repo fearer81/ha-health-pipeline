@@ -12,7 +12,7 @@ views:
         show_state: false
         show_icon: true
         entity: button.fear_pc
-        color: ""
+        color: ''
         name: FEAR_PC
         tap_action:
           action: toggle
@@ -33,7 +33,7 @@ views:
         show_state: true
         show_icon: true
         entity: switch.kuchnia_left
-        color: ""
+        color: ''
         tap_action:
           action: toggle
       - type: entity
@@ -41,7 +41,7 @@ views:
         show_state: true
         show_icon: true
         entity: switch.kuchnia_right
-        color: ""
+        color: ''
         tap_action:
           action: toggle
       - type: entity
@@ -86,7 +86,7 @@ views:
         entity: switch.przedpokoj1
         tap_action:
           action: toggle
-        color: ""
+        color: ''
       - type: entity
         entity: switch.przedpokoj2
         display_type: complete
@@ -104,7 +104,7 @@ views:
         show_state: true
         show_icon: true
         entity: switch.sypialnia
-        color: ""
+        color: ''
         tap_action:
           action: toggle
       - type: entity
@@ -118,7 +118,7 @@ views:
         show_state: true
         show_icon: true
         entity: fan.zhimi_m1_83f1_air_purifier
-        color: ""
+        color: ''
       - type: entity
         show_name: true
         show_state: true
@@ -161,7 +161,7 @@ views:
             cards:
               - type: custom:webrtc-camera
                 streams:
-                  - url: ""
+                  - url: ''
                   - url: kamera
                   - url: kamera2
                   - url: kamera3
@@ -286,7 +286,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -303,7 +303,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -320,7 +320,7 @@ views:
                   features:
                     - type: climate-hvac-modes
                       hvac_modes:
-                        - "off"
+                        - 'off'
                         - auto
                         - cool
                         - dry
@@ -329,7 +329,7 @@ views:
                 conditions:
                   - condition: state
                     entity: climate.klimatyzator
-                    state_not: "off"
+                    state_not: 'off'
                 card:
                   type: grid
                   columns: 6
@@ -436,7 +436,7 @@ views:
                             - condition: state
                               entity: climate.klimatyzator
                               attribute: swing_mode
-                              state: "on"
+                              state: 'on'
                           card:
                             type: button
                             name: Swing Start
@@ -449,7 +449,7 @@ views:
                               target:
                                 entity_id: climate.klimatyzator
                               data:
-                                swing_mode: "on"
+                                swing_mode: 'on'
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
@@ -458,7 +458,7 @@ views:
                             - condition: state
                               entity: climate.klimatyzator
                               attribute: swing_mode
-                              state_not: "on"
+                              state_not: 'on'
                           card:
                             type: button
                             name: Swing Start
@@ -470,7 +470,7 @@ views:
                               target:
                                 entity_id: climate.klimatyzator
                               data:
-                                swing_mode: "on"
+                                swing_mode: 'on'
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
@@ -481,7 +481,7 @@ views:
                             - condition: state
                               entity: climate.klimatyzator
                               attribute: swing_mode
-                              state: "off"
+                              state: 'off'
                           card:
                             type: button
                             name: Swing Stop
@@ -494,7 +494,7 @@ views:
                               target:
                                 entity_id: climate.klimatyzator
                               data:
-                                swing_mode: "off"
+                                swing_mode: 'off'
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
@@ -503,7 +503,7 @@ views:
                             - condition: state
                               entity: climate.klimatyzator
                               attribute: swing_mode
-                              state_not: "off"
+                              state_not: 'off'
                           card:
                             type: button
                             name: Swing Stop
@@ -515,7 +515,7 @@ views:
                               target:
                                 entity_id: climate.klimatyzator
                               data:
-                                swing_mode: "off"
+                                swing_mode: 'off'
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
@@ -523,7 +523,7 @@ views:
                 conditions:
                   - condition: state
                     entity: climate.klimatyzator
-                    state_not: "off"
+                    state_not: 'off'
                   - condition: state
                     entity: climate.klimatyzator
                     state_not: auto
@@ -805,6 +805,7 @@ views:
               - entity: input_boolean.przedpokoj2_manual
               - entity: input_boolean.kuchnia_manual
               - entity: input_boolean.salon_manual
+              - entity: input_boolean.lgtv_film_mode_set
           - square: false
             type: grid
             columns: 1
@@ -900,12 +901,6 @@ views:
               - name: 🔥<br>BMR (kcal)
                 data: rows
                 modify: x.bmr && Math.round(parseFloat(x.bmr))
-                align: center
-              - name: ⏳<br>Wiek metab.
-                data: rows
-                modify: >-
-                  x.metabolic_age && x.metabolic_age.replace(' y','') &&
-                  Math.round(parseFloat(x.metabolic_age))
                 align: center
             strict: true
             clickable: false
@@ -1293,6 +1288,13 @@ views:
             features_position: bottom
           - type: media-control
             entity: media_player.lg_tv
+          - type: history-graph
+            entities:
+              - sensor.termometr_humidity
+            hours_to_show: 8
+            grid_options:
+              columns: full
+              rows: 6
           - type: custom:flex-table-card
             sort_by: ts-
             entities:
@@ -1480,13 +1482,6 @@ views:
               - entity: sensor.pge3_monthly
               - entity: sensor.pge_pralka_monthly
             logarithmic_scale: false
-          - type: history-graph
-            entities:
-              - sensor.termometr_humidity
-            hours_to_show: 8
-            grid_options:
-              columns: full
-              rows: 6
       - type: grid
         cards:
           - type: entities
@@ -1574,7 +1569,7 @@ views:
         visibility:
           - condition: state
             entity: sensor.status_blokady_garmin
-            state: ""
+            state: ''
   - type: sections
     max_columns: 4
     path: kamery
