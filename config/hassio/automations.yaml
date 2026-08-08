@@ -1,5 +1,5 @@
 - id: '1724313766518'
-  alias: Pokój ON 20:35 - 00:30
+  alias: Pokój ON 20:25 - 00:30
   description: ''
   triggers:
   - type: occupied
@@ -17,7 +17,7 @@
   - condition: and
     conditions:
     - condition: time
-      after: '20:35:00'
+      after: '20:25:00'
       before: 00:30:00
       weekday:
       - mon
@@ -191,7 +191,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 20:35 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 20:25 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -212,7 +212,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -233,7 +233,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -253,7 +253,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -307,7 +307,7 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 20:35 - 23:00 (Weekend 02:00)
+  alias: Salon ON 20:25 - 23:00 (Weekend 02:00)
   description: ''
   triggers:
   - type: occupied
@@ -329,7 +329,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:35:00'
+          after: '20:25:00'
           before: '23:00:00'
           weekday:
           - sun
@@ -340,7 +340,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:35:00'
+          after: '20:25:00'
           weekday:
           - fri
           - sat
@@ -705,7 +705,7 @@
       filename: /media/K2_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
       lookback: 5
     target:
-      entity_id: camera.kuchnia_kamera2
+      entity_id: camera.kamera2_profile_0
     action: camera.record
   - delay:
       hours: 0
@@ -761,7 +761,7 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
@@ -960,7 +960,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 20:35 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 20:25 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -998,7 +998,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -1018,7 +1018,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -1038,7 +1038,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:35:00'
+        after: '20:25:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1998,7 +1998,7 @@
       duration: 60
       lookback: 5
     target:
-      entity_id: camera.kuchnia_kamera
+      entity_id: camera.kamera_profile_0
     action: camera.record
   - delay:
       hours: 0
@@ -2457,7 +2457,7 @@
       duration: 60
       lookback: 5
     target:
-      entity_id: camera.pokoj_kamera3
+      entity_id: camera.kamera3_profile_0
     action: camera.record
   - delay:
       hours: 0
@@ -2870,7 +2870,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          fan_mode: sleep
+          fan_mode: quiet
         enabled: true
     - alias: Chłodzenie - noc
       conditions:
