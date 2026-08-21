@@ -38,7 +38,9 @@ columns:
     data: rows
     modify: |-
       (function(){
-        const v = parseInt(x.kroki, 10);
+        const k = parseInt(x.kroki, 10);
+        const a = parseInt(x.aktywnosci, 10);
+        const v = Math.max(k, a);
         return isNaN(v) ? '---' : v.toLocaleString('pl-PL');
       })()
     align: center
