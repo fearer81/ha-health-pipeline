@@ -1,8 +1,20 @@
 lgtv_picture_mode:
   alias: LG TV Picture Mode
-  description: ''
+  description: Ustawia tryb obrazu i dopasowuje Eye Comfort
   mode: single
+  fields:
+    picture_mode:
+      name: Tryb obrazu
+      required: true
+      selector:
+        select:
+          options:
+          - filmMaker
+          - expert1
+          - expert2
   sequence:
+  - variables:
+      eye_comfort: '{%- if picture_mode %}off {%- else %}on{% endif %}'
   - action: webostv.command
     data:
       entity_id: media_player.lg_tv
@@ -21,11 +33,6 @@ lgtv_picture_mode:
               pictureMode: '{{ picture_mode }}'
         type: confirm
         isSysReq: true
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ picture_mode | lower == ''filmmaker'' }}'
-      sequence: []
   - delay:
       hours: 0
       minutes: 0
@@ -35,83 +42,38 @@ lgtv_picture_mode:
     data:
       entity_id: media_player.lg_tv
       button: ENTER
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ picture_mode | lower == ''filmmaker'' }}'
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 400
-      - action: webostv.command
-        data:
-          entity_id: media_player.lg_tv
-          command: system.notifications/createAlert
-          payload:
-            message: Eye Comfort OFF
-            modal: false
-            buttons:
-            - label: ok
-              focus: true
-              buttonType: ok
-              onClick: luna://com.webos.settingsservice/setSystemSettings
-              params:
-                category: picture
-                settings:
-                  eyeComfortMode: 'off'
-            type: confirm
-            isSysReq: true
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 400
-      - action: webostv.button
-        data:
-          entity_id: media_player.lg_tv
-          button: ENTER
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ picture_mode | lower in [''expert1'',''expert2'']
-              }}
-
-              '
-          sequence:
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 0
-          - action: webostv.command
-            data:
-              entity_id: media_player.lg_tv
-              command: system.notifications/createAlert
-              payload:
-                message: Eye Comfort ON
-                modal: false
-                buttons:
-                - label: ok
-                  focus: true
-                  buttonType: ok
-                  onClick: luna://com.webos.settingsservice/setSystemSettings
-                  params:
-                    category: picture
-                    settings:
-                      eyeComfortMode: 'on'
-                type: confirm
-                isSysReq: true
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 0
-              milliseconds: 400
-          - action: webostv.button
-            data:
-              entity_id: media_player.lg_tv
-              button: ENTER
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 400
+  - action: webostv.command
+    data:
+      entity_id: media_player.lg_tv
+      command: system.notifications/createAlert
+      payload:
+        message: 'Eye Comfort: {{ eye_comfort | upper }}'
+        modal: false
+        buttons:
+        - label: ok
+          focus: true
+          buttonType: ok
+          onClick: luna://com.webos.settingsservice/setSystemSettings
+          params:
+            category: picture
+            settings:
+              eyeComfortMode: '{{ eye_comfort }}'
+        type: confirm
+        isSysReq: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 400
+  - action: webostv.button
+    data:
+      entity_id: media_player.lg_tv
+      button: ENTER
 lgtv_script:
   alias: LGTV_Script
   description: ''
@@ -441,7 +403,7 @@ lgtv_on_yt:
   - delay:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 3
       milliseconds: 0
   - data:
       entity_id: media_player.lg_tv
@@ -458,13 +420,13 @@ lgtv_on_yt:
       entity_id: media_player.lg_tv
       button: ENTER
     action: webostv.button
-    enabled: false
+    enabled: true
   - delay:
       hours: 0
       minutes: 0
-      seconds: 0
-      milliseconds: 600
-    enabled: false
+      seconds: 1
+      milliseconds: 0
+    enabled: true
   - data:
       entity_id: media_player.lg_tv
       button: LEFT

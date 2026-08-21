@@ -166,18 +166,12 @@ views:
                   - url: kamera2
                   - url: kamera3
                   - url: saros_10_camera
+                mode: webrtc,mse
                 ui: true
                 digital_ptz: true
                 background: false
                 intersection: 0.75
-                muted: true
-                shortcuts:
-                  - name: UCISZ SAROSA
-                    icon: mdi:volume-variant-off
-                    service: script.saros_silent_guard
-                  - name: PRZYWRÓĆ GŁOŚNOŚĆ
-                    icon: mdi:volume-high
-                    service: script.saros_restore_volume
+                muted: false
               - type: entities
                 entities:
                   - entity: sensor.xiaomihmi15_battery_level
@@ -192,7 +186,8 @@ views:
                   - entity: sensor.fresh_water_tank_status
                     name: Tineco Fresh Water
                   - entity: sensor.waste_water_tank_status
-          - type: entities
+          - color: state
+            type: entities
             entities:
               - entity: binary_sensor.czujnik_pokoj_occupancy
                 secondary_info: last-changed
@@ -209,11 +204,16 @@ views:
               - entity: binary_sensor.czujnik_salon_occupancy
                 secondary_info: last-changed
                 name: Czujnik_Salon
-              - entity: binary_sensor.kamera_motion_alarm
-              - entity: binary_sensor.kamera2_motion_alarm
-              - entity: binary_sensor.kamera3_motion_alarm
+              - entity: binary_sensor.kamera_motion
+              - entity: binary_sensor.kamera2_motion
+              - entity: binary_sensor.kamera3_motion
+              - entity: sensor.kamera_wifi_signal
+              - entity: sensor.kamera2_wifi_signal
+              - entity: sensor.kamera3_wifi_signal
+              - entity: button.kamera_reboot
+              - entity: button.kamera2_reboot_2
+              - entity: button.kamera3_reboot_2
             title: Czujniki Ruchu
-            state_color: true
           - type: history-graph
             entities:
               - entity: sensor.xiaomihmi15_geocoded_location
@@ -270,6 +270,14 @@ views:
               type: entity
             vertical: false
             features_position: bottom
+          - type: tile
+            entity: input_number.klima_cool_start
+          - type: tile
+            entity: input_number.klima_cool_stop
+          - type: tile
+            entity: input_number.klima_dry_start
+          - type: tile
+            entity: input_number.klima_dry_stop
           - type: vertical-stack
             cards:
               - type: conditional
@@ -678,20 +686,6 @@ views:
                             hold_action:
                               action: perform-action
                               perform_action: script.klimatyzator_wyslij_ponownie
-          - type: tile
-            entity: input_number.klima_cool_start
-          - type: tile
-            entity: input_number.klima_cool_stop
-          - type: tile
-            entity: input_number.klima_dry_start
-          - type: tile
-            entity: input_number.klima_dry_stop
-          - type: tile
-            entity: input_number.klima_cool_start_noc
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: input_number.klima_cool_stop_noc
       - type: grid
         cards:
           - show_name: true
@@ -860,80 +854,125 @@ views:
           - type: tile
             entity: automation.klimatyzacja_powiadomienia
           - type: custom:flex-table-card
+            sort_by: ts-
             entities:
               include:
-                - sensor.xiaomi_s400_history
+                - sensor.omron_m4_history
             columns:
-              - name: 🕒<br>Data & Czas
+              - name: 🕒<br><small>Data i Czas</small>
                 data: rows
-                modify: x.time
-                style: |
-                  white-space: nowrap;
-                  min-width: 130px;
-              - name: ⚖️<br>Waga (kg)
+                modify: |-
+                  (function(){
+                    let t = String(x.time);
+                    if (t.includes('-')) {
+                      let p = t.split(' ');
+                      let d = p[0].split('-');
+                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+                    }
+                    return t.replace('.2026', '');
+                  })()
+              - name: 🩺<br><small>Ciśnienie</small>
                 data: rows
-                modify: x.weight && parseFloat(x.weight).toFixed(1)
+                modify: >-
+                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
+                  mmHg','') : '---')
                 align: center
-              - name: 📉<br>Zrzuć (kg)
+              - name: 🚦<br><small>S0-3</small>
                 data: rows
-                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]); var d = parseInt(p[1]);
+                    if (s >= 180 || d >= 110) return '⛔ S3';
+                    if (s >= 160 || d >= 100) return '🔴 S2';
+                    if (s >= 140 || d >=  90) return '🟠 S1';
+                    if (s >= 130 || d >=  85) return '🟡WP';
+                    if (s >= 120 || d >=  80) return '🔵Pra';
+                    if (s <   90 || d <   60) return '🟣Hip';
+                    return '🟢Opt';
+                  })()
                 align: center
-              - name: Δ<br>Zm (kg)
+              - name: 💢<br><small>Ro-Sk</small>
                 data: rows
-                modify: x.change && parseFloat(x.change).toFixed(1)
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]);
+                    var d = parseInt(p[1]);
+                    var pp = s - d;
+                    if (pp >= 60) return pp + '🔴';
+                    if (pp >= 50) return pp + '🟡';
+                    if (pp >= 40) return pp + '🟢';
+                    return pp + '💚';
+                  })()
                 align: center
-              - name: 🧍<br>BMI (kg_m2)
+              - name: ❤️<br><small>Tętno</small>
                 data: rows
-                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
+                modify: |-
+                  (function(){
+                    // Priorytet: puls z Omrona (pomiar mankietowy)
+                    if (x.pulse) return x.pulse.replace(' bpm','');
+                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr ? closest.rhr + '⌚' : '---';
+                    } catch(e) { return '---'; }
+                  })()
                 align: center
-              - name: 🟡<br>Tłuszcz (%)
+              - name: 💤<br><small>T.Spoczyn.</small>
                 data: rows
-                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr || '---';
+                    } catch(e) { return '---'; }
+                  })()
                 align: center
-              - name: 💧<br>Woda (%)
-                data: rows
-                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
-                align: center
-              - name: 🧠<br>Tłuszcz Trzewny
-                data: rows
-                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
-                align: center
-              - name: 🔥<br>BMR (kcal)
-                data: rows
-                modify: x.bmr && Math.round(parseFloat(x.bmr))
-                align: center
-            strict: true
-            clickable: false
-            view_layout:
-              column_span: 2
             card_mod:
               style: |
                 ha-card {
-                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
-                  max-height: 480px;
-                  overflow-y: auto;       /* Przewijanie pionowe */
-                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
-                  font-size: 12px; 
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
                 }
                 ha-card table {
-                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  width: 100% !important;
                   border-collapse: collapse;
+                  table-layout: auto;
                 }
-                /* DANE: Zawsze w jednej linii */
-                ha-card td {
-                  white-space: nowrap !important;
-                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
-                }
-                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
                 ha-card thead th {
-                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
-                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  text-align: center;
                   vertical-align: bottom;
-                  padding: 2px;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
                   position: sticky;
                   top: 0;
                   background: var(--card-background-color);
-                  z-index: 10;
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
                 }
           - type: custom:flex-table-card
             sort_by: ts-
@@ -966,12 +1005,13 @@ views:
                     if (!x.pressure) return '---';
                     var p = x.pressure.split('/');
                     var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔S3';
-                    if (s >= 160 || d >= 100) return '🔴S2';
-                    if (s >= 140 || d >=  90) return '🟠S1';
-                    if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵 Pr';
-                    return '🟢 Pr';
+                    if (s >= 180 || d >= 110) return '⛔ S3';
+                    if (s >= 160 || d >= 100) return '🔴 S2';
+                    if (s >= 140 || d >=  90) return '🟠 S1';
+                    if (s >= 130 || d >=  85) return '🟡WP';
+                    if (s >= 120 || d >=  80) return '🔵Pra';
+                    if (s <   90 || d <   60) return '🟣Hip';
+                    return '🟢Opt';
                   })()
                 align: center
               - name: 💢<br><small>Ro-Sk</small>
@@ -1289,131 +1329,87 @@ views:
           - type: media-control
             entity: media_player.lg_tv
           - type: history-graph
-            entities:
-              - sensor.termometr_humidity
-            hours_to_show: 8
             grid_options:
               columns: full
               rows: 6
+            entities:
+              - sensor.termometr_humidity
+            hours_to_show: 6
           - type: custom:flex-table-card
-            sort_by: ts-
             entities:
               include:
-                - sensor.omron_m4_history
+                - sensor.xiaomi_s400_history
             columns:
-              - name: 🕒<br><small>Data i Czas</small>
+              - name: 🕒<br>Data & Czas
                 data: rows
-                modify: |-
-                  (function(){
-                    let t = String(x.time);
-                    if (t.includes('-')) {
-                      let p = t.split(' ');
-                      let d = p[0].split('-');
-                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
-                    }
-                    return t.replace('.2026', '');
-                  })()
-              - name: 🩺<br><small>Ciśnienie</small>
+                modify: x.time
+                style: |
+                  white-space: nowrap;
+                  min-width: 130px;
+              - name: ⚖️<br>Waga (kg)
                 data: rows
-                modify: >-
-                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
-                  mmHg','') : '---')
+                modify: x.weight && parseFloat(x.weight).toFixed(1)
                 align: center
-              - name: 🚦<br><small>S0-3</small>
+              - name: 📉<br>Zrzuć (kg)
                 data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔S3';
-                    if (s >= 160 || d >= 100) return '🔴S2';
-                    if (s >= 140 || d >=  90) return '🟠S1';
-                    if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵Pr';
-                    return '🟢 Pr';
-                  })()
+                modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
                 align: center
-              - name: 💢<br><small>Ro-Sk</small>
+              - name: Δ<br>Zm (kg)
                 data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]);
-                    var d = parseInt(p[1]);
-                    var pp = s - d;
-                    if (pp >= 60) return pp + '🔴';
-                    if (pp >= 50) return pp + '🟡';
-                    if (pp >= 40) return pp + '🟢';
-                    return pp + '💚';
-                  })()
+                modify: x.change && parseFloat(x.change).toFixed(1)
                 align: center
-              - name: ❤️<br><small>Tętno</small>
+              - name: 🧍<br>BMI (kg_m2)
                 data: rows
-                modify: |-
-                  (function(){
-                    // Priorytet: puls z Omrona (pomiar mankietowy)
-                    if (x.pulse) return x.pulse.replace(' bpm','');
-                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr ? closest.rhr + '⌚' : '---';
-                    } catch(e) { return '---'; }
-                  })()
+                modify: x.bmi && parseFloat(x.bmi).toFixed(1)
                 align: center
-              - name: 💤<br><small>T.Spoczyn.</small>
+              - name: 🟡<br>Tłuszcz (%)
                 data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr || '---';
-                    } catch(e) { return '---'; }
-                  })()
+                modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
                 align: center
+              - name: 💧<br>Woda (%)
+                data: rows
+                modify: x.body_water && parseFloat(x.body_water).toFixed(1)
+                align: center
+              - name: 🧠<br>Tłuszcz Trzewny
+                data: rows
+                modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
+                align: center
+              - name: 🔥<br>BMR (kcal)
+                data: rows
+                modify: x.bmr && Math.round(parseFloat(x.bmr))
+                align: center
+            strict: true
+            clickable: false
+            view_layout:
+              column_span: 2
             card_mod:
               style: |
                 ha-card {
-                  max-height: 333px;
-                  overflow-y: auto;
-                  font-size: 12px;
-                  user-select: text !important;
-                  -webkit-user-select: text !important;
+                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  max-height: 480px;
+                  overflow-y: auto;       /* Przewijanie pionowe */
+                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  font-size: 12px; 
                 }
                 ha-card table {
-                  width: 100% !important;
+                  width: 99% !important; /* Tabela trzyma się szerokości karty */
                   border-collapse: collapse;
-                  table-layout: auto;
                 }
+                /* DANE: Zawsze w jednej linii */
+                ha-card td {
+                  white-space: nowrap !important;
+                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                }
+                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
                 ha-card thead th {
-                  text-align: center;
+                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
+                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
                   vertical-align: bottom;
-                  padding: 2px 2px !important;
-                  line-height: 1.1;
-                  font-weight: bold;
+                  padding: 2px;
                   position: sticky;
                   top: 0;
                   background: var(--card-background-color);
-                  z-index: 2;
-                }
-                ha-card td {
-                  padding: 1px 2px !important;
-                  white-space: nowrap !important;
-                }
-                ha-card td:first-child,
-                ha-card th:first-child {
-                  width: 1px;
+                  z-index: 10;
                 }
       - type: grid
         cards:
@@ -1482,6 +1478,101 @@ views:
               - entity: sensor.pge3_monthly
               - entity: sensor.pge_pralka_monthly
             logarithmic_scale: false
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.garmin_kroki_historia
+            columns:
+              - name: 🕒<br><small>Data</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const d = String(x.data).split('-');
+                      return d[2] + '.' + d[1];
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🏃<br><small>Aktywność</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const a = parseInt(x.aktywnosci, 10);
+                    const k = parseInt(x.kroki, 10);
+                    if (isNaN(a)) { return '---'; }
+                    if (a === 0) { return '-'; }
+                    const txt = a.toLocaleString('pl-PL');
+                    return (a > k) ? txt : txt;
+                  })()
+                align: center
+              - name: 🚶<br><small>Poza akt.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const p = parseInt(x.poza, 10);
+                    return isNaN(p) ? '---' : p.toLocaleString('pl-PL');
+                  })()
+                align: center
+              - name: 👣<br><small>Łącznie</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const v = parseInt(x.kroki, 10);
+                    return isNaN(v) ? '---' : v.toLocaleString('pl-PL');
+                  })()
+                align: center
+              - name: 📏<br><small>Dystans</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const d = parseFloat(x.dystans);
+                    return (d > 0) ? d.toFixed(2) : '-';
+                  })()
+                align: center
+              - name: ⏱️<br><small>Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const c = String(x.czas);
+                    return (c === '00:00:00') ? '-' : c.substring(0, 5);
+                  })()
+                align: center
+            strict: true
+            clickable: false
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 99% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
       - type: grid
         cards:
           - type: entities
@@ -1539,12 +1630,12 @@ views:
               columns: full
               rows: 8
             entities:
-              - sensor.termometr_temperature
-            hours_to_show: 8
+              - entity: sensor.termometr_temperature
+              - entity: sensor.temperatura_zewnetrzna
+            hours_to_show: 6
       - type: grid
         cards:
-          - title: Czujniki
-            type: history-graph
+          - type: history-graph
             entities:
               - entity: binary_sensor.czujnik_pokoj_occupancy
               - entity: switch.pokoj
@@ -1557,8 +1648,8 @@ views:
               - entity: switch.kuchnia_left
               - entity: switch.kuchnia_right
               - entity: binary_sensor.czujnik_salon_occupancy
-              - entity: binary_sensor.kamera_motion_alarm
               - entity: switch.salon
+            title: Czujniki
             hours_to_show: 1
             logarithmic_scale: false
             min_y_axis: 0
@@ -1580,6 +1671,7 @@ views:
           - type: custom:webrtc-camera
             streams:
               - url: kamera
+            mode: webrtc,mse
             ui: true
             digital_ptz: true
             muted: true
@@ -1591,6 +1683,7 @@ views:
           - type: custom:webrtc-camera
             streams:
               - url: kamera2
+            mode: webrtc,mse
             ui: true
             digital_ptz: true
             muted: true
@@ -1602,6 +1695,7 @@ views:
           - type: custom:webrtc-camera
             streams:
               - url: kamera3
+            mode: webrtc,mse
             ui: true
             digital_ptz: true
             muted: true
@@ -1613,6 +1707,7 @@ views:
           - type: custom:webrtc-camera
             streams:
               - url: saros_10_camera
+            mode: webrtc,mse
             ui: true
             digital_ptz: true
             background: false
@@ -1621,10 +1716,6 @@ views:
             double_tap_action:
               action: navigate
               navigation_path: /lovelace/saros_10_camera_full
-            shortcuts:
-              - name: UCISZ SAROSA
-                icon: mdi:volume-variant-off
-                service: script.saros_silent_guard
         column_span: 4
     cards: []
     dense_section_placement: true

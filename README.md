@@ -28,6 +28,12 @@ Omron → Cloud → omramin → CSV ──→ MQTT → Home Assistant
                                 └──→ Garmin Connect
 ```
 
+### 👣 Garmin Connect (kroki)
+
+```
+Garmin API → fetch_garmin_steps.py → CSV → MQTT → Home Assistant
+```
+
 ---
 
 ## 📁 Struktura projektu
@@ -45,13 +51,19 @@ ha-project/
 │       └── user/               # export2garmin.cfg, backup CSV, tokeny
 ├── health/                     # bieżący stan zdrowia (JSON)
 │   ├── garmin.json
+│   ├── kroki.json
+│   ├── kroki_mqtt.json
 │   ├── miscale.json
 │   └── omron.json
-├── jobs/omron/                 # jednorazowe i cykliczne skrypty
-│   ├── fetch_garmin_stats.py
-│   ├── fill_omron_csv.py
-│   └── omron_loop.sh
+├── jobs/
+│   ├── garmin/
+│   │   └── fetch_garmin_steps.py
+│   └── omron/                  # jednorazowe i cykliczne skrypty
+│       ├── fetch_garmin_stats.py
+│       ├── fill_omron_csv.py
+│       └── omron_loop.sh
 ├── publishers/
+│   ├── garmin/publish_kroki_to_mqtt_daemon.py
 │   ├── miscale/publish_miscale_to_mqtt_daemon.py
 │   └── omron/
 │       ├── publish_garmin_to_mqtt_daemon.py
@@ -96,13 +108,13 @@ Edytuj `external/export2garmin/user/export2garmin.cfg` zgodnie z instrukcją pro
 ```bash
 cp systemd/*.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable export2garmin miscale-mqtt omron_sync omron-mqtt garmin_monitor garmin-mqtt
+systemctl enable export2garmin miscale-mqtt omron_sync omron-mqtt garmin_monitor garmin-mqtt kroki-mqtt
 ```
 
 ### 6. Start
 
 ```bash
-systemctl start export2garmin miscale-mqtt omron_sync omron-mqtt garmin_monitor garmin-mqtt
+systemctl start export2garmin miscale-mqtt omron_sync omron-mqtt garmin_monitor garmin-mqtt kroki-mqtt
 ```
 
 ---
@@ -115,7 +127,7 @@ systemctl start export2garmin miscale-mqtt omron_sync omron-mqtt garmin_monitor 
 # alias: restartha
 systemctl daemon-reload
 rm -rf /root/ha-project/external/export2garmin/user/tmp/*
-systemctl restart export2garmin garmin_monitor garmin-mqtt miscale-mqtt omron_sync omron-mqtt
+systemctl restart export2garmin garmin_monitor garmin-mqtt kroki-mqtt miscale-mqtt omron_sync omron-mqtt
 ```
 
 ### Sprawdzenie statusu
@@ -124,10 +136,18 @@ systemctl restart export2garmin garmin_monitor garmin-mqtt miscale-mqtt omron_sy
 systemctl status export2garmin
 systemctl status garmin_monitor
 systemctl status garmin-mqtt
+systemctl status kroki-mqtt
 systemctl status miscale-mqtt
 systemctl status omron_sync
 systemctl status omron-mqtt
 cat /root/ha-project/health/*
+```
+
+### Backfill kroków (ręcznie)
+
+```bash
+/root/ha-project/external/export2garmin/venv/bin/python \
+  /root/ha-project/jobs/garmin/fetch_garmin_steps.py --days 400
 ```
 
 ---
@@ -150,16 +170,16 @@ git push
 ### Live — wszystkie usługi
 
 ```bash
-journalctl -u export2garmin -u garmin_monitor -u garmin-mqtt \
+journalctl -u export2garmin -u garmin_monitor -u garmin-mqtt -u kroki-mqtt \
            -u miscale-mqtt -u omron_sync -u omron-mqtt \
            -f -o short-iso --no-hostname | \
 sed -E '
 s/bash\[[0-9]+\]: //g;
-s/(export2garmin|garmin_monitor|garmin-mqtt)/\x1b[95m\1\x1b[0m/g;
+s/(export2garmin|garmin_monitor|garmin-mqtt|kroki-mqtt)/\x1b[95m\1\x1b[0m/g;
 s/(miscale-mqtt)/\x1b[92m\1\x1b[0m/g;
 s/(omron_sync)/\x1b[93m\1\x1b[0m/g;
 s/(omron-mqtt)/\x1b[91m\1\x1b[0m/g;
-s/(ERROR)/\x1b[31m\1\x1b[0m/g;
+s/(ERROR|BŁĄD|ROZBIEŻNOŚĆ)/\x1b[31m\1\x1b[0m/g;
 s/(WARN)/\x1b[33m\1\x1b[0m/g;
 s/(Downloaded|Device|successfully|SUKCES|NEW)/\x1b[92m\1\x1b[0m/g;
 s/(DEBUG)/\x1b[36m\1\x1b[0m/g;
@@ -174,7 +194,7 @@ s/(START CYKLU|Cykl zakończony)/\x1b[1;37m\1\x1b[0m/g;
 |---|---|
 | `jmiscale` | export2garmin + miscale-mqtt |
 | `jomron` | export2garmin + omron_sync + omron-mqtt |
-| `jgarmin` | garmin_monitor + garmin-mqtt |
+| `jgarmin` | garmin_monitor + garmin-mqtt + kroki-mqtt |
 | `jmiscale-live` | j.w. w trybie `-f` |
 | `jomron-live` | j.w. w trybie `-f` |
 | `jgarmin-live` | j.w. w trybie `-f` |
@@ -200,11 +220,11 @@ s/(START CYKLU|Cykl zakończony)/\x1b[1;37m\1\x1b[0m/g;
 #### jgarmin
 
 ```bash
-journalctl -u garmin_monitor -u garmin-mqtt -n 50 -o short-iso --no-hostname | \
+journalctl -u garmin_monitor -u garmin-mqtt -u kroki-mqtt -n 50 -o short-iso --no-hostname | \
 sed -E '
 s/bash\[[0-9]+\]: //g;
-s/(garmin_monitor|garmin-mqtt)/\x1b[95m\1\x1b[0m/g;
-s/(ERROR)/\x1b[31m\1\x1b[0m/g;
+s/(garmin_monitor|garmin-mqtt|kroki-mqtt)/\x1b[95m\1\x1b[0m/g;
+s/(ERROR|BŁĄD|ROZBIEŻNOŚĆ)/\x1b[31m\1\x1b[0m/g;
 s/(WARN)/\x1b[33m\1\x1b[0m/g;
 s/(SUKCES|NEW)/\x1b[92m\1\x1b[0m/g;
 s/(DEBUG)/\x1b[36m\1\x1b[0m/g;
@@ -235,8 +255,8 @@ s/(Downloaded|successfully|NEW)/\x1b[92m\1\x1b[0m/g;
 ### Waga (Xiaomi S400)
 
 ```bash
-mosquitto_pub -h 192.168.1.41 -u fear -P '***' -t "hubert/scale_s400/history" -r -n
-mosquitto_pub -h 192.168.1.41 -u fear -P '***' -t "hubert/scale_s400/state"   -r -n
+mosquitto_pub -h 192.168.1.41 -u f... -P '***' -t "hubert/scale_s400/history" -r -n
+mosquitto_pub -h 192.168.1.41 -u f... -P '***' -t "hubert/scale_s400/state"   -r -n
 systemctl restart miscale-mqtt
 ```
 
@@ -248,6 +268,14 @@ mosquitto_pub -h 192.168.1.41 -u user -P '***' -t "hubert/omron_m4/state"   -r -
 systemctl restart omron-mqtt
 ```
 
+### Kroki (Garmin)
+
+```bash
+mosquitto_pub -h 192.168.1.41 -u f... -P '***' -t "homeassistant/sensor/kroki_history/attributes" -r -n
+mosquitto_pub -h 192.168.1.41 -u f... -P '***' -t "homeassistant/sensor/kroki_history/state"      -r -n
+systemctl restart kroki-mqtt
+```
+
 ---
 
 ## 📊 Home Assistant — dashboard
@@ -255,6 +283,7 @@ systemctl restart omron-mqtt
 - Karta: `custom:flex-table-card`
 - Dane z MQTT (`rows`)
 - Statusy ciśnienia: S0–S3
+- Kroki: łącznie / z aktywności / poza aktywnościami + dystans i czas
 - Sticky headers + scroll, brak zawijania danych
 
 ---
@@ -267,6 +296,7 @@ systemctl restart omron-mqtt
 | ✅ MQTT retained + init publish | Wymagane dla HA po restarcie |
 | ✅ CSV jako centralny storage | HA = wizualizacja, MQTT = transport |
 | ✅ Python venv | Izolacja zależności od systemu |
+| ✅ Kroki: `max(0, dzienne − aktywności)` | Running Dynamics Pod liczy więcej niż nadgarstek; job zapisuje surowe liczby, dashboard przycina |
 
 ---
 
@@ -276,6 +306,10 @@ systemctl restart omron-mqtt
 |---|---|
 | `user/miscale_backup.csv` | Historia pomiarów wagi |
 | `user/omron_backup.csv` | Historia pomiarów ciśnienia |
+| `user/garmin_stats.csv` | Historia stresu / body battery / snu |
+| `user/kroki.csv` | Historia kroków dziennych (1 wiersz = 1 dzień) |
 | `health/miscale.json` | Bieżący odczyt — waga |
 | `health/omron.json` | Bieżący odczyt — ciśnienie |
 | `health/garmin.json` | Bieżący odczyt — Garmin |
+| `health/kroki.json` | Stan jobu pobierającego kroki |
+| `health/kroki_mqtt.json` | Stan publishera kroków |

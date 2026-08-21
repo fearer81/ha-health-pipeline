@@ -1,5 +1,5 @@
 - id: '1724313766518'
-  alias: Pokój ON 20:25 - 00:30
+  alias: Pokój ON 20:00 - 00:30
   description: ''
   triggers:
   - type: occupied
@@ -7,17 +7,11 @@
     entity_id: a7a1603fa9734c9a390584ac02273592
     domain: binary_sensor
     trigger: device
-  - type: motion
-    device_id: d0a7ff6b543280e60bd2f13df3398f72
-    entity_id: d7c357a3bf89a16481345fee4c499adf
-    domain: binary_sensor
-    trigger: device
-    enabled: false
   conditions:
   - condition: and
     conditions:
     - condition: time
-      after: '20:25:00'
+      after: '20:00:00'
       before: 00:30:00
       weekday:
       - mon
@@ -64,16 +58,6 @@
       minutes: 9
       seconds: 45
     trigger: device
-  - type: no_motion
-    device_id: d0a7ff6b543280e60bd2f13df3398f72
-    entity_id: d7c357a3bf89a16481345fee4c499adf
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 9
-      seconds: 45
-    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -191,7 +175,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 20:25 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 20:00 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -212,7 +196,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -233,7 +217,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -253,7 +237,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -307,7 +291,7 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 20:25 - 23:00 (Weekend 02:00)
+  alias: Salon ON 20:00 - 23:00 (Weekend 02:00)
   description: ''
   triggers:
   - type: occupied
@@ -315,12 +299,6 @@
     entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
     domain: binary_sensor
     trigger: device
-  - type: motion
-    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
-    entity_id: 8a0c3268cd39728337bcb973317fa5da
-    domain: binary_sensor
-    trigger: device
-    enabled: false
   conditions:
   - condition: and
     conditions:
@@ -329,7 +307,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:25:00'
+          after: '20:00:00'
           before: '23:00:00'
           weekday:
           - sun
@@ -340,7 +318,7 @@
       - condition: and
         conditions:
         - condition: time
-          after: '20:25:00'
+          after: '20:00:00'
           weekday:
           - fri
           - sat
@@ -389,16 +367,6 @@
       minutes: 6
       seconds: 45
     trigger: device
-  - type: no_motion
-    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
-    entity_id: 8a0c3268cd39728337bcb973317fa5da
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 6
-      seconds: 45
-    enabled: false
   conditions:
   - condition: and
     conditions:
@@ -491,15 +459,16 @@
   alias: Kamera REC ON
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.kamera_motion_alarm
-    to:
-    - 'off'
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
+  - trigger: zone.left
+    target:
+      entity_id: person.hubert
+    options:
+      behavior: each
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      zone: zone.home
   conditions: []
   actions:
   - action: automation.turn_on
@@ -557,22 +526,12 @@
       - parallel:
         - action: script.lgtv_picture_mode
           data:
-            picture_mode: expert2
+            picture_mode: filmMaker
         - target:
             entity_id: automation.lg_off_23_00_071h
           data:
             skip_condition: true
           action: automation.trigger
-        - sequence:
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 250
-            enabled: true
-          - action: script.lg_tv_wylacz_ekran
-            data: {}
-            enabled: false
         - target:
             device_id:
             - 89f70f1df25e47c9084e6cbdc04db268
@@ -595,6 +554,11 @@
           target:
             device_id: 8cebb71e415e431ddada2cac66240610
           data: {}
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.lgtv_film_mode_set
+        data: {}
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == ''double'' }}'
@@ -608,16 +572,6 @@
           data:
             skip_condition: true
           action: automation.trigger
-        - sequence:
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 250
-            enabled: true
-          - action: script.lg_tv_wylacz_ekran
-            data: {}
-            enabled: false
         - target:
             device_id:
             - 89f70f1df25e47c9084e6cbdc04db268
@@ -640,6 +594,10 @@
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
+        - target:
+            entity_id: input_boolean.lgtv_film_mode_set
+          action: input_boolean.turn_off
+          data: {}
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == ''hold'' }}'
@@ -684,10 +642,10 @@
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
-  - target:
-      entity_id: input_boolean.lgtv_film_mode_set
-    action: input_boolean.turn_off
-    data: {}
+        - target:
+            entity_id: input_boolean.lgtv_film_mode_set
+          action: input_boolean.turn_off
+          data: {}
   mode: restart
 - id: '1725632338648'
   alias: Kamera REC2
@@ -695,22 +653,32 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.kamera2_motion_alarm
+    - binary_sensor.kamera2_motion
     to:
     - 'on'
+    enabled: true
+  - trigger: occupancy.detected
+    target:
+      entity_id: binary_sensor.czujnik_kuchnia_occupancy
+    options:
+      behavior: each
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
   conditions: []
   actions:
   - data:
-      duration: 60
+      duration: 30
       filename: /media/K2_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
-      lookback: 5
+      lookback: 2
     target:
-      entity_id: camera.kamera2_profile_0
+      entity_id: camera.kuchnia_kamera2
     action: camera.record
   - delay:
       hours: 0
-      minutes: 0
-      seconds: 15
+      minutes: 1
+      seconds: 0
       milliseconds: 0
   - data:
       stop_actions: true
@@ -723,15 +691,16 @@
   alias: Kamera2 REC ON
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.kamera2_motion_alarm
-    to:
-    - 'off'
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
+  - trigger: zone.left
+    target:
+      entity_id: person.hubert
+    options:
+      behavior: each
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      zone: zone.home
   conditions: []
   actions:
   - action: automation.turn_on
@@ -761,7 +730,7 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
@@ -960,7 +929,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 20:25 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 20:00 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -968,16 +937,6 @@
     entity_id: a0ee0b90899607043991272bc0f0c2e8
     domain: binary_sensor
     trigger: device
-  - type: motion
-    device_id: b8d8aa05fc925818d65590ba9f4c1f97
-    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
-    domain: binary_sensor
-    trigger: device
-    enabled: false
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 3
   conditions:
   - condition: state
     entity_id: input_boolean.kuchnia_manual
@@ -998,7 +957,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -1018,7 +977,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -1038,7 +997,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:25:00'
+        after: '20:00:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1089,16 +1048,6 @@
       hours: 0
       minutes: 0
       seconds: 35
-  - type: no_motion
-    device_id: b8d8aa05fc925818d65590ba9f4c1f97
-    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 25
-    enabled: false
   conditions:
   - condition: and
     conditions:
@@ -1143,7 +1092,13 @@
   - at: 05:00:00
     id: off_trigger
     trigger: time
-  - at: 05:05:00
+  - at: 05:02:00
+    id: on_trigger
+    trigger: time
+  - at: 05:03:00
+    id: off_trigger
+    trigger: time
+  - at: 05:04:00
     id: on_trigger
     trigger: time
   conditions: []
@@ -1152,12 +1107,6 @@
     - conditions:
       - condition: trigger
         id: off_trigger
-      - condition: time
-        weekday:
-        - mon
-        - wed
-        - fri
-        - sun
       - condition: device
         type: is_on
         device_id: 8f2c9f3cefdfce343bf8c8b0bde912a3
@@ -1439,16 +1388,6 @@
       hours: 0
       minutes: 10
       seconds: 0
-  - type: no_motion
-    device_id: b8d8aa05fc925818d65590ba9f4c1f97
-    entity_id: fd8f6d0e4f6ebda8ca53a3bf2984e5d9
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
-    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -1499,16 +1438,6 @@
       hours: 0
       minutes: 10
       seconds: 0
-  - type: no_motion
-    device_id: d0a7ff6b543280e60bd2f13df3398f72
-    entity_id: d7c357a3bf89a16481345fee4c499adf
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
-    enabled: true
   conditions:
   - condition: and
     conditions:
@@ -1542,15 +1471,6 @@
   - type: not_occupied
     device_id: 499116c5d163d2646cf98ddcde70d6e7
     entity_id: 367cb132a5b2ae6905eebbc7b1867ff4
-    domain: binary_sensor
-    trigger: device
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
-  - type: no_motion
-    device_id: edc1f3bca0bdbbfd66e395530dfd17cb
-    entity_id: 8a0c3268cd39728337bcb973317fa5da
     domain: binary_sensor
     trigger: device
     for:
@@ -1653,6 +1573,9 @@
         seconds: 0
         milliseconds: 0
       enabled: true
+    - action: script.lgtv_picture_mode
+      data:
+        picture_mode: filmMaker
     - action: media_player.turn_off
       metadata: {}
       data: {}
@@ -1988,22 +1911,28 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.kamera_motion_alarm
+    - binary_sensor.kamera_motion
     to:
     - 'on'
+  - trigger: occupancy.detected
+    target:
+      entity_id: binary_sensor.czujnik_salon_occupancy
+    options:
+      behavior: each
+      for: 00:00:00
   conditions: []
   actions:
   - data:
       filename: /media/K1_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
-      duration: 60
-      lookback: 5
+      duration: 30
+      lookback: 2
     target:
-      entity_id: camera.kamera_profile_0
+      entity_id: camera.salon_kamera
     action: camera.record
   - delay:
       hours: 0
-      minutes: 0
-      seconds: 15
+      minutes: 1
+      seconds: 0
       milliseconds: 0
   - data:
       stop_actions: true
@@ -2176,8 +2105,8 @@
   conditions: []
   actions:
   - delay:
-      hours: 3
-      minutes: 40
+      hours: 4
+      minutes: 15
       seconds: 0
       milliseconds: 0
   - device_id: 8d15be71266bd86a527be15fc39ac3ec
@@ -2424,15 +2353,16 @@
   alias: Kamera3 REC ON
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.kamera3_motion_alarm
-    to:
-    - 'off'
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
+  - trigger: zone.left
+    target:
+      entity_id: person.hubert
+    options:
+      behavior: each
+      for:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      zone: zone.home
   conditions: []
   actions:
   - action: automation.turn_on
@@ -2447,22 +2377,28 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.kamera3_motion_alarm
+    - binary_sensor.kamera3_motion
     to:
     - 'on'
+  - trigger: occupancy.detected
+    target:
+      entity_id: binary_sensor.czujnik_pokoj_occupancy
+    options:
+      behavior: each
+      for: 00:00:00
   conditions: []
   actions:
   - data:
       filename: /media/K3_{{ now().strftime('%Y%m%d-%H%M%S') }}.mp4
-      duration: 60
-      lookback: 5
+      duration: 30
+      lookback: 2
     target:
-      entity_id: camera.kamera3_profile_0
+      entity_id: camera.pokoj_kamera3
     action: camera.record
   - delay:
       hours: 0
-      minutes: 0
-      seconds: 15
+      minutes: 1
+      seconds: 0
       milliseconds: 0
   - data:
       stop_actions: true
@@ -2537,9 +2473,9 @@
   mode: single
 - id: '1784810174807'
   alias: Klimatyzacja
-  description: Bosch Cool 5000 (monoblok, SmartIR/Broadlink). COOL, DRY, OFF z progami
-    z input_number. Włączanie tylko przy obecności, wyłączanie zawsze. Retransmisja
-    IR gdy chłodzenie nie daje efektu.
+  description: Bosch Cool 5000 (monoblok, SmartIR/Broadlink). Tryb AUTO z modulacją
+    inwertera - klima sama dobiera obroty. Praca ciągła 08:00-23:30, bez cyklowania.
+    Włączanie tylko przy obecności, wyłączanie zawsze.
   triggers:
   - trigger: time_pattern
     minutes: /15
@@ -2555,26 +2491,10 @@
   - trigger: numeric_state
     entity_id:
     - sensor.termometr_temperature
-    above: sensor.klima_prog_cool_start_noc
-    for:
-      minutes: 2
-    id: high_temp_noc
-    enabled: false
-  - trigger: numeric_state
-    entity_id:
-    - sensor.termometr_temperature
     below: sensor.klima_prog_cool_stop
     for:
       minutes: 2
     id: comfort_temp
-  - trigger: numeric_state
-    entity_id:
-    - sensor.termometr_temperature
-    below: sensor.klima_prog_cool_stop_noc
-    for:
-      minutes: 2
-    id: comfort_temp_noc
-    enabled: false
   - trigger: numeric_state
     entity_id: sensor.termometr_humidity
     above: sensor.klima_prog_dry_start
@@ -2593,17 +2513,15 @@
     zone: zone.home
     event: leave
     id: wyjazd
+    enabled: false
   - trigger: zone
     entity_id: person.hubert
     zone: zone.home
     event: enter
     id: powrot
   - trigger: time
-    at: 07:00:00
-    id: dzien
-  - trigger: time
     at: '23:30:00'
-    id: noc
+    id: koniec
   conditions:
   - alias: Czujniki i klimatyzator odpowiadają
     condition: not
@@ -2625,28 +2543,6 @@
       - unknown
   actions:
   - choose:
-    - alias: Wyjazd - wyłącz klimę
-      conditions:
-      - condition: trigger
-        id: wyjazd
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: climate.klimatyzator
-          state: 'off'
-      sequence:
-      - action: climate.set_hvac_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          hvac_mode: 'off'
-      - action: notify.send_message
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          title: "\U0001F6AA Wyjazd - wyłączono KLIMĘ"
-          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
-            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
     - alias: Retransmisja IR - chłodzi bez efektu
       conditions:
       - condition: trigger
@@ -2654,62 +2550,47 @@
       - condition: state
         entity_id: climate.klimatyzator
         state:
-        - cool
         - auto
+        - cool
         for:
           minutes: 30
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        above: input_number.klima_cool_stop
+        above: input_number.klima_cool_start
       sequence:
       - action: script.turn_on
         target:
           entity_id: script.klimatyzator_wyslij_ponownie
         enabled: true
         data: {}
-    - alias: Nastał dzień - przywróć moc
-      conditions:
-      - condition: trigger
-        id: dzien
-      - condition: state
-        entity_id: climate.klimatyzator
-        state: cool
-      - alias: Jestem w domu
-        condition: and
-        conditions:
-        - condition: zone.in_zone
-          target:
-            entity_id: person.hubert
-          options:
-            for:
-              hours: 0
-              minutes: 3
-              seconds: 0
-            zone: zone.home
-        - condition: template
-          value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'',
-            ''gps_accuracy'') %} {{ acc is not none and acc < 100 }}
-
-            '
-      sequence:
-      - action: climate.set_temperature
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          temperature: 18
-          hvac_mode: cool
-      - delay:
-          seconds: 1
-      - action: climate.set_fan_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          fan_mode: high
-        enabled: true
-    - alias: Chłodzenie - dzień
+    - alias: Wietrzenie zamiast klimy
       conditions:
       - condition: time
         after: 07:00:00
+        before: '23:30:00'
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        above: sensor.klima_prog_cool_start
+      - alias: Na zewnątrz wyraźnie chłodniej
+        condition: numeric_state
+        entity_id: sensor.delta_klima
+        below: -2
+      sequence:
+      - alias: Powiadom tylko przy przekroczeniu progu, nie co 15 min
+        condition: trigger
+        id: high_temp
+      - action: notify.send_message
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
+          title: "\U0001FA9F Otwórz okno zamiast chłodzić"
+          message: Na zewnątrz {{ states('sensor.temperatura_zewnetrzna') }}°C, w
+            środku {{ states('sensor.termometr_temperature') }}°C. Wietrzenie schłodzi
+            szybciej i za darmo.
+    - alias: Chłodzenie AUTO
+      conditions:
+      - condition: time
+        after: 08:00:00
         before: '23:30:00'
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
@@ -2718,7 +2599,9 @@
         conditions:
         - condition: state
           entity_id: climate.klimatyzator
-          state: cool
+          state:
+          - auto
+          - cool
       - alias: Jestem w domu
         condition: and
         conditions:
@@ -2741,51 +2624,15 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 17
-          hvac_mode: cool
-      - delay:
-          seconds: 1
-      - action: climate.set_fan_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          fan_mode: high
-        enabled: true
+          temperature: 20
+          hvac_mode: auto
       - action: notify.send_message
         target:
           entity_id: notify.xiaomihmi15
         data:
-          title: ❄️ Włączono COOL
+          title: ❄️ Włączono AUTO 20°C
           message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
             Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
-    - alias: Wyłączenie - dzień
-      conditions:
-      - condition: time
-        after: 07:00:00
-        before: '23:30:00'
-      - condition: numeric_state
-        entity_id: sensor.termometr_temperature
-        below: sensor.klima_prog_cool_stop
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: climate.klimatyzator
-          state: 'off'
-      sequence:
-      - action: climate.set_hvac_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          hvac_mode: 'off'
-        enabled: true
-      - action: notify.send_message
-        target:
-          entity_id: notify.xiaomihmi15
-        data:
-          title: ✅ Wyłączono KLIMĘ
-          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
-            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
-        enabled: true
     - alias: Osuszanie
       conditions:
       - condition: time
@@ -2793,7 +2640,7 @@
         before: '23:30:00'
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        below: sensor.klima_prog_cool_stop
+        below: sensor.klima_prog_cool_start
       - condition: numeric_state
         entity_id: sensor.termometr_humidity
         above: sensor.klima_prog_dry_start
@@ -2832,7 +2679,25 @@
           title: "\U0001F4A7 Włączono DRY"
           message: 'Wilgotność: {{ states(''sensor.termometr_humidity'') }}% Temperatura:
             {{ states(''sensor.termometr_temperature'') }}°C'
-    - alias: Wyłączenie - Koniec osuszania
+    - alias: Koniec osuszania - wróć do AUTO
+      conditions:
+      - condition: state
+        entity_id: climate.klimatyzator
+        state: dry
+      - condition: numeric_state
+        entity_id: sensor.termometr_humidity
+        below: sensor.klima_prog_dry_stop
+      - condition: numeric_state
+        entity_id: sensor.termometr_temperature
+        above: sensor.klima_prog_cool_stop
+      sequence:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          temperature: 22
+          hvac_mode: auto
+    - alias: Koniec osuszania - wyłącz
       conditions:
       - condition: state
         entity_id: climate.klimatyzator
@@ -2846,87 +2711,11 @@
           entity_id: climate.klimatyzator
         data:
           hvac_mode: 'off'
-    - alias: Nastała noc - wycisz chłodzenie
+    - alias: Wyłączenie - zrobiło się chłodno
       conditions:
-      - condition: trigger
-        id: noc
-      - condition: state
-        entity_id: climate.klimatyzator
-        state:
-        - cool
-        - auto
-      sequence:
-      - action: climate.set_temperature
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          temperature: 23
-          hvac_mode: cool
-        enabled: true
-      - delay:
-          seconds: 1
-        enabled: true
-      - action: climate.set_fan_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          fan_mode: quiet
-        enabled: true
-    - alias: Chłodzenie - noc
-      conditions:
-      - condition: time
-        after: '23:30:00'
-        before: 07:00:00
       - condition: numeric_state
         entity_id: sensor.termometr_temperature
-        above: sensor.klima_prog_cool_start_noc
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: climate.klimatyzator
-          state: cool
-      - alias: Jestem w domu
-        condition: and
-        conditions:
-        - condition: zone.in_zone
-          target:
-            entity_id: person.hubert
-          options:
-            for:
-              hours: 0
-              minutes: 3
-              seconds: 0
-            zone: zone.home
-        - condition: template
-          value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'',
-            ''gps_accuracy'') %} {{ acc is not none and acc < 100 }}
-
-            '
-      sequence:
-      - action: climate.set_temperature
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          temperature: 23
-          hvac_mode: cool
-        enabled: false
-      - delay:
-          seconds: 1
-        enabled: false
-      - action: climate.set_fan_mode
-        target:
-          entity_id: climate.klimatyzator
-        data:
-          fan_mode: sleep
-        enabled: false
-    - alias: Wyłączenie - noc
-      conditions:
-      - condition: time
-        after: '23:30:00'
-        before: 07:00:00
-      - condition: numeric_state
-        entity_id: sensor.termometr_temperature
-        below: sensor.klima_prog_cool_stop_noc
+        below: sensor.klima_prog_cool_stop
       - condition: not
         conditions:
         - condition: state
@@ -2938,6 +2727,59 @@
           entity_id: climate.klimatyzator
         data:
           hvac_mode: 'off'
+      - action: notify.send_message
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
+          title: ✅ Wyłączono KLIMĘ
+          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
+            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
+    - alias: Wyjazd - wyłącz klimę
+      conditions:
+      - condition: trigger
+        id: wyjazd
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: 'off'
+      sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: 'off'
+        enabled: true
+      - action: notify.send_message
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
+          title: "\U0001F6AA Wyjazd - wyłączono KLIMĘ"
+          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
+            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
+        enabled: true
+    - alias: Koniec dnia 23:30 - wyłącz klimę
+      conditions:
+      - condition: trigger
+        id: koniec
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: climate.klimatyzator
+          state: 'off'
+      sequence:
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: climate.klimatyzator
+        data:
+          hvac_mode: 'off'
+      - action: notify.send_message
+        target:
+          entity_id: notify.xiaomihmi15
+        data:
+          title: "\U0001F319 23:30 - wyłączono KLIMĘ"
+          message: 'Temperatura: {{ states(''sensor.termometr_temperature'') }}°C
+            Wilgotność: {{ states(''sensor.termometr_humidity'') }}%'
   mode: queued
   max: 5
   max_exceeded: silent

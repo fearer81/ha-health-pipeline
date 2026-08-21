@@ -1,0 +1,25 @@
+[Unit]
+Description=Publish Garmin kroki -> MQTT (HA discovery)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+Environment=KROKI_CSV=/root/ha-project/external/export2garmin/user/kroki.csv
+WorkingDirectory=/root/ha-project/publishers/garmin
+ExecStart=/root/ha-project/external/export2garmin/venv/bin/python -u /root/ha-project/publishers/garmin/publish_kroki_to_mqtt_daemon.py
+Restart=always
+RestartSec=10
+
+TimeoutStopSec=5s
+KillMode=mixed
+
+StandardOutput=journal
+StandardError=journal
+
+EnvironmentFile=-/etc/default/kroki-mqtt
+
+[Install]
+WantedBy=multi-user.target

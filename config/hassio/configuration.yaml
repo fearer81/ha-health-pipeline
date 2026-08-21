@@ -124,18 +124,6 @@ template:
         availability: "{{ states('input_number.klima_cool_stop') | is_number }}"
         state: "{{ (states('input_number.klima_cool_stop') | float + 0.1) | round(1) }}"
 
-      - name: Klima próg COOL start noc
-        unique_id: klima_prog_cool_start_noc
-        unit_of_measurement: "°C"
-        availability: "{{ states('input_number.klima_cool_start_noc') | is_number }}"
-        state: "{{ (states('input_number.klima_cool_start_noc') | float - 0.1) | round(1) }}"
-
-      - name: Klima próg COOL stop noc
-        unique_id: klima_prog_cool_stop_noc
-        unit_of_measurement: "°C"
-        availability: "{{ states('input_number.klima_cool_stop_noc') | is_number }}"
-        state: "{{ (states('input_number.klima_cool_stop_noc') | float + 0.1) | round(1) }}"
-
       - name: Klima próg DRY start
         unique_id: klima_prog_dry_start
         unit_of_measurement: "%"
@@ -147,6 +135,26 @@ template:
         unit_of_measurement: "%"
         availability: "{{ states('input_number.klima_dry_stop') | is_number }}"
         state: "{{ (states('input_number.klima_dry_stop') | float + 0.1) | round(1) }}"
+        
+      - name: Temperatura zewnętrzna
+        unique_id: temperatura_zewnetrzna
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        availability: >-
+          {{ state_attr('weather.forecast_home', 'temperature') is not none }}
+        state: "{{ state_attr('weather.forecast_home', 'temperature') | float }}"
+
+      - name: Delta klima
+        unique_id: delta_klima
+        unit_of_measurement: "°C"
+        state_class: measurement
+        availability: >-
+          {{ states('sensor.termometr_temperature') | is_number
+             and state_attr('weather.forecast_home', 'temperature') is not none }}
+        state: >-
+          {{ ((state_attr('weather.forecast_home', 'temperature') | float)
+              - (states('sensor.termometr_temperature') | float)) | round(1) }}        
 
 # WIATRAK
   - fan:

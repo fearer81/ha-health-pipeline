@@ -228,7 +228,7 @@ views:
               columns: 6
               rows: 1
           - show_current: true
-            show_forecast: true
+            show_forecast: false
             type: weather-forecast
             entity: weather.forecast_home
             forecast_type: daily
@@ -254,8 +254,6 @@ views:
             hours_to_show: 1
             title: Geolocation 8h
             logarithmic_scale: false
-      - type: grid
-        cards:
           - type: tile
             entity: sensor.termometr_temperature
             name:
@@ -689,6 +687,8 @@ views:
             entity: input_number.klima_dry_start
           - type: tile
             entity: input_number.klima_dry_stop
+      - type: grid
+        cards:
           - type: grid
             square: false
             columns: 1
@@ -727,8 +727,6 @@ views:
               - entity: media_player.lg_tv
             title: Salon
             state_color: true
-      - type: grid
-        cards:
           - type: entities
             entities:
               - entity: switch.kuchnia_left
@@ -746,6 +744,129 @@ views:
                     secondary_info: last-changed
                 title: Sypialnia
                 state_color: true
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.omron_m4_history
+            columns:
+              - name: 🕒<br><small>Data i Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    let t = String(x.time);
+                    if (t.includes('-')) {
+                      let p = t.split(' ');
+                      let d = p[0].split('-');
+                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
+                    }
+                    return t.replace('.2026', '');
+                  })()
+              - name: 🩺<br><small>Ciśnienie</small>
+                data: rows
+                modify: >-
+                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
+                  mmHg','') : '---')
+                align: center
+              - name: 🚦<br><small>S0-3</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]); var d = parseInt(p[1]);
+                    if (s >= 180 || d >= 110) return '⛔ S3';
+                    if (s >= 160 || d >= 100) return '🔴 S2';
+                    if (s >= 140 || d >=  90) return '🟠 S1';
+                    if (s >= 130 || d >=  85) return '🟡WPr';
+                    if (s >= 120 || d >=  80) return '🔵Pra';
+                    if (s <   90 || d <   60) return '🟣Hip';
+                    return '🟢Opt';
+                  })()
+                align: center
+              - name: 💢<br><small>Ro-Sk</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    if (!x.pressure) return '---';
+                    var p = x.pressure.split('/');
+                    var s = parseInt(p[0]);
+                    var d = parseInt(p[1]);
+                    var pp = s - d;
+                    if (pp >= 60) return pp + '🔴';
+                    if (pp >= 50) return pp + '🟡';
+                    if (pp >= 40) return pp + '🟢';
+                    return pp + '💚';
+                  })()
+                align: center
+              - name: ❤️<br><small>Tętno</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    // Priorytet: puls z Omrona (pomiar mankietowy)
+                    if (x.pulse) return x.pulse.replace(' bpm','');
+                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr ? closest.rhr + '⌚' : '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 💤<br><small>T.Spoczyn.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
+                      const gRows = gHist.attributes.rows;
+                      const omronTime = new Date(x.ts * 1000).getTime();
+                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
+                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
+                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
+                      return closest.rhr || '---';
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 100% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
+      - type: grid
+        cards:
           - show_name: true
             show_icon: true
             type: button
@@ -981,12 +1102,13 @@ views:
                     if (!x.pressure) return '---';
                     var p = x.pressure.split('/');
                     var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔S3';
-                    if (s >= 160 || d >= 100) return '🔴S2';
-                    if (s >= 140 || d >=  90) return '🟠S1';
-                    if (s >= 130 || d >=  85) return '🟡S0';
-                    if (s >= 120 || d >=  80) return '🔵Pr';
-                    return '🟢 Pr';
+                    if (s >= 180 || d >= 110) return '⛔ S3';
+                    if (s >= 160 || d >= 100) return '🔴 S2';
+                    if (s >= 140 || d >=  90) return '🟠 S1';
+                    if (s >= 130 || d >=  85) return '🟡WPr';
+                    if (s >= 120 || d >=  80) return '🔵Pra';
+                    if (s <   90 || d <   60) return '🟣Hip';
+                    return '🟢Opt';
                   })()
                 align: center
               - name: 💢<br>P.Pres
@@ -1230,14 +1352,103 @@ views:
                   background: var(--card-background-color);
                   z-index: 10;
                 }
+          - type: custom:flex-table-card
+            sort_by: ts-
+            entities:
+              include:
+                - sensor.garmin_kroki_historia
+            columns:
+              - name: 🕒<br><small>Data</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    try {
+                      const d = String(x.data).split('-');
+                      return d[2] + '.' + d[1];
+                    } catch(e) { return '---'; }
+                  })()
+                align: center
+              - name: 🏃<br><small>Aktywność</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const a = parseInt(x.aktywnosci, 10);
+                    const k = parseInt(x.kroki, 10);
+                    if (isNaN(a)) { return '---'; }
+                    if (a === 0) { return '-'; }
+                    const txt = a.toLocaleString('pl-PL');
+                    return (a > k) ? txt : txt;
+                  })()
+                align: center
+              - name: 🚶<br><small>Poza akt.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const p = parseInt(x.poza, 10);
+                    return isNaN(p) ? '---' : p.toLocaleString('pl-PL');
+                  })()
+                align: center
+              - name: 👣<br><small>Łącznie</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const v = parseInt(x.kroki, 10);
+                    return isNaN(v) ? '---' : v.toLocaleString('pl-PL');
+                  })()
+                align: center
+              - name: 📏<br><small>Dystans</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const d = parseFloat(x.dystans);
+                    return (d > 0) ? d.toFixed(2) : '-';
+                  })()
+                align: center
+              - name: ⏱️<br><small>Czas</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const c = String(x.czas);
+                    return (c === '00:00:00') ? '-' : c.substring(0, 5);
+                  })()
+                align: center
+            strict: true
+            clickable: false
+            card_mod:
+              style: |
+                ha-card {
+                  max-height: 333px;
+                  overflow-y: auto;
+                  font-size: 12px;
+                  user-select: text !important;
+                  -webkit-user-select: text !important;
+                }
+                ha-card table {
+                  width: 99% !important;
+                  border-collapse: collapse;
+                  table-layout: auto;
+                }
+                ha-card thead th {
+                  text-align: center;
+                  vertical-align: bottom;
+                  padding: 2px 2px !important;
+                  line-height: 1.1;
+                  font-weight: bold;
+                  position: sticky;
+                  top: 0;
+                  background: var(--card-background-color);
+                  z-index: 2;
+                }
+                ha-card td {
+                  padding: 1px 2px !important;
+                  white-space: nowrap !important;
+                }
+                ha-card td:first-child,
+                ha-card th:first-child {
+                  width: 1px;
+                }
       - type: grid
-        cards:
-          - type: tile
-            entity: input_number.klima_cool_start_noc
-            vertical: false
-            features_position: bottom
-          - type: tile
-            entity: input_number.klima_cool_stop_noc
+        cards: []
         visibility:
           - condition: state
             entity: sensor.status_blokady_garmin

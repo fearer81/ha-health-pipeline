@@ -1,0 +1,95 @@
+type: custom:flex-table-card
+sort_by: ts-
+entities:
+  include:
+    - sensor.garmin_kroki_historia
+columns:
+  - name: 🕒<br><small>Data</small>
+    data: rows
+    modify: |-
+      (function(){
+        try {
+          const d = String(x.data).split('-');
+          return d[2] + '.' + d[1];
+        } catch(e) { return '---'; }
+      })()
+    align: center
+  - name: 🏃<br><small>Aktywność</small>
+    data: rows
+    modify: |-
+      (function(){
+        const a = parseInt(x.aktywnosci, 10);
+        const k = parseInt(x.kroki, 10);
+        if (isNaN(a)) { return '---'; }
+        if (a === 0) { return '-'; }
+        const txt = a.toLocaleString('pl-PL');
+        return (a > k) ? txt : txt;
+      })()
+    align: center
+  - name: 🚶<br><small>Poza akt.</small>
+    data: rows
+    modify: |-
+      (function(){
+        const p = parseInt(x.poza, 10);
+        return isNaN(p) ? '---' : p.toLocaleString('pl-PL');
+      })()
+    align: center
+  - name: 👣<br><small>Łącznie</small>
+    data: rows
+    modify: |-
+      (function(){
+        const v = parseInt(x.kroki, 10);
+        return isNaN(v) ? '---' : v.toLocaleString('pl-PL');
+      })()
+    align: center
+  - name: 📏<br><small>Dystans</small>
+    data: rows
+    modify: |-
+      (function(){
+        const d = parseFloat(x.dystans);
+        return (d > 0) ? d.toFixed(2) : '-';
+      })()
+    align: center
+  - name: ⏱️<br><small>Czas</small>
+    data: rows
+    modify: |-
+      (function(){
+        const c = String(x.czas);
+        return (c === '00:00:00') ? '-' : c.substring(0, 5);
+      })()
+    align: center
+strict: true
+clickable: false
+card_mod:
+  style: |
+    ha-card {
+      max-height: 333px;
+      overflow-y: auto;
+      font-size: 12px;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+    ha-card table {
+      width: 99% !important;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+    ha-card thead th {
+      text-align: center;
+      vertical-align: bottom;
+      padding: 2px 2px !important;
+      line-height: 1.1;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      background: var(--card-background-color);
+      z-index: 2;
+    }
+    ha-card td {
+      padding: 1px 2px !important;
+      white-space: nowrap !important;
+    }
+    ha-card td:first-child,
+    ha-card th:first-child {
+      width: 1px;
+    }
