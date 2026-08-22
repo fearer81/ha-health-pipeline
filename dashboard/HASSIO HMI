@@ -1807,6 +1807,62 @@ views:
                 ha-card th:first-child {
                   width: 1px;
                 }
+          - type: custom:button-card
+            name: Eksport CSV
+            icon: mdi:file-download-outline
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const rows =
+                    hass.states['sensor.garmin_kroki_historia'].attributes.rows;
+
+                    const hdr = ['Data','Kroki akt.','Kroki poza','Kroki
+                    razem','Km akt.','Km poza','Km razem','Czas'];
+
+                    const num = (v) => (isNaN(parseFloat(v)) ? '' :
+                    parseFloat(v).toFixed(2).replace('.', ','));
+
+                    const lines = [hdr.join(';')];
+
+                    rows.forEach(r => {
+                      lines.push([
+                        r.data,
+                        r.aktywnosci,
+                        r.poza,
+                        Math.max(r.kroki, r.aktywnosci),
+                        num(r.dystans),
+                        num(r.poza_km),
+                        num(Math.max(r.dystans_dzienny, r.dystans)),
+                        r.czas
+                      ].join(';'));
+                    });
+
+                    const blob = new Blob(['\ufeff' + lines.join('\r\n')],
+                    {type: 'text/csv;charset=utf-8;'});
+
+                    const a = document.createElement('a');
+
+                    a.href = URL.createObjectURL(blob);
+
+                    a.download = 'kroki_' + new Date().toISOString().slice(0,10)
+                    + '.csv';
+
+                    document.body.appendChild(a);
+
+                    a.click();
+
+                    document.body.removeChild(a);
+
+                    URL.revokeObjectURL(a.href);
       - type: grid
         cards:
           - type: entities
