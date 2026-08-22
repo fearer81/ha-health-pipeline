@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Pobiera kroki z Garmina (przez fetch_garmin_steps.py) i publikuje do MQTT.
-
-Sensory:
-  sensor.kroki_historia          - stan = data ostatniego dnia, atrybut rows[]
-  sensor.kroki_dzis
-  sensor.kroki_z_aktywnosci_dzis
-  sensor.dystans_dzis
-  sensor.czas_aktywnosci_dzis
-"""
+"""Pobiera kroki z Garmina (fetch_garmin_steps.py) i publikuje do MQTT."""
 
 import os
 import csv
@@ -30,8 +21,8 @@ MQTT_USER = os.getenv("MQTT_USER", "fear")
 MQTT_PASS = os.getenv("MQTT_PASS")
 
 HISTORY_SIZE = int(os.getenv("HISTORY_SIZE", "400"))
-REFRESH = int(os.getenv("REFRESH", "300"))            # cykl pętli
-FETCH_INTERVAL = int(os.getenv("FETCH_INTERVAL", "10800"))   # 3h
+REFRESH = int(os.getenv("REFRESH", "300"))
+FETCH_INTERVAL = int(os.getenv("FETCH_INTERVAL", "10800"))
 
 HEALTH_FILE = "/root/ha-project/health/kroki_mqtt.json"
 
@@ -49,9 +40,8 @@ SENSORY = [
     ("czas_aktywnosci_dzis", "Czas aktywności dziś", None, "mdi:timer-outline", None, None),
 ]
 
-# ===== FETCH =====
+
 def run_fetch():
-    """Odpala job pobierający. Porażka nie przerywa publikacji."""
     try:
         p = subprocess.run([VENV_PY, FETCH_JOB], capture_output=True,
                            text=True, timeout=180)
@@ -70,7 +60,6 @@ def run_fetch():
         return False
 
 
-# ===== HEALTH =====
 def update_health(rows, published):
     try:
         now = int(time.time())
@@ -109,7 +98,6 @@ def update_health(rows, published):
         print(f"[HEALTH] write error: {e}")
 
 
-# ===== CSV =====
 def safe_int(x):
     try:
         return int(float(x))
@@ -125,7 +113,6 @@ def safe_float(x):
 
 
 def get_rows():
-    """Lista dni, najnowszy pierwszy. Odczyt po nazwach kolumn."""
     if not os.path.exists(CSV_PATH):
         print(f"[CSV] Brak pliku: {CSV_PATH}")
         return []
@@ -140,14 +127,18 @@ def get_rows():
 
                 kroki = safe_int(r.get("Daily Steps"))
                 akt = safe_int(r.get("Activity Steps"))
+                dyst_dz = safe_float(r.get("Daily Distance [km]"))
+                dyst_akt = safe_float(r.get("Distance [km]"))
 
                 rows.append({
                     "ts": safe_int(r.get("Unix Time")),
                     "data": data,
                     "kroki": kroki,
                     "aktywnosci": akt,
-                    "poza": max(0, kroki - akt),   # wariant A
-                    "dystans": safe_float(r.get("Distance [km]")),
+                    "poza": max(0, kroki - akt),
+                    "dystans_dzienny": dyst_dz,
+                    "dystans": dyst_akt,
+                    "poza_km": round(max(0.0, dyst_dz - dyst_akt), 2),
                     "czas": (r.get("Duration [hh:mm:ss]") or "00:00:00").strip(),
                     "aktualizacja": (r.get("Last Update") or "").strip(),
                 })
@@ -159,12 +150,12 @@ def get_rows():
     return rows[:HISTORY_SIZE]
 
 
-# ===== MQTT =====
 def publish_discovery(client):
     client.publish(
         "homeassistant/sensor/kroki_history/config",
         json.dumps({
-            "name": "Kroki historia",
+            "name": "Historia",
+            "has_entity_name": True,
             "unique_id": "kroki_historia_v2",
             "state_topic": "homeassistant/sensor/kroki_history/state",
             "json_attributes_topic": "homeassistant/sensor/kroki_history/attributes",
@@ -177,6 +168,7 @@ def publish_discovery(client):
     for key, name, unit, icon, dev_class, state_class in SENSORY:
         cfg = {
             "name": name,
+            "has_entity_name": True,
             "unique_id": f"{key}_v2",
             "state_topic": f"homeassistant/sensor/{key}/state",
             "icon": icon,
@@ -208,18 +200,18 @@ def publish_data(client, rows):
     info.wait_for_publish()
 
     for key, val in (
-        ("kroki_dzis", last["kroki"]),
+        ("kroki_dzis", max(last["kroki"], last["aktywnosci"])),
         ("kroki_z_aktywnosci_dzis", last["aktywnosci"]),
-        ("dystans_dzis", last["dystans"]),
+        ("dystans_dzis", max(last["dystans_dzienny"], last["dystans"])),
         ("czas_aktywnosci_dzis", last["czas"]),
     ):
         client.publish(f"homeassistant/sensor/{key}/state", val, retain=True)
 
     print(f"[MQTT] {len(rows)} dni | {last['data']}: {last['kroki']} kroków "
-          f"({last['aktywnosci']} z aktywności, {last['dystans']} km, {last['czas']})")
+          f"({last['aktywnosci']} z aktywności) | "
+          f"{last['dystans_dzienny']} km dz. / {last['dystans']} km akt. | {last['czas']}")
 
 
-# ===== MAIN =====
 def main():
     client = mqtt.Client()
     if MQTT_USER and MQTT_PASS:
@@ -264,8 +256,6 @@ def main():
 
         time.sleep(REFRESH)
 
+
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n[EXIT] Zatrzymano (Ctrl+C)")
+    main()

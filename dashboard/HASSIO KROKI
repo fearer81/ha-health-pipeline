@@ -14,7 +14,7 @@ columns:
         } catch(e) { return '---'; }
       })()
     align: center
-  - name: 🏃<br><small>Aktywność</small>
+  - name: 🏃<br><small>Kroki akt.</small>
     data: rows
     modify: |-
       (function(){
@@ -26,7 +26,7 @@ columns:
         return (a > k) ? txt : txt;
       })()
     align: center
-  - name: 🚶<br><small>Poza akt.</small>
+  - name: 🚶<br><small>Kroki poza</small>
     data: rows
     modify: |-
       (function(){
@@ -34,7 +34,7 @@ columns:
         return isNaN(p) ? '---' : p.toLocaleString('pl-PL');
       })()
     align: center
-  - name: 👣<br><small>Łącznie</small>
+  - name: 👣<br><small>Kroki razem</small>
     data: rows
     modify: |-
       (function(){
@@ -44,12 +44,30 @@ columns:
         return isNaN(v) ? '---' : v.toLocaleString('pl-PL');
       })()
     align: center
-  - name: 📏<br><small>Dystans</small>
+  - name: 📏<br><small>Km akt.</small>
     data: rows
     modify: |-
       (function(){
         const d = parseFloat(x.dystans);
         return (d > 0) ? d.toFixed(2) : '-';
+      })()
+    align: center
+  - name: 🥾<br><small>Km poza</small>
+    data: rows
+    modify: |-
+      (function(){
+        const p = parseFloat(x.poza_km);
+        return (p > 0) ? p.toFixed(2) : '-';
+      })()
+    align: center
+  - name: 📏<br><small>Km Razem</small>
+    data: rows
+    modify: |-
+      (function(){
+        const dz = parseFloat(x.dystans_dzienny);
+        const ak = parseFloat(x.dystans);
+        const v = Math.max(isNaN(dz) ? 0 : dz, isNaN(ak) ? 0 : ak);
+        return (v > 0) ? v.toFixed(2) : '-';
       })()
     align: center
   - name: ⏱️<br><small>Czas</small>

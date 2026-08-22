@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Pobiera z Garmin Connect kroki i dystans (dzienne + z aktywności), zapisuje do CSV.
+Pobiera z Garmin Connect kroki dzienne + aktywności i zapisuje do CSV.
 
   user/kroki.csv     - jeden wiersz na dzień; nowe dni dopisywane,
                        istniejące aktualizowane (klucz = Date)
-  health/kroki.json  - heartbeat
+  health/kroki.json  - heartbeat (kiedy ostatnio, czy oba źródła odpowiedziały)
 
-Zakres wyznaczany automatycznie z CSV: od ostatniej daty minus OVERLAP_DAYS
-do dziś (Garmin dolicza kroki wstecz po synchronizacji zegarka).
+Zakres wyznaczany automatycznie z CSV (plik jest stanem, tak jak
+w fetch_garmin_stats.py): od ostatniej daty minus OVERLAP_DAYS do dziś.
 
-Scalanie po NAZWACH kolumn - dołożenie kolumny nie psuje starych wierszy,
-brakujące wartości zostają puste do czasu odświeżenia danego dnia.
+Kilka aktywności w jednym dniu jest sumowanych (kroki, dystans, czas).
+Aktywność przypisywana jest do daty STARTU.
 """
 
 import os
@@ -32,18 +32,15 @@ CONFIG_PATH = "/root/.config/omramin/config.json"
 CSV_FILE = f"{BASE_PATH}/user/kroki.csv"
 HEALTH_FILE = "/root/ha-project/health/kroki.json"
 
-OVERLAP_DAYS = 3
-INITIAL_DAYS = 30
+OVERLAP_DAYS = 3      # ile dni wstecz odświeżamy (Garmin dolicza kroki wstecz)
+INITIAL_DAYS = 30     # ile pobrać przy pustym CSV
 
 DNI = ["pon", "wt", "śr", "czw", "pt", "sob", "nd"]
 
 HDR = [
     "Unix Time", "Date", "Daily Steps", "Activity Steps",
-    "Daily Distance [km]", "Distance [km]", "Duration [hh:mm:ss]", "Last Update",
+    "Distance [km]", "Duration [hh:mm:ss]", "Last Update",
 ]
-
-# Kolumny porównywane przy wykrywaniu zmian (bez Last Update)
-COLS_DANE = [c for c in HDR if c != "Last Update"]
 
 
 # ===== HELPERS =====
@@ -74,27 +71,17 @@ def atomic_write_csv(path, header, rows):
 
 
 def read_existing():
-    """Zwraca {'YYYY-MM-DD': {kolumna: wartość}} - odczyt po nazwach."""
     if not os.path.exists(CSV_FILE):
         return {}
     try:
         with open(CSV_FILE, encoding="utf-8", newline="") as f:
-            rd = csv.DictReader(f, delimiter=";")
-            if not rd.fieldnames or "Date" not in rd.fieldnames:
+            r = csv.reader(f, delimiter=";")
+            hdr = next(r, None)
+            if not hdr or "Date" not in hdr:
                 print("[CSV] nieznany nagłówek — plik budowany od zera")
                 return {}
-
-            nowe_kol = [c for c in HDR if c not in rd.fieldnames]
-            if nowe_kol:
-                print(f"[CSV] nowe kolumny: {', '.join(nowe_kol)} "
-                      f"(stare wiersze zostaną puste do odświeżenia)")
-
-            out = {}
-            for r in rd:
-                d = (r.get("Date") or "").strip()
-                if d:
-                    out[d] = {k: (v or "").strip() for k, v in r.items() if k}
-            return out
+            di = hdr.index("Date")
+            return {row[di]: row for row in r if len(row) > di and row[di].strip()}
     except Exception as e:
         print(f"[CSV] błąd odczytu ({e}) — plik budowany od zera")
         return {}
@@ -169,7 +156,6 @@ def login():
 
 # ===== POBIERANIE =====
 def fetch_daily(client, start, end):
-    """{'YYYY-MM-DD': (kroki, dystans_m, cel)} - totalDistance jest w metrach."""
     rows = client.get_daily_steps(start, end) or []
     out = {}
     for r in rows:
@@ -178,7 +164,6 @@ def fetch_daily(client, start, end):
             continue
         out[day] = (
             int(pick(r, "totalSteps", "steps") or 0),
-            float(pick(r, "totalDistance", "totalDistanceMeters") or 0),
             int(pick(r, "stepGoal", "dailyStepGoal", "stepsGoal") or 0),
         )
     print(f"[API] get_daily_steps: {len(out)} dni")
@@ -196,11 +181,14 @@ def fetch_acts(client, start, end):
             continue
         day = st.split(" ")[0]
 
+        dyst_m = float(pick(a, "distance") or 0)
+        czas_s = int(round(float(pick(a, "duration") or 0)))
+
         out.setdefault(day, []).append({
             "godzina": st.split(" ")[1][:5],
             "kroki": int(pick(a, "steps", "totalSteps") or 0),
-            "dystans_km": round(float(pick(a, "distance") or 0) / 1000, 2),
-            "czas_s": int(round(float(pick(a, "duration") or 0))),
+            "dystans_km": round(dyst_m / 1000, 2),
+            "czas_s": czas_s,
         })
 
     for day in out:
@@ -218,12 +206,11 @@ def build_days(daily, per_day):
     days = []
     for d in sorted(set(list(daily.keys()) + list(per_day.keys()))):
         acts = per_day.get(d, [])
-        tot, dyst_m, cel = daily.get(d, (0, 0.0, 0))
+        tot, cel = daily.get(d, (0, 0))
 
         suma_akt = sum(a["kroki"] for a in acts)
-        dyst_akt = round(sum(a["dystans_km"] for a in acts), 2)
-        dyst_dzien = round(dyst_m / 1000, 2)
         czas_s = sum(a["czas_s"] for a in acts)
+        roznica = tot - suma_akt
 
         days.append({
             "data": d,
@@ -231,30 +218,23 @@ def build_days(daily, per_day):
             "kroki_dzienne": tot,
             "cel": cel,
             "kroki_aktywnosci": suma_akt,
-            "poza_kroki": max(0, tot - suma_akt),
-            "roznica": tot - suma_akt,
-            "rozbieznosc": (tot - suma_akt) < 0 or (dyst_dzien - dyst_akt) < 0,
+            "poza_aktywnosciami": max(0, roznica),
+            "roznica": roznica,
+            "rozbieznosc": roznica < 0,
             "liczba_aktywnosci": len(acts),
-            "dystans_dzienny": dyst_dzien,
-            "dystans_aktywnosci": dyst_akt,
-            "poza_dystans": round(max(0.0, dyst_dzien - dyst_akt), 2),
+            "dystans_km": round(sum(a["dystans_km"] for a in acts), 2),
             "czas_s": czas_s,
             "czas": hhmmss(czas_s),
         })
     return days
 
 
-def row_dict(d, stamp):
-    return {
-        "Unix Time": str(day_ts(d["data"])),
-        "Date": d["data"],
-        "Daily Steps": str(d["kroki_dzienne"]),
-        "Activity Steps": str(d["kroki_aktywnosci"]),
-        "Daily Distance [km]": f"{d['dystans_dzienny']:.2f}",
-        "Distance [km]": f"{d['dystans_aktywnosci']:.2f}",
-        "Duration [hh:mm:ss]": d["czas"],
-        "Last Update": stamp,
-    }
+def row_dzien(d, stamp):
+    return [
+        day_ts(d["data"]), d["data"],
+        d["kroki_dzienne"], d["kroki_aktywnosci"],
+        f"{d['dystans_km']:.2f}", d["czas"], stamp,
+    ]
 
 
 def merge(days, istniejace, stamp):
@@ -262,20 +242,18 @@ def merge(days, istniejace, stamp):
     dopisane = zmienione = bez_zmian = 0
 
     for d in days:
-        nowy = row_dict(d, stamp)
+        row = row_dzien(d, stamp)
         stary = idx.get(d["data"])
         if stary is None:
-            idx[d["data"]] = nowy
+            idx[d["data"]] = row
             dopisane += 1
-        elif any(stary.get(c, "") != nowy[c] for c in COLS_DANE):
-            idx[d["data"]] = nowy
+        elif [str(x) for x in stary[:-1]] != [str(x) for x in row[:-1]]:
+            idx[d["data"]] = row
             zmienione += 1
         else:
             bez_zmian += 1
 
-    rows = [[r.get(c, "") for c in HDR]
-            for _, r in sorted(idx.items(), key=lambda kv: kv[0])]
-
+    rows = sorted(idx.values(), key=lambda r: r[1])
     print(f"[CSV] {len(rows)} dni w pliku "
           f"(dopisane: {dopisane}, zaktualizowane: {zmienione}, bez zmian: {bez_zmian})")
     return rows, dopisane + zmienione
@@ -283,27 +261,25 @@ def merge(days, istniejace, stamp):
 
 # ===== RAPORT =====
 def print_table(days):
-    print("\n" + "=" * 100)
-    print(f"{'Dzień':<14}{'Kroki dz.':>10}{'Kroki akt.':>11}{'n':>3}"
-          f"{'Dyst. dz.':>10}{'Dyst. akt.':>11}{'Poza km':>9}{'Czas':>10}{'Flaga':>14}")
-    print("=" * 100)
+    print("\n" + "=" * 88)
+    print(f"{'Dzień':<14}{'Dzienne':>9}{'Aktywn.':>9}{'n':>3}{'Poza':>9}"
+          f"{'Dyst.':>8}{'Czas':>11}{'Flaga':>14}")
+    print("=" * 88)
     for d in days:
         flag = "ROZBIEŻNOŚĆ" if d["rozbieznosc"] else ""
         print(f"{d['data']} {d['dzien']:<4}"
-              f"{d['kroki_dzienne']:>10,}{d['kroki_aktywnosci']:>11,}"
-              f"{d['liczba_aktywnosci']:>3}"
-              f"{d['dystans_dzienny']:>10.2f}{d['dystans_aktywnosci']:>11.2f}"
-              f"{d['poza_dystans']:>9.2f}{d['czas']:>10}{flag:>14}".replace(",", " "))
-    print("-" * 100)
+              f"{d['kroki_dzienne']:>9,}{d['kroki_aktywnosci']:>9,}"
+              f"{d['liczba_aktywnosci']:>3}{d['poza_aktywnosciami']:>9,}"
+              f"{d['dystans_km']:>8.2f}{d['czas']:>11}{flag:>14}".replace(",", " "))
+    print("-" * 88)
     print(f"{'RAZEM':<14}"
-          f"{sum(d['kroki_dzienne'] for d in days):>10,}"
-          f"{sum(d['kroki_aktywnosci'] for d in days):>11,}"
+          f"{sum(d['kroki_dzienne'] for d in days):>9,}"
+          f"{sum(d['kroki_aktywnosci'] for d in days):>9,}"
           f"{sum(d['liczba_aktywnosci'] for d in days):>3}"
-          f"{sum(d['dystans_dzienny'] for d in days):>10.2f}"
-          f"{sum(d['dystans_aktywnosci'] for d in days):>11.2f}"
-          f"{sum(d['poza_dystans'] for d in days):>9.2f}"
-          f"{hhmmss(sum(d['czas_s'] for d in days)):>10}".replace(",", " "))
-    print("=" * 100)
+          f"{sum(d['poza_aktywnosciami'] for d in days):>9,}"
+          f"{sum(d['dystans_km'] for d in days):>8.2f}"
+          f"{hhmmss(sum(d['czas_s'] for d in days)):>11}".replace(",", " "))
+    print("=" * 88)
 
 
 # ===== MAIN =====
