@@ -1072,211 +1072,6 @@ views:
             name: Salon1-5 jasność 100%
             icon_height: 50px
           - type: custom:flex-table-card
-            sort_by: ts-
-            entities:
-              include:
-                - sensor.omron_m4_history
-            columns:
-              - name: 🕒<br>Data i Czas
-                data: rows
-                modify: |-
-                  (function(){
-                    let t = String(x.time);
-                    if (t.includes('-')) {
-                      let p = t.split(' ');
-                      let d = p[0].split('-');
-                      return d[2] + '.' + d[1] + ' ' + p[1].substring(0,5);
-                    }
-                    return t.replace('.2026', '');
-                  })()
-              - name: 🩺<br>Ciśnie.
-                data: rows
-                modify: >-
-                  x.n === 0 ? '📡' : (x.pressure ? x.pressure.replace('
-                  mmHg','') : '---')
-                align: center
-              - name: 🚦<br>S0-3
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]); var d = parseInt(p[1]);
-                    if (s >= 180 || d >= 110) return '⛔ S3';
-                    if (s >= 160 || d >= 100) return '🔴 S2';
-                    if (s >= 140 || d >=  90) return '🟠 S1';
-                    if (s >= 130 || d >=  85) return '🟡WPr';
-                    if (s >= 120 || d >=  80) return '🔵Pra';
-                    if (s <   90 || d <   60) return '🟣Hip';
-                    return '🟢Opt';
-                  })()
-                align: center
-              - name: 💢<br>P.Pres
-                data: rows
-                modify: |-
-                  (function(){
-                    if (!x.pressure) return '---';
-                    var p = x.pressure.split('/');
-                    var s = parseInt(p[0]);
-                    var d = parseInt(p[1]);
-                    var pp = s - d;
-                    if (pp >= 60) return pp + '🔴';
-                    if (pp >= 50) return pp + '🟡';
-                    if (pp >= 40) return pp + '🟢';
-                    return pp + ' 💚';
-                  })()
-                align: center
-              - name: ❤️<br>Tęt
-                data: rows
-                modify: |-
-                  (function(){
-                    // Priorytet: puls z Omrona (pomiar mankietowy)
-                    if (x.pulse) return x.pulse.replace(' bpm','');
-                    // Fallback: RHR z Garmina (tętno spoczynkowe z doby) — oznaczony ⌚
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr ? closest.rhr + '⌚' : '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🧗<br>Str
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.stress || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: ⚡<br>BB
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.bb || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 💤<br>T.Sp
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      return closest.rhr || '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🛌<br>Sen
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-
-                      // Funkcja dopasowująca czas (ls musi istnieć w danych)
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-
-                      // Poprawka: sprawdzamy czy ss w ogóle istnieje, a nie czy jest > 0
-                      let score = (closest.ss !== undefined) ? closest.ss : '---';
-                      let hours = (closest.sh !== undefined) ? closest.sh : '0';
-                      return score + ' / ' + hours + 'h';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: 🔄<br>Sync
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const gHist = document.querySelector("home-assistant").hass.states['sensor.garmin_history'];
-                      const gRows = gHist.attributes.rows;
-                      const omronTime = new Date(x.ts * 1000).getTime();
-                      const getLsTs = (r) => new Date(r.ls.replace('T', ' ').split('.')[0]).getTime();
-                      const closest = gRows.reduce((prev, curr) => (Math.abs(getLsTs(curr) - omronTime) < Math.abs(getLsTs(prev) - omronTime) ? curr : prev));
-                      if (Math.abs(getLsTs(closest) - omronTime) > 14 * 3600000) return '---';
-                      const ls = String(closest.ls);
-                      const timePart = ls.includes('T') ? ls.split('T')[1] : ls.split(' ')[1];
-                      return timePart ? timePart.substring(0, 5) : '---';
-                    } catch(e) { return '---'; }
-                  })()
-                align: center
-              - name: ⚖️<br><small>Waga</small>
-                data: rows
-                modify: |-
-                  (function(){
-                    try {
-                      const hist = document.querySelector("home-assistant").hass.states['sensor.xiaomi_s400_history'];
-                      const rows = hist.attributes.rows;
-                      const target = x.ts * 1000;
-                      const closest = rows.reduce((p, c) =>
-                        Math.abs(c.ts * 1000 - target) < Math.abs(p.ts * 1000 - target) ? c : p);
-                      if (Math.abs(closest.ts * 1000 - target) > 7 * 24 * 3600000) return '---';
-                      return parseFloat(String(closest.weight)).toFixed(1);
-                    } catch(e){ return '---'; }
-                  })()
-                align: center
-            card_mod:
-              style: |
-                ha-card {
-                  max-height: 333px;
-                  overflow-y: auto;
-                  font-size: 12px;
-                  user-select: text !important;
-                  -webkit-user-select: text !important;
-                }
-                ha-card table {
-                  width: 99% !important;
-                  border-collapse: collapse;
-                  table-layout: auto;
-                }
-                ha-card thead th {
-                  text-align: center;
-                  vertical-align: bottom;
-                  padding: 2px 2px !important;
-                  line-height: 1.1;
-                  font-weight: bold;
-                  position: sticky;
-                  top: 0;
-                  background: var(--card-background-color);
-                  z-index: 2;
-                }
-                ha-card td {
-                  padding: 1px 2px !important;
-                  white-space: nowrap !important;
-                }
-                ha-card td:first-child,
-                ha-card th:first-child {
-                  width: 1px;
-                }
-          - type: custom:flex-table-card
             entities:
               include:
                 - sensor.xiaomi_s400_history
@@ -1422,6 +1217,22 @@ views:
                     const ak = parseFloat(x.dystans);
                     const v = Math.max(isNaN(dz) ? 0 : dz, isNaN(ak) ? 0 : ak);
                     return (v > 0) ? v.toFixed(2) : '-';
+                  })()
+                align: center
+              - name: 🏊<br><small>Basen<br>km</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const s = parseFloat(x.swim_km);
+                    return (s > 0) ? s.toFixed(2) : '-';
+                  })()
+                align: center
+              - name: 🏊<br><small>Basen<br>dług.</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const n = parseInt(x.swim_dlugosci, 10);
+                    return (n > 0) ? n : '-';
                   })()
                 align: center
               - name: ⏱️<br><small>Czas</small>
