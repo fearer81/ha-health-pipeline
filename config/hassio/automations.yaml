@@ -1680,10 +1680,11 @@
       payload:
         id: com.webos.app.home
     action: webostv.command
+    enabled: false
   - delay:
       hours: 0
       minutes: 0
-      seconds: 2
+      seconds: 10
       milliseconds: 0
   - data:
       picture_mode: filmMaker
@@ -2105,8 +2106,8 @@
   conditions: []
   actions:
   - delay:
-      hours: 4
-      minutes: 15
+      hours: 3
+      minutes: 45
       seconds: 0
       milliseconds: 0
   - device_id: 8d15be71266bd86a527be15fc39ac3ec

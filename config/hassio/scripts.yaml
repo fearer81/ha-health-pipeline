@@ -467,20 +467,24 @@ lgtv_on_yt:
       entity_id: media_player.lg_tv
       button: DOWN
     action: webostv.button
+    enabled: false
   - delay:
       hours: 0
       minutes: 0
       seconds: 0
       milliseconds: 600
+    enabled: false
   - data:
       entity_id: media_player.lg_tv
       button: DOWN
     action: webostv.button
+    enabled: false
   - delay:
       hours: 0
       minutes: 0
       seconds: 0
       milliseconds: 600
+    enabled: false
   - data:
       entity_id: media_player.lg_tv
       button: RIGHT

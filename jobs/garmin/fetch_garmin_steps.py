@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Pobiera z Garmin Connect kroki i dystans (dzienne + z aktywności), zapisuje do CSV.
+Pobiera z Garmin Connect kroki, dystans i pływanie, zapisuje do CSV.
 
   user/kroki.csv     - jeden wiersz na dzień; nowe dni dopisywane,
                        istniejące aktualizowane (klucz = Date)
-  health/kroki.json  - heartbeat
+  health/kroki.json  - heartbeat + lastSync zegarka
 
-Zakres wyznaczany automatycznie z CSV: od ostatniej daty minus OVERLAP_DAYS
-do dziś (Garmin dolicza kroki wstecz po synchronizacji zegarka).
+Pływanie (parentTypeId 26) NIE wchodzi do dystansu lądowego - Garmin nie
+dolicza go do totalDistance. Ma własne kolumny. Czas liczony wspólnie.
 
-Scalanie po NAZWACH kolumn - dołożenie kolumny nie psuje starych wierszy,
-brakujące wartości zostają puste do czasu odświeżenia danego dnia.
+Scalanie po NAZWACH kolumn - dołożenie kolumny nie psuje starych wierszy.
 """
 
 import os
@@ -20,7 +19,7 @@ import csv
 import json
 import time
 import argparse
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import garth
 from garminconnect import Garmin
@@ -35,14 +34,18 @@ HEALTH_FILE = "/root/ha-project/health/kroki.json"
 OVERLAP_DAYS = 3
 INITIAL_DAYS = 30
 
+# Garmin: parentTypeId 26 = swimming (lap_swimming, open_water_swimming, ...)
+SWIM_PARENT_ID = 26
+
 DNI = ["pon", "wt", "śr", "czw", "pt", "sob", "nd"]
 
 HDR = [
     "Unix Time", "Date", "Daily Steps", "Activity Steps",
-    "Daily Distance [km]", "Distance [km]", "Duration [hh:mm:ss]", "Last Update",
+    "Daily Distance [km]", "Distance [km]",
+    "Swim Distance [km]", "Swim Lengths",
+    "Duration [hh:mm:ss]", "Last Update",
 ]
 
-# Kolumny porównywane przy wykrywaniu zmian (bez Last Update)
 COLS_DANE = [c for c in HDR if c != "Last Update"]
 
 
@@ -74,7 +77,6 @@ def atomic_write_csv(path, header, rows):
 
 
 def read_existing():
-    """Zwraca {'YYYY-MM-DD': {kolumna: wartość}} - odczyt po nazwach."""
     if not os.path.exists(CSV_FILE):
         return {}
     try:
@@ -121,8 +123,27 @@ def ustal_zakres(args, istniejace):
            f"auto (ostatni wpis {ostatni}, luka {luka} dni, zakładka {OVERLAP_DAYS})"
 
 
+# ===== LAST SYNC =====
+def fetch_last_sync(client):
+    try:
+        stats = client.get_stats(date.today().isoformat()) or {}
+        raw = stats.get("lastSyncTimestampGMT")
+        if not raw:
+            return None, None
+
+        dt = datetime.fromisoformat(raw.replace(" ", "T").split(".")[0]) \
+                     .replace(tzinfo=timezone.utc).astimezone()
+        wiek = int((datetime.now().astimezone() - dt).total_seconds() / 60)
+        print(f"[SYNC] zegarek: {dt.strftime('%Y-%m-%d %H:%M:%S')} ({wiek} min temu)")
+        return dt.strftime("%Y-%m-%dT%H:%M:%S"), wiek
+    except Exception as e:
+        print(f"[SYNC] nieznany ({e})")
+        return None, None
+
+
 # ===== HEALTH =====
-def update_health(status, zrodla, dni=0, ostatni_dzien=None, blad=None):
+def update_health(status, zrodla, dni=0, ostatni_dzien=None, blad=None,
+                  last_sync=None, sync_age_min=None):
     try:
         now = int(time.time())
         data = {
@@ -133,6 +154,10 @@ def update_health(status, zrodla, dni=0, ostatni_dzien=None, blad=None):
             "dni_w_csv": dni,
             "ostatni_dzien": ostatni_dzien,
         }
+        if last_sync:
+            data["last_sync"] = last_sync
+            data["sync_age_min"] = sync_age_min
+            data["sync_status"] = "OK" if (sync_age_min or 0) < 180 else "STALE"
         if blad:
             data["blad"] = str(blad)[:300]
 
@@ -169,7 +194,6 @@ def login():
 
 # ===== POBIERANIE =====
 def fetch_daily(client, start, end):
-    """{'YYYY-MM-DD': (kroki, dystans_m, cel)} - totalDistance jest w metrach."""
     rows = client.get_daily_steps(start, end) or []
     out = {}
     for r in rows:
@@ -196,10 +220,16 @@ def fetch_acts(client, start, end):
             continue
         day = st.split(" ")[0]
 
+        at = a.get("activityType") or {}
+        plywanie = at.get("parentTypeId") == SWIM_PARENT_ID
+
         out.setdefault(day, []).append({
             "godzina": st.split(" ")[1][:5],
+            "typ": at.get("typeKey", "?"),
+            "plywanie": plywanie,
             "kroki": int(pick(a, "steps", "totalSteps") or 0),
             "dystans_km": round(float(pick(a, "distance") or 0) / 1000, 2),
+            "dlugosci": int(pick(a, "activeLengths") or 0) if plywanie else 0,
             "czas_s": int(round(float(pick(a, "duration") or 0))),
         })
 
@@ -210,6 +240,13 @@ def fetch_acts(client, start, end):
     if wiele:
         print(f"[AKT] dni z kilkoma aktywnościami: "
               f"{', '.join(f'{d} x{n}' for d, n in sorted(wiele.items()))}")
+
+    plyw = {d: sum(1 for a in v if a["plywanie"]) for d, v in out.items()}
+    plyw = {d: n for d, n in plyw.items() if n}
+    if plyw:
+        print(f"[PŁYW] dni z pływaniem: "
+              f"{', '.join(f'{d} x{n}' for d, n in sorted(plyw.items()))} "
+              f"(wyłączone z dystansu lądowego)")
     return out
 
 
@@ -220,10 +257,15 @@ def build_days(daily, per_day):
         acts = per_day.get(d, [])
         tot, dyst_m, cel = daily.get(d, (0, 0.0, 0))
 
-        suma_akt = sum(a["kroki"] for a in acts)
-        dyst_akt = round(sum(a["dystans_km"] for a in acts), 2)
+        lad = [a for a in acts if not a["plywanie"]]
+        woda = [a for a in acts if a["plywanie"]]
+
+        suma_akt = sum(a["kroki"] for a in lad)
+        dyst_akt = round(sum(a["dystans_km"] for a in lad), 2)
+        dyst_swim = round(sum(a["dystans_km"] for a in woda), 2)
+        dlug_swim = sum(a["dlugosci"] for a in woda)
         dyst_dzien = round(dyst_m / 1000, 2)
-        czas_s = sum(a["czas_s"] for a in acts)
+        czas_s = sum(a["czas_s"] for a in acts)   # czas: wszystko razem
 
         days.append({
             "data": d,
@@ -238,6 +280,8 @@ def build_days(daily, per_day):
             "dystans_dzienny": dyst_dzien,
             "dystans_aktywnosci": dyst_akt,
             "poza_dystans": round(max(0.0, dyst_dzien - dyst_akt), 2),
+            "swim_km": dyst_swim,
+            "swim_dlugosci": dlug_swim,
             "czas_s": czas_s,
             "czas": hhmmss(czas_s),
         })
@@ -252,6 +296,8 @@ def row_dict(d, stamp):
         "Activity Steps": str(d["kroki_aktywnosci"]),
         "Daily Distance [km]": f"{d['dystans_dzienny']:.2f}",
         "Distance [km]": f"{d['dystans_aktywnosci']:.2f}",
+        "Swim Distance [km]": f"{d['swim_km']:.2f}",
+        "Swim Lengths": str(d["swim_dlugosci"]),
         "Duration [hh:mm:ss]": d["czas"],
         "Last Update": stamp,
     }
@@ -283,18 +329,21 @@ def merge(days, istniejace, stamp):
 
 # ===== RAPORT =====
 def print_table(days):
-    print("\n" + "=" * 100)
+    print("\n" + "=" * 112)
     print(f"{'Dzień':<14}{'Kroki dz.':>10}{'Kroki akt.':>11}{'n':>3}"
-          f"{'Dyst. dz.':>10}{'Dyst. akt.':>11}{'Poza km':>9}{'Czas':>10}{'Flaga':>14}")
-    print("=" * 100)
+          f"{'Dyst. dz.':>10}{'Dyst. akt.':>11}{'Poza km':>9}"
+          f"{'Basen km':>10}{'Dług.':>7}{'Czas':>10}{'Flaga':>14}")
+    print("=" * 112)
     for d in days:
         flag = "ROZBIEŻNOŚĆ" if d["rozbieznosc"] else ""
         print(f"{d['data']} {d['dzien']:<4}"
               f"{d['kroki_dzienne']:>10,}{d['kroki_aktywnosci']:>11,}"
               f"{d['liczba_aktywnosci']:>3}"
               f"{d['dystans_dzienny']:>10.2f}{d['dystans_aktywnosci']:>11.2f}"
-              f"{d['poza_dystans']:>9.2f}{d['czas']:>10}{flag:>14}".replace(",", " "))
-    print("-" * 100)
+              f"{d['poza_dystans']:>9.2f}"
+              f"{d['swim_km']:>10.2f}{d['swim_dlugosci']:>7}"
+              f"{d['czas']:>10}{flag:>14}".replace(",", " "))
+    print("-" * 112)
     print(f"{'RAZEM':<14}"
           f"{sum(d['kroki_dzienne'] for d in days):>10,}"
           f"{sum(d['kroki_aktywnosci'] for d in days):>11,}"
@@ -302,8 +351,10 @@ def print_table(days):
           f"{sum(d['dystans_dzienny'] for d in days):>10.2f}"
           f"{sum(d['dystans_aktywnosci'] for d in days):>11.2f}"
           f"{sum(d['poza_dystans'] for d in days):>9.2f}"
+          f"{sum(d['swim_km'] for d in days):>10.2f}"
+          f"{sum(d['swim_dlugosci'] for d in days):>7}"
           f"{hhmmss(sum(d['czas_s'] for d in days)):>10}".replace(",", " "))
-    print("=" * 100)
+    print("=" * 112)
 
 
 # ===== MAIN =====
@@ -329,6 +380,8 @@ def main():
             update_health("ERROR", zrodla, dni=len(istniejace), blad=e)
         sys.exit(1)
 
+    last_sync, sync_age = fetch_last_sync(client)
+
     daily, per_day = {}, {}
     blad = None
     try:
@@ -349,7 +402,8 @@ def main():
         print("Niekompletne dane z API — pomijam zapis CSV (stare wiersze nietknięte).")
         if not args.dry_run:
             update_health("ERROR", zrodla, dni=len(istniejace),
-                          ostatni_dzien=max(istniejace) if istniejace else None, blad=blad)
+                          ostatni_dzien=max(istniejace) if istniejace else None,
+                          blad=blad, last_sync=last_sync, sync_age_min=sync_age)
         sys.exit(1)
 
     days = build_days(daily, per_day)
@@ -358,7 +412,7 @@ def main():
         if not args.dry_run:
             update_health("WARNING", zrodla, dni=len(istniejace),
                           ostatni_dzien=max(istniejace) if istniejace else None,
-                          blad="pusty zakres")
+                          blad="pusty zakres", last_sync=last_sync, sync_age_min=sync_age)
         return
 
     print_table(days)
@@ -377,7 +431,8 @@ def main():
         print("INFO: Dane w CSV są już aktualne — pomijam zapis.")
 
     update_health("OK", zrodla, dni=len(rows),
-                  ostatni_dzien=rows[-1][1] if rows else None)
+                  ostatni_dzien=rows[-1][1] if rows else None,
+                  last_sync=last_sync, sync_age_min=sync_age)
     print(f"[ZAPIS] {HEALTH_FILE} (OK)")
 
 
