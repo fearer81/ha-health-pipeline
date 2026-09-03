@@ -10,8 +10,11 @@ Pobiera z Garmin Connect kroki, dystans, pływanie i kalorie; zapisuje do CSV.
 Pływanie (parentTypeId 26) NIE wchodzi do dystansu lądowego - Garmin nie
 dolicza go do totalDistance. Ma własne kolumny. Czas liczony wspólnie.
 
-Kalorie = totalKilocalories z get_stats, czyli całodobowa suma spalonych
-kalorii (to samo, co "Suma kalorii" w aplikacji Garmin Connect).
+Kalorie = activeKilocalories z get_stats: wydatek ponad podstawową przemianę
+materii, czyli wszystko spalone ruchem (chodzenie + treningi razem).
+Świadomie NIE totalKilocalories - tam ~92% wartości to stałe BMR, przez co
+różnica między dniem treningowym a bezczynnym ginęła w szumie.
+
 get_stats to 1 request NA DZIEŃ, więc pobierany tylko dla dni nowych
 lub z zakładki; starsze wartości brane z CSV.
 
@@ -256,21 +259,21 @@ def fetch_acts(client, start, end):
 
 
 def fetch_kalorie(client, dni, istniejace):
-    """Całodobowe kalorie z get_stats — 1 request na dzień.
+    """Kalorie aktywne (ponad BMR) z get_stats — 1 request na dzień.
     Pobiera tylko dni nowe lub z zakładki; resztę bierze z CSV."""
     prog = (date.today() - timedelta(days=OVERLAP_DAYS)).isoformat()
     out, z_csv, pobrane = {}, 0, 0
 
     for d in dni:
         stary = istniejace.get(d)
-        if stary and d < prog and stary.get("Calories [kcal]", "").strip():
+        if stary and d < prog and (stary.get("Calories [kcal]", "").strip() or "0") != "0":
             out[d] = int(stary.get("Calories [kcal]") or 0)
             z_csv += 1
             continue
 
         try:
             s = client.get_stats(d) or {}
-            out[d] = int(pick(s, "totalKilocalories") or 0)
+            out[d] = int(pick(s, "activeKilocalories") or 0)
             pobrane += 1
         except Exception as e:
             print(f"[KCAL] {d}: błąd ({e})")
