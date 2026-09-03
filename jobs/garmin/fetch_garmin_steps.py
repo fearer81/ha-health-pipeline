@@ -8,10 +8,12 @@ Pobiera z Garmin Connect kroki, dystans, pływanie i kalorie; zapisuje do CSV.
   health/kroki.json  - heartbeat + lastSync zegarka
 
 Pływanie (parentTypeId 26) NIE wchodzi do dystansu lądowego - Garmin nie
-dolicza go do totalDistance. Ma własne kolumny. Czas i kalorie liczone wspólnie.
+dolicza go do totalDistance. Ma własne kolumny. Czas liczony wspólnie.
 
-Kalorie = suma pola 'calories' ze wszystkich aktywności dnia (brutto, jak
-w aplikacji Garmin Connect). To NIE jest całodobowa suma kalorii.
+Kalorie = totalKilocalories z get_stats, czyli całodobowa suma spalonych
+kalorii (to samo, co "Suma kalorii" w aplikacji Garmin Connect).
+get_stats to 1 request NA DZIEŃ, więc pobierany tylko dla dni nowych
+lub z zakładki; starsze wartości brane z CSV.
 
 Scalanie po NAZWACH kolumn - dołożenie kolumny nie psuje starych wierszy.
 """
@@ -234,7 +236,6 @@ def fetch_acts(client, start, end):
             "dystans_km": round(float(pick(a, "distance") or 0) / 1000, 2),
             "dlugosci": int(pick(a, "activeLengths") or 0) if plywanie else 0,
             "czas_s": int(round(float(pick(a, "duration") or 0))),
-            "kcal": int(round(float(pick(a, "calories") or 0))),
         })
 
     for day in out:
@@ -254,8 +255,33 @@ def fetch_acts(client, start, end):
     return out
 
 
+def fetch_kalorie(client, dni, istniejace):
+    """Całodobowe kalorie z get_stats — 1 request na dzień.
+    Pobiera tylko dni nowe lub z zakładki; resztę bierze z CSV."""
+    prog = (date.today() - timedelta(days=OVERLAP_DAYS)).isoformat()
+    out, z_csv, pobrane = {}, 0, 0
+
+    for d in dni:
+        stary = istniejace.get(d)
+        if stary and d < prog and stary.get("Calories [kcal]", "").strip():
+            out[d] = int(stary.get("Calories [kcal]") or 0)
+            z_csv += 1
+            continue
+
+        try:
+            s = client.get_stats(d) or {}
+            out[d] = int(pick(s, "totalKilocalories") or 0)
+            pobrane += 1
+        except Exception as e:
+            print(f"[KCAL] {d}: błąd ({e})")
+            out[d] = 0
+
+    print(f"[API] get_stats: {pobrane} requestów (z CSV: {z_csv})")
+    return out
+
+
 # ===== BUDOWA REKORDÓW =====
-def build_days(daily, per_day):
+def build_days(daily, per_day, kalorie):
     days = []
     for d in sorted(set(list(daily.keys()) + list(per_day.keys()))):
         acts = per_day.get(d, [])
@@ -269,8 +295,7 @@ def build_days(daily, per_day):
         dyst_swim = round(sum(a["dystans_km"] for a in woda), 2)
         dlug_swim = sum(a["dlugosci"] for a in woda)
         dyst_dzien = round(dyst_m / 1000, 2)
-        czas_s = sum(a["czas_s"] for a in acts)     # czas: wszystko razem
-        kcal = sum(a["kcal"] for a in acts)         # kalorie: wszystko razem
+        czas_s = sum(a["czas_s"] for a in acts)
 
         days.append({
             "data": d,
@@ -289,7 +314,7 @@ def build_days(daily, per_day):
             "swim_dlugosci": dlug_swim,
             "czas_s": czas_s,
             "czas": hhmmss(czas_s),
-            "kcal": kcal,
+            "kcal": kalorie.get(d, 0),
         })
     return days
 
@@ -336,11 +361,11 @@ def merge(days, istniejace, stamp):
 
 # ===== RAPORT =====
 def print_table(days):
-    print("\n" + "=" * 120)
+    print("\n" + "=" * 114)
     print(f"{'Dzień':<14}{'Kroki dz.':>10}{'Kroki akt.':>11}{'n':>3}"
           f"{'Dyst. dz.':>10}{'Dyst. akt.':>11}{'Poza km':>9}"
           f"{'Basen km':>10}{'Dług.':>7}{'Czas':>10}{'kcal':>8}{'Flaga':>14}")
-    print("=" * 120)
+    print("=" * 114)
     for d in days:
         flag = "ROZBIEŻNOŚĆ" if d["rozbieznosc"] else ""
         print(f"{d['data']} {d['dzien']:<4}"
@@ -350,7 +375,7 @@ def print_table(days):
               f"{d['poza_dystans']:>9.2f}"
               f"{d['swim_km']:>10.2f}{d['swim_dlugosci']:>7}"
               f"{d['czas']:>10}{d['kcal']:>8,}{flag:>14}".replace(",", " "))
-    print("-" * 120)
+    print("-" * 114)
     print(f"{'RAZEM':<14}"
           f"{sum(d['kroki_dzienne'] for d in days):>10,}"
           f"{sum(d['kroki_aktywnosci'] for d in days):>11,}"
@@ -362,7 +387,7 @@ def print_table(days):
           f"{sum(d['swim_dlugosci'] for d in days):>7}"
           f"{hhmmss(sum(d['czas_s'] for d in days)):>10}"
           f"{sum(d['kcal'] for d in days):>8,}".replace(",", " "))
-    print("=" * 120)
+    print("=" * 114)
 
 
 # ===== MAIN =====
@@ -414,7 +439,13 @@ def main():
                           blad=blad, last_sync=last_sync, sync_age_min=sync_age)
         sys.exit(1)
 
-    days = build_days(daily, per_day)
+    dni_zakres = sorted(set(list(daily.keys()) + list(per_day.keys())))
+    if len(dni_zakres) > 60:
+        print(f"[KCAL] UWAGA: {len(dni_zakres)} dni w zakresie — "
+              f"tyle może być requestów do get_stats")
+    kalorie = fetch_kalorie(client, dni_zakres, istniejace)
+
+    days = build_days(daily, per_day, kalorie)
     if not days:
         print("Brak danych w zakresie — nic nie zapisuję.")
         if not args.dry_run:
