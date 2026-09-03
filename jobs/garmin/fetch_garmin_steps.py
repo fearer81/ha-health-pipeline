@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Pobiera z Garmin Connect kroki, dystans i pływanie, zapisuje do CSV.
+Pobiera z Garmin Connect kroki, dystans, pływanie i kalorie; zapisuje do CSV.
 
   user/kroki.csv     - jeden wiersz na dzień; nowe dni dopisywane,
                        istniejące aktualizowane (klucz = Date)
   health/kroki.json  - heartbeat + lastSync zegarka
 
 Pływanie (parentTypeId 26) NIE wchodzi do dystansu lądowego - Garmin nie
-dolicza go do totalDistance. Ma własne kolumny. Czas liczony wspólnie.
+dolicza go do totalDistance. Ma własne kolumny. Czas i kalorie liczone wspólnie.
+
+Kalorie = suma pola 'calories' ze wszystkich aktywności dnia (brutto, jak
+w aplikacji Garmin Connect). To NIE jest całodobowa suma kalorii.
 
 Scalanie po NAZWACH kolumn - dołożenie kolumny nie psuje starych wierszy.
 """
@@ -43,7 +46,7 @@ HDR = [
     "Unix Time", "Date", "Daily Steps", "Activity Steps",
     "Daily Distance [km]", "Distance [km]",
     "Swim Distance [km]", "Swim Lengths",
-    "Duration [hh:mm:ss]", "Last Update",
+    "Duration [hh:mm:ss]", "Calories [kcal]", "Last Update",
 ]
 
 COLS_DANE = [c for c in HDR if c != "Last Update"]
@@ -231,6 +234,7 @@ def fetch_acts(client, start, end):
             "dystans_km": round(float(pick(a, "distance") or 0) / 1000, 2),
             "dlugosci": int(pick(a, "activeLengths") or 0) if plywanie else 0,
             "czas_s": int(round(float(pick(a, "duration") or 0))),
+            "kcal": int(round(float(pick(a, "calories") or 0))),
         })
 
     for day in out:
@@ -265,7 +269,8 @@ def build_days(daily, per_day):
         dyst_swim = round(sum(a["dystans_km"] for a in woda), 2)
         dlug_swim = sum(a["dlugosci"] for a in woda)
         dyst_dzien = round(dyst_m / 1000, 2)
-        czas_s = sum(a["czas_s"] for a in acts)   # czas: wszystko razem
+        czas_s = sum(a["czas_s"] for a in acts)     # czas: wszystko razem
+        kcal = sum(a["kcal"] for a in acts)         # kalorie: wszystko razem
 
         days.append({
             "data": d,
@@ -284,6 +289,7 @@ def build_days(daily, per_day):
             "swim_dlugosci": dlug_swim,
             "czas_s": czas_s,
             "czas": hhmmss(czas_s),
+            "kcal": kcal,
         })
     return days
 
@@ -299,6 +305,7 @@ def row_dict(d, stamp):
         "Swim Distance [km]": f"{d['swim_km']:.2f}",
         "Swim Lengths": str(d["swim_dlugosci"]),
         "Duration [hh:mm:ss]": d["czas"],
+        "Calories [kcal]": str(d["kcal"]),
         "Last Update": stamp,
     }
 
@@ -329,11 +336,11 @@ def merge(days, istniejace, stamp):
 
 # ===== RAPORT =====
 def print_table(days):
-    print("\n" + "=" * 112)
+    print("\n" + "=" * 120)
     print(f"{'Dzień':<14}{'Kroki dz.':>10}{'Kroki akt.':>11}{'n':>3}"
           f"{'Dyst. dz.':>10}{'Dyst. akt.':>11}{'Poza km':>9}"
-          f"{'Basen km':>10}{'Dług.':>7}{'Czas':>10}{'Flaga':>14}")
-    print("=" * 112)
+          f"{'Basen km':>10}{'Dług.':>7}{'Czas':>10}{'kcal':>8}{'Flaga':>14}")
+    print("=" * 120)
     for d in days:
         flag = "ROZBIEŻNOŚĆ" if d["rozbieznosc"] else ""
         print(f"{d['data']} {d['dzien']:<4}"
@@ -342,8 +349,8 @@ def print_table(days):
               f"{d['dystans_dzienny']:>10.2f}{d['dystans_aktywnosci']:>11.2f}"
               f"{d['poza_dystans']:>9.2f}"
               f"{d['swim_km']:>10.2f}{d['swim_dlugosci']:>7}"
-              f"{d['czas']:>10}{flag:>14}".replace(",", " "))
-    print("-" * 112)
+              f"{d['czas']:>10}{d['kcal']:>8,}{flag:>14}".replace(",", " "))
+    print("-" * 120)
     print(f"{'RAZEM':<14}"
           f"{sum(d['kroki_dzienne'] for d in days):>10,}"
           f"{sum(d['kroki_aktywnosci'] for d in days):>11,}"
@@ -353,8 +360,9 @@ def print_table(days):
           f"{sum(d['poza_dystans'] for d in days):>9.2f}"
           f"{sum(d['swim_km'] for d in days):>10.2f}"
           f"{sum(d['swim_dlugosci'] for d in days):>7}"
-          f"{hhmmss(sum(d['czas_s'] for d in days)):>10}".replace(",", " "))
-    print("=" * 112)
+          f"{hhmmss(sum(d['czas_s'] for d in days)):>10}"
+          f"{sum(d['kcal'] for d in days):>8,}".replace(",", " "))
+    print("=" * 120)
 
 
 # ===== MAIN =====

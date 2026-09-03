@@ -141,6 +141,7 @@ def get_rows():
                     "poza_km": round(max(0.0, dyst_dz - dyst_akt), 2),
                     "swim_km": safe_float(r.get("Swim Distance [km]")),
                     "swim_dlugosci": safe_int(r.get("Swim Lengths")),
+                    "kcal": safe_int(r.get("Calories [kcal]")),
                     "czas": (r.get("Duration [hh:mm:ss]") or "00:00:00").strip(),
                     "aktualizacja": (r.get("Last Update") or "").strip(),
                 })

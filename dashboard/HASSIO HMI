@@ -1777,6 +1777,14 @@ views:
                     return (n > 0) ? n : '-';
                   })()
                 align: center
+              - name: 🔥<br><small>kcal</small>
+                data: rows
+                modify: |-
+                  (function(){
+                    const k = parseInt(x.kcal, 10);
+                    return (k > 0) ? k.toLocaleString('pl-PL') : '-';
+                  })()
+                align: center
               - name: ⏱️<br><small>Czas</small>
                 data: rows
                 modify: |-

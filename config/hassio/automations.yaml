@@ -2107,7 +2107,7 @@
   actions:
   - delay:
       hours: 3
-      minutes: 45
+      minutes: 30
       seconds: 0
       milliseconds: 0
   - device_id: 8d15be71266bd86a527be15fc39ac3ec
