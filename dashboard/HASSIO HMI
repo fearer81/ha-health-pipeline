@@ -1104,7 +1104,11 @@ views:
                       @page { size: A4 portrait; margin: 12mm; }
                       * { -webkit-print-color-adjust: exact !important;
                           print-color-adjust: exact !important; }
-                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222; font-size:11pt; margin:0; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
                       h1 { font-size:16pt; margin:0 0 2px; }
                       .sub { color:#666; font-size:10pt; margin-bottom:14px; }
                       .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
@@ -1134,8 +1138,12 @@ views:
                       .stopka { margin-top:12px; font-size:8pt; color:#888;
                                 border-top:1px solid #ddd; padding-top:6px; }
                       .noprint { margin-bottom:14px; }
-                      @media print { .noprint { display:none; } body { font-size:10pt; } }
-                    </style></head><body>
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:10pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
 
                     <div class="noprint">
                       <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
@@ -1144,7 +1152,9 @@ views:
 
                     <h1>Pomiary ciśnienia tętniczego</h1>
 
-                    <div class="sub">Okres: <b>${okres}</b>
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp;
+                    Ciśnieniomierz Omron M4 Intelli IT
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
 
                     <div class="box">
                       <div class="grid">
@@ -1175,7 +1185,16 @@ views:
                       <tbody>${wiersze}</tbody>
                     </table>
 
+
+                    <div class="stopka">
+                      Pomiary własne wykonane ciśnieniomierzem Omron M4 Intelli IT (walidowany klinicznie),
+                      eksport automatyczny bez ręcznej edycji. Klasyfikacja wg wytycznych ESC/ESH.
+                    </div>
+
+                    </div>
+
                     </body></html>`;
+
 
                     const w = window.open('', '_blank');
 
@@ -1637,7 +1656,7 @@ views:
                 service: browser_mod.javascript
                 data:
                   code: >
-                    const DNI_WSTECZ = 60;
+                    const DNI_WSTECZ = 30;
 
                     const all =
                     hass.states['sensor.xiaomi_s400_history'].attributes.rows ||
@@ -1662,10 +1681,8 @@ views:
                     };
 
 
-                    const num = (v) => {
-                      const f = parseFloat(v);
-                      return isNaN(f) ? null : f;
-                    };
+                    const num = (v) => { const f = parseFloat(v); return
+                    isNaN(f) ? null : f; };
 
 
                     const pom = [];
@@ -1683,7 +1700,6 @@ views:
                         woda: num(r.body_water),
                         trzewny: num(r.visceral_fat),
                         bmr: num(r.bmr),
-                        zrzuc: num(r.fat_to_ideal),
                         zmiana: num(r.change)
                       });
                     });
@@ -1763,7 +1779,11 @@ views:
                       @page { size: A4 portrait; margin: 12mm; }
                       * { -webkit-print-color-adjust: exact !important;
                           print-color-adjust: exact !important; }
-                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222; font-size:11pt; margin:0; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
                       h1 { font-size:16pt; margin:0 0 2px; }
                       .sub { color:#666; font-size:10pt; margin-bottom:14px; }
                       .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
@@ -1791,8 +1811,12 @@ views:
                       .stopka { margin-top:12px; font-size:8pt; color:#888;
                                 border-top:1px solid #ddd; padding-top:6px; }
                       .noprint { margin-bottom:14px; }
-                      @media print { .noprint { display:none; } body { font-size:10pt; } }
-                    </style></head><body>
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:10pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
 
                     <div class="noprint">
                       <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
@@ -1843,6 +1867,8 @@ views:
                       Pomiary własne wykonane wagą bioimpedancyjną Xiaomi S400, eksport automatyczny
                       bez ręcznej edycji. Klasyfikacja BMI wg WHO. Skład ciała z pomiaru bioimpedancji
                       — wartość orientacyjna, zależna od nawodnienia i pory pomiaru.
+                    </div>
+
                     </div>
 
                     </body></html>`;
@@ -2062,6 +2088,236 @@ views:
                 ha-card th:first-child {
                   width: 1px;
                 }
+          - type: custom:button-card
+            name: Eksport HTML
+            icon: mdi:printer
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const DNI_WSTECZ = 60;
+
+                    const all =
+                    hass.states['sensor.garmin_kroki_historia'].attributes.rows
+                    || [];
+
+                    const prog = Date.now() / 1000 - DNI_WSTECZ * 86400;
+
+
+                    const num = (v) => { const f = parseFloat(v); return
+                    isNaN(f) ? 0 : f; };
+
+                    const cel = (k) => {
+                      if (k >= 10000) return ['🟢', '#1e7e45', '#e6f5ec'];
+                      if (k >= 7500)  return ['🔵', '#1f6391', '#e8f2fa'];
+                      if (k >= 5000)  return ['🟡', '#8a6d00', '#fdf8e1'];
+                      return ['⚪', '#666', '#f5f5f5'];
+                    };
+
+
+                    const dni = [];
+
+                    all.forEach(r => {
+                      const ts = parseInt(r.ts, 10);
+                      if (!ts || ts < prog) return;
+                      const kroki = Math.max(num(r.kroki), num(r.aktywnosci));
+                      const km = Math.max(num(r.dystans_dzienny), num(r.dystans));
+                      const czasS = String(r.czas || '00:00:00').split(':')
+                                    .reduce((a, b) => a * 60 + parseInt(b, 10), 0);
+                      dni.push({
+                        dt: new Date(ts * 1000),
+                        kroki: kroki,
+                        aktywnosci: num(r.aktywnosci),
+                        poza: Math.max(0, num(r.kroki) - num(r.aktywnosci)),
+                        km: km,
+                        swimKm: num(r.swim_km),
+                        swimDl: parseInt(r.swim_dlugosci, 10) || 0,
+                        czas: String(r.czas || '00:00:00'),
+                        czasS: czasS,
+                        kcal: parseInt(r.kcal, 10) || 0
+                      });
+                    });
+
+                    dni.sort((a, b) => b.dt - a.dt);
+
+
+                    if (!dni.length) { alert('Brak danych w wybranym okresie.');
+                    return; }
+
+
+                    const suma = (k) => dni.reduce((a, x) => a + x[k], 0);
+
+                    const fmtD = (dt) => String(dt.getDate()).padStart(2,'0') +
+                    '.' +
+                                         String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
+                    const dow = ['nd','pon','wt','śr','czw','pt','sob'];
+
+                    const hhmm = (s) => Math.floor(s / 3600) + ' godz ' +
+                                        String(Math.floor((s % 3600) / 60)).padStart(2,'0') + ' min';
+
+                    const dniTren = dni.filter(x => x.czasS > 0).length;
+
+                    const dniSwim = dni.filter(x => x.swimDl > 0).length;
+
+                    const srKroki = Math.round(suma('kroki') / dni.length);
+
+                    const naj = dni.reduce((p, q) => (q.kroki > p.kroki ? q :
+                    p));
+
+
+                    const wiersze = dni.map(x => {
+                      const [ico, kolor, tlo] = cel(x.kroki);
+                      return '<tr>' +
+                        '<td class="dt">' + fmtD(x.dt) +
+                          ' <span class="godz">' + dow[x.dt.getDay()] + '</span></td>' +
+                        '<td class="num kr" style="color:' + kolor +
+                          ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
+                          ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
+                          '<span class="ico">' + ico + '</span> <b>' +
+                          x.kroki.toLocaleString('pl-PL') + '</b></td>' +
+                        '<td class="num">' + (x.aktywnosci > 0 ? x.aktywnosci.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '<td class="num">' + (x.poza > 0 ? x.poza.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '<td class="num">' + (x.km > 0 ? x.km.toFixed(2) : '—') + '</td>' +
+                        '<td class="num swim">' + (x.swimKm > 0 ? x.swimKm.toFixed(2) : '—') + '</td>' +
+                        '<td class="num swim">' + (x.swimDl > 0 ? x.swimDl : '—') + '</td>' +
+                        '<td class="num">' + (x.czasS > 0 ? x.czas.substring(0,5) : '—') + '</td>' +
+                        '<td class="num">' + (x.kcal > 0 ? x.kcal.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '</tr>';
+                    }).join('');
+
+
+                    const okres = fmtD(dni[dni.length - 1].dt) + ' – ' +
+                    fmtD(dni[0].dt);
+
+
+                    const html = `<!DOCTYPE html><html lang="pl"><head><meta
+                    charset="utf-8">
+
+                    <title>Aktywność fizyczna — ${okres}</title>
+
+                    <style>
+                      @page { size: A4 portrait; margin: 12mm; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
+                      h1 { font-size:16pt; margin:0 0 2px; }
+                      .sub { color:#666; font-size:10pt; margin-bottom:14px; }
+                      .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
+                      .grid { display:flex; gap:24px; flex-wrap:wrap; }
+                      .kpi { min-width:92px; }
+                      .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
+                      .kpi .val { font-size:16pt; font-weight:bold; line-height:1.15; }
+                      .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
+                      table { width:100%; border-collapse:collapse; font-size:9pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 5px;
+                           border-bottom:2px solid #999; font-size:8pt;
+                           text-transform:uppercase; letter-spacing:.3px; }
+                      td { padding:3px 5px; border-bottom:1px solid #e8e8e8; }
+                      td.num, th.num { text-align:center; }
+                      td.dt { white-space:nowrap; }
+                      td.dt .godz { color:#555; font-size:8pt; }
+                      td.kr { padding-left:11px !important;
+                              background-repeat:no-repeat; background-size:100% 100%; }
+                      th.kr { padding-left:11px; }
+                      td.swim, th.swim { background:#f4fafd; }
+                      .ico { font-size:9pt; }
+                      tbody tr:nth-child(even) td:not(.kr):not(.swim) { background:#fafafa; }
+                      thead { display:table-header-group; }
+                      tr { page-break-inside:avoid; }
+                      .stopka { margin-top:12px; font-size:8pt; color:#888;
+                                border-top:1px solid #ddd; padding-top:6px; }
+                      .noprint { margin-bottom:14px; }
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:9.5pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
+
+                    <div class="noprint">
+                      <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
+                        🖨️ Drukuj / zapisz jako PDF</button>
+                    </div>
+
+                    <h1>Aktywność fizyczna</h1>
+
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp; Garmin
+                    Venu 4
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
+
+                    <div class="box">
+                      <div class="grid">
+                        <div class="kpi"><div class="lbl">Dni</div><div class="val">${dni.length}</div></div>
+                        <div class="kpi"><div class="lbl">Kroki razem</div>
+                          <div class="val">${suma('kroki').toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Śr. na dzień</div>
+                          <div class="val">${srKroki.toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Dystans</div>
+                          <div class="val">${suma('km').toFixed(1)} <small>km</small></div></div>
+                        <div class="kpi"><div class="lbl">Dni z treningiem</div>
+                          <div class="val">${dniTren} <small>/ ${dni.length}</small></div></div>
+                        <div class="kpi"><div class="lbl">Czas treningów</div>
+                          <div class="val" style="font-size:13pt">${hhmm(suma('czasS'))}</div></div>
+                        <div class="kpi"><div class="lbl">Basen</div>
+                          <div class="val">${suma('swimKm').toFixed(2)} <small>km / ${dniSwim} dni</small></div></div>
+                        <div class="kpi"><div class="lbl">Kalorie aktywne</div>
+                          <div class="val">${suma('kcal').toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Rekord</div>
+                          <div class="val">${naj.kroki.toLocaleString('pl-PL')}
+                            <small>${fmtD(naj.dt).substring(0,5)}</small></div></div>
+                      </div>
+                    </div>
+
+
+                    <table>
+                      <thead><tr>
+                        <th>Data</th>
+                        <th class="num kr">Kroki<br><small style="font-weight:normal">razem</small></th>
+                        <th class="num">Kroki<br><small style="font-weight:normal">z treningu</small></th>
+                        <th class="num">Kroki<br><small style="font-weight:normal">poza</small></th>
+                        <th class="num">Dystans<br><small style="font-weight:normal">km</small></th>
+                        <th class="num swim">Basen<br><small style="font-weight:normal">km</small></th>
+                        <th class="num swim">Basen<br><small style="font-weight:normal">długości</small></th>
+                        <th class="num">Czas<br><small style="font-weight:normal">treningu</small></th>
+                        <th class="num">Kalorie<br><small style="font-weight:normal">aktywne</small></th>
+                      </tr></thead>
+                      <tbody>${wiersze}</tbody>
+                    </table>
+
+
+                    <div class="stopka">
+                      Dane z zegarka Garmin Venu 4, eksport automatyczny bez ręcznej edycji.
+                      Kroki „razem" to wartość większa z licznika dziennego i sumy treningów — na bieżni
+                      nadgarstek rejestruje mniej kroków niż czujnik nożny. Dystans basenowy liczony osobno,
+                      nie wchodzi do dystansu lądowego. Kalorie aktywne = wydatek ponad podstawową
+                      przemianę materii. Kolor kroków: 🟢 ≥10 000, 🔵 ≥7 500, 🟡 ≥5 000.
+                    </div>
+
+                    </div>
+
+                    </body></html>`;
+
+
+                    const w = window.open('', '_blank');
+
+                    if (!w) { alert('Przeglądarka zablokowała nowe okno — zezwól
+                    na wyskakujące okienka.'); return; }
+
+                    w.document.write(html);
+
+                    w.document.close();
           - type: custom:button-card
             name: Eksport CSV
             icon: mdi:file-download-outline
