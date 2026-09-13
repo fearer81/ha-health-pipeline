@@ -50,10 +50,7 @@ def format_history_row(p):
         "body_water": f"{p['body_water']:.1f} %" if p["body_water"] else "0.0 %",
         "visceral_fat": f"{p['visceral_fat']:.1f}" if p["visceral_fat"] else "0.0",
         "bmr": f"{p['bmr']:.1f} kcal" if p["bmr"] else "0 kcal",
-        "metabolic_age": f"{p['metabolic_age']:.1f} y" if p["metabolic_age"] else "0 y",
-        "avg7": p.get("avg7"),
-        "tempo": p.get("tempo"),
-        "lbm": p.get("lbm")
+        "metabolic_age": f"{p['metabolic_age']:.1f} y" if p["metabolic_age"] else "0 y"
     }
 
 def format_state_row(p):
@@ -132,28 +129,6 @@ def connect_mqtt():
             print(f"[MQTT] Connect error: {e} - ponowna próba za 30s", flush=True)
             time.sleep(30)
 
-def dodaj_trend(parsed_rows):
-    """Średnia krocząca z 7 ostatnich ważeń + tempo w kg/tydzień.
-    parsed_rows są posortowane malejąco, więc liczymy na odwróconej kopii."""
-    chrono = list(reversed(parsed_rows))
-
-    for i, r in enumerate(chrono):
-        okno = [x for x in chrono[max(0, i - 6):i + 1] if x.get("weight")]
-        r["avg7"] = round(sum(x["weight"] for x in okno) / len(okno), 2) \
-                    if len(okno) >= 3 else None
-
-    for i, r in enumerate(chrono):
-        r["tempo"] = None
-        if r["avg7"] is None or i < 7:
-            continue
-        prev = chrono[i - 7]
-        if prev.get("avg7") is None:
-            continue
-        dni = (r["ts"] - prev["ts"]) / 86400.0
-        if dni < 3 or dni > 21:
-            continue          # zbyt gęsto lub zbyt rzadko, żeby coś znaczyło
-        r["tempo"] = round((r["avg7"] - prev["avg7"]) / dni * 7, 2)
-
 def main():
     client = connect_mqtt()
 
@@ -176,7 +151,6 @@ def main():
                         if p["weight"]: parsed_rows.append(p)
                     
                     parsed_rows.sort(key=lambda x: x["ts"], reverse=True)
-                    dodaj_trend(parsed_rows)
                     
                     if parsed_rows:
                         # 1. Historia (Wszystkie klucze dla YAML)

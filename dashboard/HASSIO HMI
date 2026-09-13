@@ -1580,19 +1580,36 @@ views:
                 data: rows
                 modify: x.weight && parseFloat(x.weight).toFixed(1)
                 align: center
+              - name: 📊<br>Śr. 7d (kg)
+                data: rows
+                modify: |-
+                  (function(){
+                    const a = parseFloat(x.avg7);
+                    return isNaN(a) ? '—' : a.toFixed(2);
+                  })()
+                align: center
+              - name: 📈<br>Tempo (kg/tyg)
+                data: rows
+                modify: |-
+                  (function(){
+                    const t = parseFloat(x.tempo);
+                    if (isNaN(t)) { return '—'; }
+                    const s = (t > 0 ? '+' : '') + t.toFixed(2);
+                    if (t <= -1.2) { return '⚠ ' + s; }
+                    if (t <= -0.4) { return '🟢 ' + s; }
+                    if (t < 0.1)   { return '🟡 ' + s; }
+                    return '🔴 ' + s;
+                  })()
+                align: center
               - name: 📉<br>Zrzuć (kg)
                 data: rows
                 modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
                 align: center
-              - name: Δ<br>Zm (kg)
-                data: rows
-                modify: x.change && parseFloat(x.change).toFixed(1)
-                align: center
-              - name: 🧍<br>BMI (kg_m2)
+              - name: 🧍<br>BMI (kg)
                 data: rows
                 modify: x.bmi && parseFloat(x.bmi).toFixed(1)
                 align: center
-              - name: 🟡<br>Tłuszcz (%)
+              - name: 🟡<br>Fat (%)
                 data: rows
                 modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
                 align: center
@@ -1600,7 +1617,7 @@ views:
                 data: rows
                 modify: x.body_water && parseFloat(x.body_water).toFixed(1)
                 align: center
-              - name: 🧠<br>Tłuszcz Trzewny
+              - name: 🧠<br>Tłusz trzew
                 data: rows
                 modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
                 align: center
@@ -1615,31 +1632,38 @@ views:
             card_mod:
               style: |
                 ha-card {
-                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  user-select: text !important;
                   max-height: 480px;
-                  overflow-y: auto;       /* Przewijanie pionowe */
-                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  overflow-y: auto;
+                  overflow-x: auto;
                   font-size: 12px; 
                 }
                 ha-card table {
-                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  width: 99% !important;
                   border-collapse: collapse;
                 }
-                /* DANE: Zawsze w jednej linii */
                 ha-card td {
                   white-space: nowrap !important;
-                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                  padding: 2px 2px;
                 }
-                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
                 ha-card thead th {
-                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
-                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  white-space: normal !important;
+                  text-align: center;
                   vertical-align: bottom;
                   padding: 2px;
                   position: sticky;
                   top: 0;
                   background: var(--card-background-color);
                   z-index: 10;
+                }
+                /* separacja bloku trendu od reszty */
+                ha-card td:nth-child(3),
+                ha-card th:nth-child(3) {
+                  border-left: 1px solid var(--divider-color);
+                }
+                ha-card td:nth-child(5),
+                ha-card th:nth-child(5) {
+                  border-left: 1px solid var(--divider-color);
                 }
           - type: custom:button-card
             name: Eksport HTML
@@ -1656,7 +1680,7 @@ views:
                 service: browser_mod.javascript
                 data:
                   code: >
-                    const DNI_WSTECZ = 30;
+                    const DNI_WSTECZ = 60;
 
                     const all =
                     hass.states['sensor.xiaomi_s400_history'].attributes.rows ||
@@ -1671,6 +1695,14 @@ views:
                       if (bmi >= 25)   return ['🟠', 'Nadwaga',            '#a04000', '#fdf0e3'];
                       if (bmi >= 18.5) return ['🟢', 'Waga prawidłowa',    '#1e7e45', '#e6f5ec'];
                       return ['🔵', 'Niedowaga', '#1f6391', '#e8f2fa'];
+                    };
+
+
+                    const tempoOc = (t) => {
+                      if (t <= -1.2) return ['⚠', '#a04000'];
+                      if (t <= -0.4) return ['🟢', '#1e7e45'];
+                      if (t <   0.1) return ['🟡', '#8a6d00'];
+                      return ['🔴', '#b03a2e'];
                     };
 
 
@@ -1695,12 +1727,14 @@ views:
                       pom.push({
                         dt: new Date(ts * 1000),
                         waga: w,
+                        avg7: num(r.avg7),
+                        tempo: num(r.tempo),
                         bmi: num(r.bmi),
                         tluszcz: num(r.body_fat),
                         woda: num(r.body_water),
                         trzewny: num(r.visceral_fat),
-                        bmr: num(r.bmr),
-                        zmiana: num(r.change)
+                        lbm: num(r.lbm),
+                        bmr: num(r.bmr)
                       });
                     });
 
@@ -1741,24 +1775,54 @@ views:
                     const minW = Math.min(...wagi), maxW = Math.max(...wagi);
 
 
+                    // tempo z ostatniego pomiaru, który je ma
+
+                    const zT = pom.find(x => x.tempo !== null);
+
+                    const tempoTxt = zT ? ((zT.tempo > 0 ? '+' : '') +
+                    zT.tempo.toFixed(2)) : '—';
+
+                    const tempoKol = zT ? tempoOc(zT.tempo)[1] : '#666';
+
+
+                    // utrata tłuszczu vs beztłuszczowej w okresie
+
+                    let bilans = '';
+
+                    if (pierwszy.lbm !== null && ostatni.lbm !== null &&
+                    Math.abs(delta) > 0.3) {
+                      const dLbm = ostatni.lbm - pierwszy.lbm;
+                      const dFat = delta - dLbm;
+                      bilans = '<div class="bilans">W okresie: zmiana masy <b>' + znak + delta.toFixed(1) +
+                               ' kg</b> — w tym tkanka tłuszczowa <b style="color:' +
+                               (dFat < 0 ? '#1e7e45' : '#b03a2e') + '">' +
+                               (dFat > 0 ? '+' : '') + dFat.toFixed(1) + ' kg</b>, masa beztłuszczowa <b style="color:' +
+                               (dLbm < -0.5 ? '#a04000' : '#666') + '">' +
+                               (dLbm > 0 ? '+' : '') + dLbm.toFixed(1) + ' kg</b>.</div>';
+                    }
+
+
                     const wiersze = pom.map(x => {
                       const [ico, opis, kolor, tlo] = x.bmi ? kat(x.bmi) : ['', '—', '#666', '#fff'];
                       const [tIco, tKolor] = x.trzewny ? trzewny(x.trzewny) : ['', '#666'];
-                      const zm = x.zmiana;
-                      const zmTxt = (zm === null || zm === 0) ? '—'
-                                  : (zm > 0 ? '+' : '') + zm.toFixed(1);
-                      const zmKolor = zm > 0 ? '#b03a2e' : (zm < 0 ? '#1e7e45' : '#666');
+                      let tempoTd = '<td class="num">—</td>';
+                      if (x.tempo !== null) {
+                        const [tpIco, tpKol] = tempoOc(x.tempo);
+                        tempoTd = '<td class="num" style="color:' + tpKol + '"><span class="ico">' +
+                                  tpIco + '</span> ' + (x.tempo > 0 ? '+' : '') + x.tempo.toFixed(2) + '</td>';
+                      }
                       return '<tr>' +
                         '<td class="dt">' + fmtD(x.dt) + ' <span class="godz">' + fmtT(x.dt) + '</span></td>' +
                         '<td class="num waga"><b>' + x.waga.toFixed(1) + '</b></td>' +
-                        '<td class="num" style="color:' + zmKolor + '">' + zmTxt + '</td>' +
+                        '<td class="num trend">' + (x.avg7 !== null ? x.avg7.toFixed(2) : '—') + '</td>' +
+                        tempoTd.replace('class="num"', 'class="num trend"') +
                         '<td class="num">' + (x.bmi !== null ? x.bmi.toFixed(1) : '—') + '</td>' +
                         '<td class="num">' + (x.tluszcz !== null ? x.tluszcz.toFixed(1) : '—') + '</td>' +
                         '<td class="num">' + (x.woda !== null ? x.woda.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.lbm !== null ? x.lbm.toFixed(1) : '—') + '</td>' +
                         '<td class="num" style="color:' + tKolor + '">' +
                           (x.trzewny !== null ? '<span class="ico">' + tIco + '</span> ' +
                            Math.round(x.trzewny) : '—') + '</td>' +
-                        '<td class="num">' + (x.bmr !== null ? Math.round(x.bmr) : '—') + '</td>' +
                         '<td class="kat" style="color:' + kolor +
                           ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
                           ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
@@ -1787,25 +1851,28 @@ views:
                       h1 { font-size:16pt; margin:0 0 2px; }
                       .sub { color:#666; font-size:10pt; margin-bottom:14px; }
                       .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
-                      .grid { display:flex; gap:26px; flex-wrap:wrap; }
-                      .kpi { min-width:96px; }
+                      .grid { display:flex; gap:24px; flex-wrap:wrap; }
+                      .kpi { min-width:92px; }
                       .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
                       .kpi .val { font-size:17pt; font-weight:bold; line-height:1.15; }
                       .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
-                      table { width:100%; border-collapse:collapse; font-size:9.5pt; }
-                      th { background:#f2f2f2; text-align:left; padding:5px 6px;
-                           border-bottom:2px solid #999; font-size:8.5pt;
+                      .bilans { margin-top:10px; padding-top:8px; border-top:1px solid #e0e0e0;
+                                font-size:9.5pt; color:#444; }
+                      table { width:100%; border-collapse:collapse; font-size:9pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 5px;
+                           border-bottom:2px solid #999; font-size:8pt;
                            text-transform:uppercase; letter-spacing:.3px; }
-                      td { padding:4px 6px; border-bottom:1px solid #e8e8e8; }
+                      td { padding:3px 5px; border-bottom:1px solid #e8e8e8; }
                       td.num, th.num { text-align:center; }
                       td.dt { white-space:nowrap; }
                       td.dt .godz { color:#555; }
                       td.waga { font-size:10.5pt; }
+                      td.trend, th.trend { background:#f6f8fb; }
                       td.kat { font-weight:600; padding-left:11px !important;
                                background-repeat:no-repeat; background-size:100% 100%; }
                       th.kat { padding-left:11px; }
-                      .ico { font-size:10pt; }
-                      tbody tr:nth-child(even) { background:#fafafa; }
+                      .ico { font-size:9pt; }
+                      tbody tr:nth-child(even) td:not(.trend):not(.kat) { background:#fafafa; }
                       thead { display:table-header-group; }
                       tr { page-break-inside:avoid; }
                       .stopka { margin-top:12px; font-size:8pt; color:#888;
@@ -1813,7 +1880,7 @@ views:
                       .noprint { margin-bottom:14px; }
                       @media print {
                         .noprint { display:none; }
-                        body { font-size:10pt; background:#fff; padding:0; }
+                        body { font-size:9.5pt; background:#fff; padding:0; }
                         .page { max-width:none; margin:0; padding:0; box-shadow:none; }
                       }
                     </style></head><body><div class="page">
@@ -1834,16 +1901,23 @@ views:
                         <div class="kpi"><div class="lbl">Pomiarów</div><div class="val">${pom.length}</div></div>
                         <div class="kpi"><div class="lbl">Aktualna</div>
                           <div class="val">${ostatni.waga.toFixed(1)} <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Średnia 7d</div>
+                          <div class="val">${ostatni.avg7 !== null ? ostatni.avg7.toFixed(2) : '—'}
+                            <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Tempo</div>
+                          <div class="val" style="color:${tempoKol}">${tempoTxt}
+                            <small>kg/tyg</small></div></div>
                         <div class="kpi"><div class="lbl">Zmiana</div>
-                          <div class="val" style="color:${kolorD}">${znak}${delta.toFixed(1)} <small>kg</small></div></div>
+                          <div class="val" style="color:${kolorD}">${znak}${delta.toFixed(1)}
+                            <small>kg</small></div></div>
                         <div class="kpi"><div class="lbl">Zakres</div>
                           <div class="val">${minW.toFixed(1)}–${maxW.toFixed(1)}</div></div>
-                        <div class="kpi"><div class="lbl">Śr. BMI</div><div class="val">${sr('bmi')}</div></div>
                         <div class="kpi"><div class="lbl">Śr. tłuszcz</div>
                           <div class="val">${sr('tluszcz')} <small>%</small></div></div>
                         <div class="kpi"><div class="lbl">Śr. woda</div>
                           <div class="val">${sr('woda')} <small>%</small></div></div>
                       </div>
+                      ${bilans}
                     </div>
 
 
@@ -1851,12 +1925,13 @@ views:
                       <thead><tr>
                         <th>Data i godzina</th>
                         <th class="num">Waga<br><small style="font-weight:normal">kg</small></th>
-                        <th class="num">Zmiana<br><small style="font-weight:normal">kg</small></th>
+                        <th class="num trend">Średnia<br><small style="font-weight:normal">7 ważeń</small></th>
+                        <th class="num trend">Tempo<br><small style="font-weight:normal">kg/tydzień</small></th>
                         <th class="num">BMI<br><small style="font-weight:normal">kg/m²</small></th>
                         <th class="num">Tłuszcz<br><small style="font-weight:normal">%</small></th>
                         <th class="num">Woda<br><small style="font-weight:normal">%</small></th>
+                        <th class="num">LBM<br><small style="font-weight:normal">kg</small></th>
                         <th class="num">Tłuszcz<br><small style="font-weight:normal">trzewny</small></th>
-                        <th class="num">BMR<br><small style="font-weight:normal">kcal</small></th>
                         <th class="kat">Kategoria BMI</th>
                       </tr></thead>
                       <tbody>${wiersze}</tbody>
@@ -1865,8 +1940,10 @@ views:
 
                     <div class="stopka">
                       Pomiary własne wykonane wagą bioimpedancyjną Xiaomi S400, eksport automatyczny
-                      bez ręcznej edycji. Klasyfikacja BMI wg WHO. Skład ciała z pomiaru bioimpedancji
-                      — wartość orientacyjna, zależna od nawodnienia i pory pomiaru.
+                      bez ręcznej edycji. Klasyfikacja BMI wg WHO. Średnia z 7 kolejnych ważeń wygładza
+                      wahania nawodnienia; tempo to zmiana tej średniej przeliczona na tydzień.
+                      LBM = masa beztłuszczowa. Skład ciała z bioimpedancji — wartość orientacyjna,
+                      zależna od nawodnienia i pory pomiaru.
                     </div>
 
                     </div>

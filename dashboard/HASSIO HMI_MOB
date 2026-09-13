@@ -865,6 +865,236 @@ views:
                 ha-card th:first-child {
                   width: 1px;
                 }
+          - type: custom:button-card
+            name: Eksport HTML
+            icon: mdi:printer
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const DNI_WSTECZ = 30;
+
+                    const all =
+                    hass.states['sensor.omron_m4_history'].attributes.rows ||
+                    [];
+
+                    const prog = Date.now() / 1000 - DNI_WSTECZ * 86400;
+
+
+                    const kat = (s, d) => {
+                      if (s >= 180 || d >= 110) return ['⛔', 'S3 — nadciśnienie 3. stopnia', '#8e1b12', '#fbe3e0'];
+                      if (s >= 160 || d >= 100) return ['🔴', 'S2 — nadciśnienie 2. stopnia', '#b03a2e', '#fdeae7'];
+                      if (s >= 140 || d >=  90) return ['🟠', 'S1 — nadciśnienie 1. stopnia', '#a04000', '#fdf0e3'];
+                      if (s >= 130 || d >=  85) return ['🟡', 'Wysokie prawidłowe', '#8a6d00', '#fdf8e1'];
+                      if (s >= 120 || d >=  80) return ['🔵', 'Prawidłowe', '#1f6391', '#e8f2fa'];
+                      if (s <   90 || d <   60) return ['🟣', 'Hipotonia', '#6c3483', '#f3e9f7'];
+                      return ['🟢', 'Optymalne', '#1e7e45', '#e6f5ec'];
+                    };
+
+
+                    const ppOcena = (v) => {
+                      if (v >= 60) return ['💔', 'wysokie', '#b03a2e'];
+                      if (v >= 50) return ['🧡', 'podwyższone', '#a04000'];
+                      if (v >= 40) return ['💚', 'prawidłowe', '#1e7e45'];
+                      return ['💙', 'niskie', '#1f6391'];
+                    };
+
+
+                    const pom = [];
+
+                    all.forEach(r => {
+                      if (r.n === 0 || !r.pressure || r.ts < prog) return;
+                      const p = String(r.pressure).replace(' mmHg', '').split('/');
+                      const s = parseInt(p[0], 10), d = parseInt(p[1], 10);
+                      if (isNaN(s) || isNaN(d)) return;
+                      const dt = new Date(r.ts * 1000);
+                      pom.push({
+                        dt: dt, s: s, d: d, pp: s - d,
+                        puls: r.pulse ? parseInt(String(r.pulse).replace(' bpm', ''), 10) : null,
+                        rano: dt.getHours() < 12
+                      });
+                    });
+
+                    pom.sort((a, b) => b.dt - a.dt);
+
+
+                    if (!pom.length) { alert('Brak pomiarów w wybranym
+                    okresie.'); return; }
+
+
+                    const sr = (arr, k) => {
+                      const v = arr.map(x => x[k]).filter(x => x !== null && !isNaN(x));
+                      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : '—';
+                    };
+
+                    const fmtD = (dt) => String(dt.getDate()).padStart(2,'0') +
+                    '.' +
+                                         String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
+                    const fmtT = (dt) => String(dt.getHours()).padStart(2,'0') +
+                    ':' +
+                                         String(dt.getMinutes()).padStart(2,'0');
+
+                    const ranne = pom.filter(x => x.rano);
+
+                    const wiecz = pom.filter(x => !x.rano);
+
+                    const podw = pom.filter(x => x.s >= 140 || x.d >=
+                    90).length;
+
+
+                    const licz = {};
+
+                    pom.forEach(x => {
+                      const k = kat(x.s, x.d);
+                      const key = k[1];
+                      if (!licz[key]) licz[key] = { n: 0, ico: k[0], kolor: k[2], tlo: k[3] };
+                      licz[key].n++;
+                    });
+
+                    const rozklad = Object.entries(licz).sort((a, b) => b[1].n -
+                    a[1].n)
+                      .map(([k, v]) => '<span class="pill" style="color:' + v.kolor +
+                           ';background:' + v.tlo + ';border:1px solid ' + v.kolor + '">' +
+                           v.ico + ' ' + k + ': <b>' + v.n + '</b></span>').join(' ');
+
+                    const wiersze = pom.map(x => {
+                      const [ico, opis, kolor, tlo] = kat(x.s, x.d);
+                      const [pIco, pOpis, pKolor] = ppOcena(x.pp);
+                      return '<tr>' +
+                        '<td class="dt">' + fmtD(x.dt) + ' <span class="godz">' + fmtT(x.dt) + '</span></td>' +
+                        '<td class="num cis"><b>' + x.s + '</b> / <b>' + x.d + '</b></td>' +
+                        '<td class="num" style="color:' + pKolor + '" title="' + pOpis + '">' +
+                          '<span class="ico">' + pIco + '</span> <b>' + x.pp + '</b></td>' +
+                        '<td class="num">' + (x.puls || '—') + '</td>' +
+                        '<td class="kat" style="color:' + kolor +
+                          ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
+                          ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
+                          '<span class="ico">' + ico + '</span> ' + opis + '</td>' +
+                        '</tr>';
+                    }).join('');
+
+
+                    const okres = fmtD(pom[pom.length - 1].dt) + ' – ' +
+                    fmtD(pom[0].dt);
+
+
+                    const html = `<!DOCTYPE html><html lang="pl"><head><meta
+                    charset="utf-8">
+
+                    <title>Pomiary ciśnienia — ${okres}</title>
+
+                    <style>
+                      @page { size: A4 portrait; margin: 12mm; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
+                      h1 { font-size:16pt; margin:0 0 2px; }
+                      .sub { color:#666; font-size:10pt; margin-bottom:14px; }
+                      .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
+                      .grid { display:flex; gap:26px; flex-wrap:wrap; margin-bottom:8px; }
+                      .kpi { min-width:100px; }
+                      .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
+                      .kpi .val { font-size:17pt; font-weight:bold; line-height:1.15; }
+                      .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
+                      .pill { display:inline-block; border-radius:10px; padding:2px 9px;
+                              font-size:9pt; margin:2px 3px 2px 0; font-weight:600; }
+                      table { width:100%; border-collapse:collapse; font-size:9.5pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 6px;
+                           border-bottom:2px solid #999; font-size:8.5pt;
+                           text-transform:uppercase; letter-spacing:.3px; }
+                      td { padding:4px 6px; border-bottom:1px solid #e8e8e8; }
+                      td.num, th.num { text-align:center; }
+                      td.dt { white-space:nowrap; }
+                      td.dt .godz { color:#555; font-variant-numeric:tabular-nums; }
+                      td.cis { font-size:10.5pt; white-space:nowrap; }
+                      td.kat { font-weight:600; padding-left:11px !important;
+                               background-repeat:no-repeat; background-size:100% 100%; }
+                      th.kat { padding-left:11px; }
+                      .ico { font-size:10pt; }
+                      tbody tr:nth-child(even) { background:#fafafa; }
+                      thead { display:table-header-group; }
+                      tr { page-break-inside:avoid; }
+                      .stopka { margin-top:12px; font-size:8pt; color:#888;
+                                border-top:1px solid #ddd; padding-top:6px; }
+                      .noprint { margin-bottom:14px; }
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:10pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
+
+                    <div class="noprint">
+                      <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
+                        🖨️ Drukuj / zapisz jako PDF</button>
+                    </div>
+
+                    <h1>Pomiary ciśnienia tętniczego</h1>
+
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp;
+                    Ciśnieniomierz Omron M4 Intelli IT
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
+
+                    <div class="box">
+                      <div class="grid">
+                        <div class="kpi"><div class="lbl">Pomiarów</div><div class="val">${pom.length}</div></div>
+                        <div class="kpi"><div class="lbl">Średnia</div>
+                          <div class="val">${sr(pom,'s')}/${sr(pom,'d')} <small>mmHg</small></div></div>
+                        <div class="kpi"><div class="lbl">Rano (${ranne.length})</div>
+                          <div class="val">${ranne.length ? sr(ranne,'s') + '/' + sr(ranne,'d') : '—'}</div></div>
+                        <div class="kpi"><div class="lbl">Wieczór (${wiecz.length})</div>
+                          <div class="val">${wiecz.length ? sr(wiecz,'s') + '/' + sr(wiecz,'d') : '—'}</div></div>
+                        <div class="kpi"><div class="lbl">Tętno śr.</div>
+                          <div class="val">${sr(pom,'puls')} <small>bpm</small></div></div>
+                        <div class="kpi"><div class="lbl">≥ 140/90</div>
+                          <div class="val">${podw} <small>(${Math.round(podw / pom.length * 100)}%)</small></div></div>
+                      </div>
+                      <div>${rozklad}</div>
+                    </div>
+
+
+                    <table>
+                      <thead><tr>
+                        <th>Data i godzina</th>
+                        <th class="num">Ciśnienie<br><small style="font-weight:normal">mmHg</small></th>
+                        <th class="num">Ciśnienie tętna<br><small style="font-weight:normal">skurczowe − rozkurczowe</small></th>
+                        <th class="num">Tętno<br><small style="font-weight:normal">bpm</small></th>
+                        <th class="kat">Kategoria</th>
+                      </tr></thead>
+                      <tbody>${wiersze}</tbody>
+                    </table>
+
+
+                    <div class="stopka">
+                      Pomiary własne wykonane ciśnieniomierzem Omron M4 Intelli IT (walidowany klinicznie),
+                      eksport automatyczny bez ręcznej edycji. Klasyfikacja wg wytycznych ESC/ESH.
+                    </div>
+
+                    </div>
+
+                    </body></html>`;
+
+
+                    const w = window.open('', '_blank');
+
+                    if (!w) { alert('Przeglądarka zablokowała nowe okno — zezwól
+                    na wyskakujące okienka.'); return; }
+
+                    w.document.write(html);
+
+                    w.document.close();
       - type: grid
         cards:
           - show_name: true
@@ -1086,19 +1316,36 @@ views:
                 data: rows
                 modify: x.weight && parseFloat(x.weight).toFixed(1)
                 align: center
+              - name: 📊<br>Śr. 7d (kg)
+                data: rows
+                modify: |-
+                  (function(){
+                    const a = parseFloat(x.avg7);
+                    return isNaN(a) ? '—' : a.toFixed(2);
+                  })()
+                align: center
+              - name: 📈<br>Tempo (kg/tyg)
+                data: rows
+                modify: |-
+                  (function(){
+                    const t = parseFloat(x.tempo);
+                    if (isNaN(t)) { return '—'; }
+                    const s = (t > 0 ? '+' : '') + t.toFixed(2);
+                    if (t <= -1.2) { return '⚠ ' + s; }
+                    if (t <= -0.4) { return '🟢 ' + s; }
+                    if (t < 0.1)   { return '🟡 ' + s; }
+                    return '🔴 ' + s;
+                  })()
+                align: center
               - name: 📉<br>Zrzuć (kg)
                 data: rows
                 modify: x.fat_to_ideal && parseFloat(x.fat_to_ideal).toFixed(1)
                 align: center
-              - name: Δ<br>Zm (kg)
-                data: rows
-                modify: x.change && parseFloat(x.change).toFixed(1)
-                align: center
-              - name: 🧍<br>BMI (kg_m2)
+              - name: 🧍<br>BMI (kg)
                 data: rows
                 modify: x.bmi && parseFloat(x.bmi).toFixed(1)
                 align: center
-              - name: 🟡<br>Tłuszcz (%)
+              - name: 🟡<br>Fat (%)
                 data: rows
                 modify: x.body_fat && parseFloat(x.body_fat).toFixed(1)
                 align: center
@@ -1106,7 +1353,7 @@ views:
                 data: rows
                 modify: x.body_water && parseFloat(x.body_water).toFixed(1)
                 align: center
-              - name: 🧠<br>Tłuszcz Trzewny
+              - name: 🧠<br>Tłusz trzew
                 data: rows
                 modify: x.visceral_fat && Math.round(parseFloat(x.visceral_fat))
                 align: center
@@ -1121,25 +1368,23 @@ views:
             card_mod:
               style: |
                 ha-card {
-                  user-select: text !important; /* Pozwala na zaznaczanie tekstu myszką */
+                  user-select: text !important;
                   max-height: 480px;
-                  overflow-y: auto;       /* Przewijanie pionowe */
-                  overflow-x: auto;       /* Przewijanie poziome tylko w ostateczności */
+                  overflow-y: auto;
+                  overflow-x: auto;
                   font-size: 12px; 
                 }
                 ha-card table {
-                  width: 99% !important; /* Tabela trzyma się szerokości karty */
+                  width: 99% !important;
                   border-collapse: collapse;
                 }
-                /* DANE: Zawsze w jednej linii */
                 ha-card td {
                   white-space: nowrap !important;
-                  padding: 2px 2px;       /* Zmniejszony padding dla oszczędności miejsca */
+                  padding: 2px 2px;
                 }
-                /* NAGŁÓWKI: Pozwól na zawijanie tekstu */
                 ha-card thead th {
-                  white-space: normal !important; /* To odpowiada za zawijanie nagłówków */
-                  text-align: center;     /* Wyśrodkowanie nagłówków wygląda lepiej przy zawijaniu */
+                  white-space: normal !important;
+                  text-align: center;
                   vertical-align: bottom;
                   padding: 2px;
                   position: sticky;
@@ -1147,6 +1392,309 @@ views:
                   background: var(--card-background-color);
                   z-index: 10;
                 }
+                /* separacja bloku trendu od reszty */
+                ha-card td:nth-child(3),
+                ha-card th:nth-child(3) {
+                  border-left: 1px solid var(--divider-color);
+                }
+                ha-card td:nth-child(5),
+                ha-card th:nth-child(5) {
+                  border-left: 1px solid var(--divider-color);
+                }
+          - type: custom:button-card
+            name: Eksport HTML
+            icon: mdi:printer
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const DNI_WSTECZ = 60;
+
+                    const all =
+                    hass.states['sensor.xiaomi_s400_history'].attributes.rows ||
+                    [];
+
+                    const prog = Date.now() / 1000 - DNI_WSTECZ * 86400;
+
+
+                    const kat = (bmi) => {
+                      if (bmi >= 35)   return ['⛔', 'Otyłość II stopnia', '#8e1b12', '#fbe3e0'];
+                      if (bmi >= 30)   return ['🔴', 'Otyłość I stopnia',  '#b03a2e', '#fdeae7'];
+                      if (bmi >= 25)   return ['🟠', 'Nadwaga',            '#a04000', '#fdf0e3'];
+                      if (bmi >= 18.5) return ['🟢', 'Waga prawidłowa',    '#1e7e45', '#e6f5ec'];
+                      return ['🔵', 'Niedowaga', '#1f6391', '#e8f2fa'];
+                    };
+
+
+                    const tempoOc = (t) => {
+                      if (t <= -1.2) return ['⚠', '#a04000'];
+                      if (t <= -0.4) return ['🟢', '#1e7e45'];
+                      if (t <   0.1) return ['🟡', '#8a6d00'];
+                      return ['🔴', '#b03a2e'];
+                    };
+
+
+                    const trzewny = (v) => {
+                      if (v >= 15) return ['💔', '#b03a2e'];
+                      if (v >= 10) return ['🧡', '#a04000'];
+                      return ['💚', '#1e7e45'];
+                    };
+
+
+                    const num = (v) => { const f = parseFloat(v); return
+                    isNaN(f) ? null : f; };
+
+
+                    const pom = [];
+
+                    all.forEach(r => {
+                      const ts = parseInt(r.ts, 10);
+                      if (!ts || ts < prog) return;
+                      const w = num(r.weight);
+                      if (!w) return;
+                      pom.push({
+                        dt: new Date(ts * 1000),
+                        waga: w,
+                        avg7: num(r.avg7),
+                        tempo: num(r.tempo),
+                        bmi: num(r.bmi),
+                        tluszcz: num(r.body_fat),
+                        woda: num(r.body_water),
+                        trzewny: num(r.visceral_fat),
+                        lbm: num(r.lbm),
+                        bmr: num(r.bmr)
+                      });
+                    });
+
+                    pom.sort((a, b) => b.dt - a.dt);
+
+
+                    if (!pom.length) { alert('Brak pomiarów w wybranym
+                    okresie.'); return; }
+
+
+                    const sr = (k, d) => {
+                      const v = pom.map(x => x[k]).filter(x => x !== null);
+                      if (!v.length) return '—';
+                      return (v.reduce((a, b) => a + b, 0) / v.length).toFixed(d === undefined ? 1 : d);
+                    };
+
+                    const fmtD = (dt) => String(dt.getDate()).padStart(2,'0') +
+                    '.' +
+                                         String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
+                    const fmtT = (dt) => String(dt.getHours()).padStart(2,'0') +
+                    ':' +
+                                         String(dt.getMinutes()).padStart(2,'0');
+
+                    const pierwszy = pom[pom.length - 1];
+
+                    const ostatni = pom[0];
+
+                    const delta = ostatni.waga - pierwszy.waga;
+
+                    const znak = delta > 0 ? '+' : '';
+
+                    const kolorD = delta > 0 ? '#b03a2e' : (delta < 0 ?
+                    '#1e7e45' : '#666');
+
+
+                    const wagi = pom.map(x => x.waga);
+
+                    const minW = Math.min(...wagi), maxW = Math.max(...wagi);
+
+
+                    // tempo z ostatniego pomiaru, który je ma
+
+                    const zT = pom.find(x => x.tempo !== null);
+
+                    const tempoTxt = zT ? ((zT.tempo > 0 ? '+' : '') +
+                    zT.tempo.toFixed(2)) : '—';
+
+                    const tempoKol = zT ? tempoOc(zT.tempo)[1] : '#666';
+
+
+                    // utrata tłuszczu vs beztłuszczowej w okresie
+
+                    let bilans = '';
+
+                    if (pierwszy.lbm !== null && ostatni.lbm !== null &&
+                    Math.abs(delta) > 0.3) {
+                      const dLbm = ostatni.lbm - pierwszy.lbm;
+                      const dFat = delta - dLbm;
+                      bilans = '<div class="bilans">W okresie: zmiana masy <b>' + znak + delta.toFixed(1) +
+                               ' kg</b> — w tym tkanka tłuszczowa <b style="color:' +
+                               (dFat < 0 ? '#1e7e45' : '#b03a2e') + '">' +
+                               (dFat > 0 ? '+' : '') + dFat.toFixed(1) + ' kg</b>, masa beztłuszczowa <b style="color:' +
+                               (dLbm < -0.5 ? '#a04000' : '#666') + '">' +
+                               (dLbm > 0 ? '+' : '') + dLbm.toFixed(1) + ' kg</b>.</div>';
+                    }
+
+
+                    const wiersze = pom.map(x => {
+                      const [ico, opis, kolor, tlo] = x.bmi ? kat(x.bmi) : ['', '—', '#666', '#fff'];
+                      const [tIco, tKolor] = x.trzewny ? trzewny(x.trzewny) : ['', '#666'];
+                      let tempoTd = '<td class="num">—</td>';
+                      if (x.tempo !== null) {
+                        const [tpIco, tpKol] = tempoOc(x.tempo);
+                        tempoTd = '<td class="num" style="color:' + tpKol + '"><span class="ico">' +
+                                  tpIco + '</span> ' + (x.tempo > 0 ? '+' : '') + x.tempo.toFixed(2) + '</td>';
+                      }
+                      return '<tr>' +
+                        '<td class="dt">' + fmtD(x.dt) + ' <span class="godz">' + fmtT(x.dt) + '</span></td>' +
+                        '<td class="num waga"><b>' + x.waga.toFixed(1) + '</b></td>' +
+                        '<td class="num trend">' + (x.avg7 !== null ? x.avg7.toFixed(2) : '—') + '</td>' +
+                        tempoTd.replace('class="num"', 'class="num trend"') +
+                        '<td class="num">' + (x.bmi !== null ? x.bmi.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.tluszcz !== null ? x.tluszcz.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.woda !== null ? x.woda.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.lbm !== null ? x.lbm.toFixed(1) : '—') + '</td>' +
+                        '<td class="num" style="color:' + tKolor + '">' +
+                          (x.trzewny !== null ? '<span class="ico">' + tIco + '</span> ' +
+                           Math.round(x.trzewny) : '—') + '</td>' +
+                        '<td class="kat" style="color:' + kolor +
+                          ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
+                          ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
+                          '<span class="ico">' + ico + '</span> ' + opis + '</td>' +
+                        '</tr>';
+                    }).join('');
+
+
+                    const okres = fmtD(pierwszy.dt) + ' – ' + fmtD(ostatni.dt);
+
+
+                    const html = `<!DOCTYPE html><html lang="pl"><head><meta
+                    charset="utf-8">
+
+                    <title>Pomiary masy ciała — ${okres}</title>
+
+                    <style>
+                      @page { size: A4 portrait; margin: 12mm; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
+                      h1 { font-size:16pt; margin:0 0 2px; }
+                      .sub { color:#666; font-size:10pt; margin-bottom:14px; }
+                      .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
+                      .grid { display:flex; gap:24px; flex-wrap:wrap; }
+                      .kpi { min-width:92px; }
+                      .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
+                      .kpi .val { font-size:17pt; font-weight:bold; line-height:1.15; }
+                      .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
+                      .bilans { margin-top:10px; padding-top:8px; border-top:1px solid #e0e0e0;
+                                font-size:9.5pt; color:#444; }
+                      table { width:100%; border-collapse:collapse; font-size:9pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 5px;
+                           border-bottom:2px solid #999; font-size:8pt;
+                           text-transform:uppercase; letter-spacing:.3px; }
+                      td { padding:3px 5px; border-bottom:1px solid #e8e8e8; }
+                      td.num, th.num { text-align:center; }
+                      td.dt { white-space:nowrap; }
+                      td.dt .godz { color:#555; }
+                      td.waga { font-size:10.5pt; }
+                      td.trend, th.trend { background:#f6f8fb; }
+                      td.kat { font-weight:600; padding-left:11px !important;
+                               background-repeat:no-repeat; background-size:100% 100%; }
+                      th.kat { padding-left:11px; }
+                      .ico { font-size:9pt; }
+                      tbody tr:nth-child(even) td:not(.trend):not(.kat) { background:#fafafa; }
+                      thead { display:table-header-group; }
+                      tr { page-break-inside:avoid; }
+                      .stopka { margin-top:12px; font-size:8pt; color:#888;
+                                border-top:1px solid #ddd; padding-top:6px; }
+                      .noprint { margin-bottom:14px; }
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:9.5pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
+
+                    <div class="noprint">
+                      <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
+                        🖨️ Drukuj / zapisz jako PDF</button>
+                    </div>
+
+                    <h1>Pomiary masy ciała i składu</h1>
+
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp; Waga
+                    Xiaomi S400
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
+
+                    <div class="box">
+                      <div class="grid">
+                        <div class="kpi"><div class="lbl">Pomiarów</div><div class="val">${pom.length}</div></div>
+                        <div class="kpi"><div class="lbl">Aktualna</div>
+                          <div class="val">${ostatni.waga.toFixed(1)} <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Średnia 7d</div>
+                          <div class="val">${ostatni.avg7 !== null ? ostatni.avg7.toFixed(2) : '—'}
+                            <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Tempo</div>
+                          <div class="val" style="color:${tempoKol}">${tempoTxt}
+                            <small>kg/tyg</small></div></div>
+                        <div class="kpi"><div class="lbl">Zmiana</div>
+                          <div class="val" style="color:${kolorD}">${znak}${delta.toFixed(1)}
+                            <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Zakres</div>
+                          <div class="val">${minW.toFixed(1)}–${maxW.toFixed(1)}</div></div>
+                        <div class="kpi"><div class="lbl">Śr. tłuszcz</div>
+                          <div class="val">${sr('tluszcz')} <small>%</small></div></div>
+                        <div class="kpi"><div class="lbl">Śr. woda</div>
+                          <div class="val">${sr('woda')} <small>%</small></div></div>
+                      </div>
+                      ${bilans}
+                    </div>
+
+
+                    <table>
+                      <thead><tr>
+                        <th>Data i godzina</th>
+                        <th class="num">Waga<br><small style="font-weight:normal">kg</small></th>
+                        <th class="num trend">Średnia<br><small style="font-weight:normal">7 ważeń</small></th>
+                        <th class="num trend">Tempo<br><small style="font-weight:normal">kg/tydzień</small></th>
+                        <th class="num">BMI<br><small style="font-weight:normal">kg/m²</small></th>
+                        <th class="num">Tłuszcz<br><small style="font-weight:normal">%</small></th>
+                        <th class="num">Woda<br><small style="font-weight:normal">%</small></th>
+                        <th class="num">LBM<br><small style="font-weight:normal">kg</small></th>
+                        <th class="num">Tłuszcz<br><small style="font-weight:normal">trzewny</small></th>
+                        <th class="kat">Kategoria BMI</th>
+                      </tr></thead>
+                      <tbody>${wiersze}</tbody>
+                    </table>
+
+
+                    <div class="stopka">
+                      Pomiary własne wykonane wagą bioimpedancyjną Xiaomi S400, eksport automatyczny
+                      bez ręcznej edycji. Klasyfikacja BMI wg WHO. Średnia z 7 kolejnych ważeń wygładza
+                      wahania nawodnienia; tempo to zmiana tej średniej przeliczona na tydzień.
+                      LBM = masa beztłuszczowa. Skład ciała z bioimpedancji — wartość orientacyjna,
+                      zależna od nawodnienia i pory pomiaru.
+                    </div>
+
+                    </div>
+
+                    </body></html>`;
+
+
+                    const w = window.open('', '_blank');
+
+                    if (!w) { alert('Przeglądarka zablokowała nowe okno — zezwól
+                    na wyskakujące okienka.'); return; }
+
+                    w.document.write(html);
+
+                    w.document.close();
           - type: custom:flex-table-card
             sort_by: ts-
             entities:
@@ -1286,6 +1834,236 @@ views:
                 ha-card th:first-child {
                   width: 1px;
                 }
+          - type: custom:button-card
+            name: Eksport HTML
+            icon: mdi:printer
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const DNI_WSTECZ = 60;
+
+                    const all =
+                    hass.states['sensor.garmin_kroki_historia'].attributes.rows
+                    || [];
+
+                    const prog = Date.now() / 1000 - DNI_WSTECZ * 86400;
+
+
+                    const num = (v) => { const f = parseFloat(v); return
+                    isNaN(f) ? 0 : f; };
+
+                    const cel = (k) => {
+                      if (k >= 10000) return ['🟢', '#1e7e45', '#e6f5ec'];
+                      if (k >= 7500)  return ['🔵', '#1f6391', '#e8f2fa'];
+                      if (k >= 5000)  return ['🟡', '#8a6d00', '#fdf8e1'];
+                      return ['⚪', '#666', '#f5f5f5'];
+                    };
+
+
+                    const dni = [];
+
+                    all.forEach(r => {
+                      const ts = parseInt(r.ts, 10);
+                      if (!ts || ts < prog) return;
+                      const kroki = Math.max(num(r.kroki), num(r.aktywnosci));
+                      const km = Math.max(num(r.dystans_dzienny), num(r.dystans));
+                      const czasS = String(r.czas || '00:00:00').split(':')
+                                    .reduce((a, b) => a * 60 + parseInt(b, 10), 0);
+                      dni.push({
+                        dt: new Date(ts * 1000),
+                        kroki: kroki,
+                        aktywnosci: num(r.aktywnosci),
+                        poza: Math.max(0, num(r.kroki) - num(r.aktywnosci)),
+                        km: km,
+                        swimKm: num(r.swim_km),
+                        swimDl: parseInt(r.swim_dlugosci, 10) || 0,
+                        czas: String(r.czas || '00:00:00'),
+                        czasS: czasS,
+                        kcal: parseInt(r.kcal, 10) || 0
+                      });
+                    });
+
+                    dni.sort((a, b) => b.dt - a.dt);
+
+
+                    if (!dni.length) { alert('Brak danych w wybranym okresie.');
+                    return; }
+
+
+                    const suma = (k) => dni.reduce((a, x) => a + x[k], 0);
+
+                    const fmtD = (dt) => String(dt.getDate()).padStart(2,'0') +
+                    '.' +
+                                         String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
+                    const dow = ['nd','pon','wt','śr','czw','pt','sob'];
+
+                    const hhmm = (s) => Math.floor(s / 3600) + ' godz ' +
+                                        String(Math.floor((s % 3600) / 60)).padStart(2,'0') + ' min';
+
+                    const dniTren = dni.filter(x => x.czasS > 0).length;
+
+                    const dniSwim = dni.filter(x => x.swimDl > 0).length;
+
+                    const srKroki = Math.round(suma('kroki') / dni.length);
+
+                    const naj = dni.reduce((p, q) => (q.kroki > p.kroki ? q :
+                    p));
+
+
+                    const wiersze = dni.map(x => {
+                      const [ico, kolor, tlo] = cel(x.kroki);
+                      return '<tr>' +
+                        '<td class="dt">' + fmtD(x.dt) +
+                          ' <span class="godz">' + dow[x.dt.getDay()] + '</span></td>' +
+                        '<td class="num kr" style="color:' + kolor +
+                          ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
+                          ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
+                          '<span class="ico">' + ico + '</span> <b>' +
+                          x.kroki.toLocaleString('pl-PL') + '</b></td>' +
+                        '<td class="num">' + (x.aktywnosci > 0 ? x.aktywnosci.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '<td class="num">' + (x.poza > 0 ? x.poza.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '<td class="num">' + (x.km > 0 ? x.km.toFixed(2) : '—') + '</td>' +
+                        '<td class="num swim">' + (x.swimKm > 0 ? x.swimKm.toFixed(2) : '—') + '</td>' +
+                        '<td class="num swim">' + (x.swimDl > 0 ? x.swimDl : '—') + '</td>' +
+                        '<td class="num">' + (x.czasS > 0 ? x.czas.substring(0,5) : '—') + '</td>' +
+                        '<td class="num">' + (x.kcal > 0 ? x.kcal.toLocaleString('pl-PL') : '—') + '</td>' +
+                        '</tr>';
+                    }).join('');
+
+
+                    const okres = fmtD(dni[dni.length - 1].dt) + ' – ' +
+                    fmtD(dni[0].dt);
+
+
+                    const html = `<!DOCTYPE html><html lang="pl"><head><meta
+                    charset="utf-8">
+
+                    <title>Aktywność fizyczna — ${okres}</title>
+
+                    <style>
+                      @page { size: A4 portrait; margin: 12mm; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222;
+                             font-size:11pt; margin:0; background:#e8e8e8; }
+                      .page { max-width:170mm; margin:0 auto; background:#fff;
+                              padding:14mm 12mm; box-shadow:0 2px 12px rgba(0,0,0,.18); }
+                      @media screen { body { padding:18px 0; } }
+                      h1 { font-size:16pt; margin:0 0 2px; }
+                      .sub { color:#666; font-size:10pt; margin-bottom:14px; }
+                      .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
+                      .grid { display:flex; gap:24px; flex-wrap:wrap; }
+                      .kpi { min-width:92px; }
+                      .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
+                      .kpi .val { font-size:16pt; font-weight:bold; line-height:1.15; }
+                      .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
+                      table { width:100%; border-collapse:collapse; font-size:9pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 5px;
+                           border-bottom:2px solid #999; font-size:8pt;
+                           text-transform:uppercase; letter-spacing:.3px; }
+                      td { padding:3px 5px; border-bottom:1px solid #e8e8e8; }
+                      td.num, th.num { text-align:center; }
+                      td.dt { white-space:nowrap; }
+                      td.dt .godz { color:#555; font-size:8pt; }
+                      td.kr { padding-left:11px !important;
+                              background-repeat:no-repeat; background-size:100% 100%; }
+                      th.kr { padding-left:11px; }
+                      td.swim, th.swim { background:#f4fafd; }
+                      .ico { font-size:9pt; }
+                      tbody tr:nth-child(even) td:not(.kr):not(.swim) { background:#fafafa; }
+                      thead { display:table-header-group; }
+                      tr { page-break-inside:avoid; }
+                      .stopka { margin-top:12px; font-size:8pt; color:#888;
+                                border-top:1px solid #ddd; padding-top:6px; }
+                      .noprint { margin-bottom:14px; }
+                      @media print {
+                        .noprint { display:none; }
+                        body { font-size:9.5pt; background:#fff; padding:0; }
+                        .page { max-width:none; margin:0; padding:0; box-shadow:none; }
+                      }
+                    </style></head><body><div class="page">
+
+                    <div class="noprint">
+                      <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
+                        🖨️ Drukuj / zapisz jako PDF</button>
+                    </div>
+
+                    <h1>Aktywność fizyczna</h1>
+
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp; Garmin
+                    Venu 4
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
+
+                    <div class="box">
+                      <div class="grid">
+                        <div class="kpi"><div class="lbl">Dni</div><div class="val">${dni.length}</div></div>
+                        <div class="kpi"><div class="lbl">Kroki razem</div>
+                          <div class="val">${suma('kroki').toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Śr. na dzień</div>
+                          <div class="val">${srKroki.toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Dystans</div>
+                          <div class="val">${suma('km').toFixed(1)} <small>km</small></div></div>
+                        <div class="kpi"><div class="lbl">Dni z treningiem</div>
+                          <div class="val">${dniTren} <small>/ ${dni.length}</small></div></div>
+                        <div class="kpi"><div class="lbl">Czas treningów</div>
+                          <div class="val" style="font-size:13pt">${hhmm(suma('czasS'))}</div></div>
+                        <div class="kpi"><div class="lbl">Basen</div>
+                          <div class="val">${suma('swimKm').toFixed(2)} <small>km / ${dniSwim} dni</small></div></div>
+                        <div class="kpi"><div class="lbl">Kalorie aktywne</div>
+                          <div class="val">${suma('kcal').toLocaleString('pl-PL')}</div></div>
+                        <div class="kpi"><div class="lbl">Rekord</div>
+                          <div class="val">${naj.kroki.toLocaleString('pl-PL')}
+                            <small>${fmtD(naj.dt).substring(0,5)}</small></div></div>
+                      </div>
+                    </div>
+
+
+                    <table>
+                      <thead><tr>
+                        <th>Data</th>
+                        <th class="num kr">Kroki<br><small style="font-weight:normal">razem</small></th>
+                        <th class="num">Kroki<br><small style="font-weight:normal">z treningu</small></th>
+                        <th class="num">Kroki<br><small style="font-weight:normal">poza</small></th>
+                        <th class="num">Dystans<br><small style="font-weight:normal">km</small></th>
+                        <th class="num swim">Basen<br><small style="font-weight:normal">km</small></th>
+                        <th class="num swim">Basen<br><small style="font-weight:normal">długości</small></th>
+                        <th class="num">Czas<br><small style="font-weight:normal">treningu</small></th>
+                        <th class="num">Kalorie<br><small style="font-weight:normal">aktywne</small></th>
+                      </tr></thead>
+                      <tbody>${wiersze}</tbody>
+                    </table>
+
+
+                    <div class="stopka">
+                      Dane z zegarka Garmin Venu 4, eksport automatyczny bez ręcznej edycji.
+                      Kroki „razem" to wartość większa z licznika dziennego i sumy treningów — na bieżni
+                      nadgarstek rejestruje mniej kroków niż czujnik nożny. Dystans basenowy liczony osobno,
+                      nie wchodzi do dystansu lądowego. Kalorie aktywne = wydatek ponad podstawową
+                      przemianę materii. Kolor kroków: 🟢 ≥10 000, 🔵 ≥7 500, 🟡 ≥5 000.
+                    </div>
+
+                    </div>
+
+                    </body></html>`;
+
+
+                    const w = window.open('', '_blank');
+
+                    if (!w) { alert('Przeglądarka zablokowała nowe okno — zezwól
+                    na wyskakujące okienka.'); return; }
+
+                    w.document.write(html);
+
+                    w.document.close();
       - type: grid
         cards: []
         visibility:
