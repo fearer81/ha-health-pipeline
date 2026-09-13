@@ -1508,7 +1508,8 @@ views:
             icon_height: 50px
             grid_options:
               rows: 2
-          - type: entities
+          - color: state
+            type: entities
             entities:
               - entity: switch.salon
               - entity: light.salon1
@@ -1524,10 +1525,9 @@ views:
                 name: LG Twitch
               - entity: script.lgtv_on_yt
                 name: LG YT
-              - entity: script.lgtv_script_off
+              - entity: input_button.lgtv_manual2
                 name: LG OFF
             title: Salon
-            state_color: true
           - type: tile
             grid_options:
               columns: full
@@ -1622,6 +1622,240 @@ views:
                   background: var(--card-background-color);
                   z-index: 10;
                 }
+          - type: custom:button-card
+            name: Eksport HTML
+            icon: mdi:printer
+            show_state: false
+            styles:
+              card:
+                - height: 60px
+              name:
+                - font-size: 13px
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.javascript
+                data:
+                  code: >
+                    const DNI_WSTECZ = 60;
+
+                    const all =
+                    hass.states['sensor.xiaomi_s400_history'].attributes.rows ||
+                    [];
+
+                    const prog = Date.now() / 1000 - DNI_WSTECZ * 86400;
+
+
+                    const kat = (bmi) => {
+                      if (bmi >= 35)   return ['⛔', 'Otyłość II stopnia', '#8e1b12', '#fbe3e0'];
+                      if (bmi >= 30)   return ['🔴', 'Otyłość I stopnia',  '#b03a2e', '#fdeae7'];
+                      if (bmi >= 25)   return ['🟠', 'Nadwaga',            '#a04000', '#fdf0e3'];
+                      if (bmi >= 18.5) return ['🟢', 'Waga prawidłowa',    '#1e7e45', '#e6f5ec'];
+                      return ['🔵', 'Niedowaga', '#1f6391', '#e8f2fa'];
+                    };
+
+
+                    const trzewny = (v) => {
+                      if (v >= 15) return ['💔', '#b03a2e'];
+                      if (v >= 10) return ['🧡', '#a04000'];
+                      return ['💚', '#1e7e45'];
+                    };
+
+
+                    const num = (v) => {
+                      const f = parseFloat(v);
+                      return isNaN(f) ? null : f;
+                    };
+
+
+                    const pom = [];
+
+                    all.forEach(r => {
+                      const ts = parseInt(r.ts, 10);
+                      if (!ts || ts < prog) return;
+                      const w = num(r.weight);
+                      if (!w) return;
+                      pom.push({
+                        dt: new Date(ts * 1000),
+                        waga: w,
+                        bmi: num(r.bmi),
+                        tluszcz: num(r.body_fat),
+                        woda: num(r.body_water),
+                        trzewny: num(r.visceral_fat),
+                        bmr: num(r.bmr),
+                        zrzuc: num(r.fat_to_ideal),
+                        zmiana: num(r.change)
+                      });
+                    });
+
+                    pom.sort((a, b) => b.dt - a.dt);
+
+
+                    if (!pom.length) { alert('Brak pomiarów w wybranym
+                    okresie.'); return; }
+
+
+                    const sr = (k, d) => {
+                      const v = pom.map(x => x[k]).filter(x => x !== null);
+                      if (!v.length) return '—';
+                      return (v.reduce((a, b) => a + b, 0) / v.length).toFixed(d === undefined ? 1 : d);
+                    };
+
+                    const fmtD = (dt) => String(dt.getDate()).padStart(2,'0') +
+                    '.' +
+                                         String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
+                    const fmtT = (dt) => String(dt.getHours()).padStart(2,'0') +
+                    ':' +
+                                         String(dt.getMinutes()).padStart(2,'0');
+
+                    const pierwszy = pom[pom.length - 1];
+
+                    const ostatni = pom[0];
+
+                    const delta = ostatni.waga - pierwszy.waga;
+
+                    const znak = delta > 0 ? '+' : '';
+
+                    const kolorD = delta > 0 ? '#b03a2e' : (delta < 0 ?
+                    '#1e7e45' : '#666');
+
+
+                    const wagi = pom.map(x => x.waga);
+
+                    const minW = Math.min(...wagi), maxW = Math.max(...wagi);
+
+
+                    const wiersze = pom.map(x => {
+                      const [ico, opis, kolor, tlo] = x.bmi ? kat(x.bmi) : ['', '—', '#666', '#fff'];
+                      const [tIco, tKolor] = x.trzewny ? trzewny(x.trzewny) : ['', '#666'];
+                      const zm = x.zmiana;
+                      const zmTxt = (zm === null || zm === 0) ? '—'
+                                  : (zm > 0 ? '+' : '') + zm.toFixed(1);
+                      const zmKolor = zm > 0 ? '#b03a2e' : (zm < 0 ? '#1e7e45' : '#666');
+                      return '<tr>' +
+                        '<td class="dt">' + fmtD(x.dt) + ' <span class="godz">' + fmtT(x.dt) + '</span></td>' +
+                        '<td class="num waga"><b>' + x.waga.toFixed(1) + '</b></td>' +
+                        '<td class="num" style="color:' + zmKolor + '">' + zmTxt + '</td>' +
+                        '<td class="num">' + (x.bmi !== null ? x.bmi.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.tluszcz !== null ? x.tluszcz.toFixed(1) : '—') + '</td>' +
+                        '<td class="num">' + (x.woda !== null ? x.woda.toFixed(1) : '—') + '</td>' +
+                        '<td class="num" style="color:' + tKolor + '">' +
+                          (x.trzewny !== null ? '<span class="ico">' + tIco + '</span> ' +
+                           Math.round(x.trzewny) : '—') + '</td>' +
+                        '<td class="num">' + (x.bmr !== null ? Math.round(x.bmr) : '—') + '</td>' +
+                        '<td class="kat" style="color:' + kolor +
+                          ';background-image:linear-gradient(to right,' + kolor + ' 0,' + kolor +
+                          ' 3px,' + tlo + ' 3px,' + tlo + ' 100%)">' +
+                          '<span class="ico">' + ico + '</span> ' + opis + '</td>' +
+                        '</tr>';
+                    }).join('');
+
+
+                    const okres = fmtD(pierwszy.dt) + ' – ' + fmtD(ostatni.dt);
+
+
+                    const html = `<!DOCTYPE html><html lang="pl"><head><meta
+                    charset="utf-8">
+
+                    <title>Pomiary masy ciała — ${okres}</title>
+
+                    <style>
+                      @page { size: A4 portrait; margin: 12mm; }
+                      * { -webkit-print-color-adjust: exact !important;
+                          print-color-adjust: exact !important; }
+                      body { font-family: "Segoe UI", Arial, sans-serif; color:#222; font-size:11pt; margin:0; }
+                      h1 { font-size:16pt; margin:0 0 2px; }
+                      .sub { color:#666; font-size:10pt; margin-bottom:14px; }
+                      .box { border:1px solid #ccc; border-radius:6px; padding:10px 12px; margin-bottom:14px; }
+                      .grid { display:flex; gap:26px; flex-wrap:wrap; }
+                      .kpi { min-width:96px; }
+                      .kpi .lbl { font-size:8.5pt; color:#666; text-transform:uppercase; letter-spacing:.4px; }
+                      .kpi .val { font-size:17pt; font-weight:bold; line-height:1.15; }
+                      .kpi .val small { font-size:9pt; font-weight:normal; color:#666; }
+                      table { width:100%; border-collapse:collapse; font-size:9.5pt; }
+                      th { background:#f2f2f2; text-align:left; padding:5px 6px;
+                           border-bottom:2px solid #999; font-size:8.5pt;
+                           text-transform:uppercase; letter-spacing:.3px; }
+                      td { padding:4px 6px; border-bottom:1px solid #e8e8e8; }
+                      td.num, th.num { text-align:center; }
+                      td.dt { white-space:nowrap; }
+                      td.dt .godz { color:#555; }
+                      td.waga { font-size:10.5pt; }
+                      td.kat { font-weight:600; padding-left:11px !important;
+                               background-repeat:no-repeat; background-size:100% 100%; }
+                      th.kat { padding-left:11px; }
+                      .ico { font-size:10pt; }
+                      tbody tr:nth-child(even) { background:#fafafa; }
+                      thead { display:table-header-group; }
+                      tr { page-break-inside:avoid; }
+                      .stopka { margin-top:12px; font-size:8pt; color:#888;
+                                border-top:1px solid #ddd; padding-top:6px; }
+                      .noprint { margin-bottom:14px; }
+                      @media print { .noprint { display:none; } body { font-size:10pt; } }
+                    </style></head><body>
+
+                    <div class="noprint">
+                      <button onclick="window.print()" style="padding:8px 18px;font-size:14px;cursor:pointer">
+                        🖨️ Drukuj / zapisz jako PDF</button>
+                    </div>
+
+                    <h1>Pomiary masy ciała i składu</h1>
+
+                    <div class="sub">Okres: <b>${okres}</b> &nbsp;•&nbsp; Waga
+                    Xiaomi S400
+                      &nbsp;•&nbsp; Wygenerowano: ${fmtD(new Date())}</div>
+
+                    <div class="box">
+                      <div class="grid">
+                        <div class="kpi"><div class="lbl">Pomiarów</div><div class="val">${pom.length}</div></div>
+                        <div class="kpi"><div class="lbl">Aktualna</div>
+                          <div class="val">${ostatni.waga.toFixed(1)} <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Zmiana</div>
+                          <div class="val" style="color:${kolorD}">${znak}${delta.toFixed(1)} <small>kg</small></div></div>
+                        <div class="kpi"><div class="lbl">Zakres</div>
+                          <div class="val">${minW.toFixed(1)}–${maxW.toFixed(1)}</div></div>
+                        <div class="kpi"><div class="lbl">Śr. BMI</div><div class="val">${sr('bmi')}</div></div>
+                        <div class="kpi"><div class="lbl">Śr. tłuszcz</div>
+                          <div class="val">${sr('tluszcz')} <small>%</small></div></div>
+                        <div class="kpi"><div class="lbl">Śr. woda</div>
+                          <div class="val">${sr('woda')} <small>%</small></div></div>
+                      </div>
+                    </div>
+
+
+                    <table>
+                      <thead><tr>
+                        <th>Data i godzina</th>
+                        <th class="num">Waga<br><small style="font-weight:normal">kg</small></th>
+                        <th class="num">Zmiana<br><small style="font-weight:normal">kg</small></th>
+                        <th class="num">BMI<br><small style="font-weight:normal">kg/m²</small></th>
+                        <th class="num">Tłuszcz<br><small style="font-weight:normal">%</small></th>
+                        <th class="num">Woda<br><small style="font-weight:normal">%</small></th>
+                        <th class="num">Tłuszcz<br><small style="font-weight:normal">trzewny</small></th>
+                        <th class="num">BMR<br><small style="font-weight:normal">kcal</small></th>
+                        <th class="kat">Kategoria BMI</th>
+                      </tr></thead>
+                      <tbody>${wiersze}</tbody>
+                    </table>
+
+
+                    <div class="stopka">
+                      Pomiary własne wykonane wagą bioimpedancyjną Xiaomi S400, eksport automatyczny
+                      bez ręcznej edycji. Klasyfikacja BMI wg WHO. Skład ciała z pomiaru bioimpedancji
+                      — wartość orientacyjna, zależna od nawodnienia i pory pomiaru.
+                    </div>
+
+                    </body></html>`;
+
+
+                    const w = window.open('', '_blank');
+
+                    if (!w) { alert('Przeglądarka zablokowała nowe okno — zezwól
+                    na wyskakujące okienka.'); return; }
+
+                    w.document.write(html);
+
+                    w.document.close();
       - type: grid
         cards:
           - type: grid

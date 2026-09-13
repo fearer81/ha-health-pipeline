@@ -1,5 +1,5 @@
 - id: '1724313766518'
-  alias: Pokój ON 20:00 - 00:30
+  alias: Pokój ON 19:10 - 00:30
   description: ''
   triggers:
   - type: occupied
@@ -11,7 +11,7 @@
   - condition: and
     conditions:
     - condition: time
-      after: '20:00:00'
+      after: '19:10:00'
       before: 00:30:00
       weekday:
       - mon
@@ -175,7 +175,7 @@
     data: {}
   mode: single
 - id: '1724313948590'
-  alias: Przedpokój2 ON 20:00 - 23:30 (weekend 03:00)
+  alias: Przedpokój2 ON 19:10 - 23:30 (weekend 03:00)
   description: ''
   triggers:
   - type: occupied
@@ -196,7 +196,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -217,7 +217,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -237,7 +237,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:30:00'
         weekday:
         - mon
@@ -291,7 +291,7 @@
     domain: switch
   mode: single
 - id: '1724314114541'
-  alias: Salon ON 20:00 - 23:00 (Weekend 02:00)
+  alias: Salon ON 19:10 - 23:00
   description: ''
   triggers:
   - type: occupied
@@ -302,33 +302,17 @@
   conditions:
   - condition: and
     conditions:
-    - condition: or
-      conditions:
-      - condition: and
-        conditions:
-        - condition: time
-          after: '20:00:00'
-          before: '23:00:00'
-          weekday:
-          - sun
-          - mon
-          - tue
-          - wed
-          - thu
-      - condition: and
-        conditions:
-        - condition: time
-          after: '20:00:00'
-          weekday:
-          - fri
-          - sat
-      - condition: and
-        conditions:
-        - condition: time
-          before: 02:00:00
-          weekday:
-          - sat
-          - sun
+    - condition: time
+      after: '19:10:00'
+      before: '23:00:00'
+      weekday:
+      - sun
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+      - sat
     - condition: device
       type: is_off
       device_id: 8cebb71e415e431ddada2cac66240610
@@ -393,7 +377,7 @@
       entity_id: 92eb0d8002c30b04355ff5c7aa987dea
       type: is_on
     then:
-    - action: notify.lg_tv
+    - action: notify.oled65g33la
       metadata: {}
       data:
         message: ' Salon OFF 15s'
@@ -427,7 +411,7 @@
         entity_id: 92eb0d8002c30b04355ff5c7aa987dea
         type: is_on
       then:
-      - action: notify.lg_tv
+      - action: notify.oled65g33la
         metadata: {}
         data:
           message: Salon OFF
@@ -450,7 +434,7 @@
         entity_id: 92eb0d8002c30b04355ff5c7aa987dea
         type: is_on
       then:
-      - action: notify.lg_tv
+      - action: notify.oled65g33la
         metadata: {}
         data:
           message: Salon will stay ON
@@ -554,11 +538,6 @@
           target:
             device_id: 8cebb71e415e431ddada2cac66240610
           data: {}
-      - action: input_boolean.turn_on
-        target:
-          entity_id:
-          - input_boolean.lgtv_film_mode_set
-        data: {}
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == ''double'' }}'
@@ -594,10 +573,6 @@
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
-        - target:
-            entity_id: input_boolean.lgtv_film_mode_set
-          action: input_boolean.turn_off
-          data: {}
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == ''hold'' }}'
@@ -642,10 +617,6 @@
             - 09094d3b16a9a010936727c287c04cfe
             - decdfc9c849e2d160492f0f731bd8fc1
             - 32f9d6bc3960c64f80491ae3a31e09f8
-        - target:
-            entity_id: input_boolean.lgtv_film_mode_set
-          action: input_boolean.turn_off
-          data: {}
   mode: restart
 - id: '1725632338648'
   alias: Kamera REC2
@@ -730,7 +701,7 @@
       - condition: trigger
         id: arrive
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:30:00'
       - condition: template
         value_template: '{% set acc = state_attr(''device_tracker.xiaomihmi15'', ''gps_accuracy'')
@@ -929,7 +900,7 @@
         data: {}
   mode: restart
 - id: '1728996583325'
-  alias: Kuchnia ON 20:00 - 06:10 (weekend 04:00)
+  alias: Kuchnia ON 19:10 - 06:10 (weekend 04:00)
   description: ''
   triggers:
   - type: occupied
@@ -957,7 +928,7 @@
   - choose:
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:59:59'
         weekday:
         - fri
@@ -977,7 +948,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:59:59'
         weekday:
         - sat
@@ -997,7 +968,7 @@
         action: switch.turn_on
     - conditions:
       - condition: time
-        after: '20:00:00'
+        after: '19:10:00'
         before: '23:59:59'
         weekday:
         - mon
@@ -1517,9 +1488,6 @@
       minutes: 45
       seconds: 0
     enabled: true
-  - trigger: state
-    entity_id:
-    - input_button.lgtv_manual
   conditions: []
   actions:
   - delay:
@@ -1539,7 +1507,7 @@
         minutes: 30
         seconds: 0
     then:
-    - action: notify.lg_tv
+    - action: notify.oled65g33la
       metadata: {}
       data:
         message: LGTV OFF 5m
@@ -1556,7 +1524,7 @@
         seconds: 0
         milliseconds: 0
       enabled: true
-    - action: notify.lg_tv
+    - action: notify.oled65g33la
       metadata: {}
       data:
         message: LGTV OFF 1m
@@ -1674,13 +1642,6 @@
       entity_id: input_boolean.lgtv_film_mode_set
       state: 'off'
   actions:
-  - data:
-      entity_id: media_player.lg_tv
-      command: system.launcher/launch
-      payload:
-        id: com.webos.app.home
-    action: webostv.command
-    enabled: false
   - delay:
       hours: 0
       minutes: 0
@@ -1689,24 +1650,6 @@
   - data:
       picture_mode: filmMaker
     action: script.lgtv_picture_mode
-  - target:
-      entity_id: input_boolean.lgtv_film_mode_set
-    action: input_boolean.turn_on
-    data: {}
-  mode: single
-- id: '1750362745719'
-  alias: LGTV OF FilmMode Flag OF
-  description: ''
-  triggers:
-  - entity_id: media_player.lg_tv
-    to: 'off'
-    trigger: state
-  conditions: []
-  actions:
-  - target:
-      entity_id: input_boolean.lgtv_film_mode_set
-    action: input_boolean.turn_off
-    data: {}
   mode: single
 - id: '1750461812065'
   alias: Kuchnia ON OFF Manual
@@ -2106,7 +2049,7 @@
   conditions: []
   actions:
   - delay:
-      hours: 3
+      hours: 4
       minutes: 30
       seconds: 0
       milliseconds: 0
@@ -2230,10 +2173,6 @@
   - action: script.lgtv_picture_mode
     data:
       picture_mode: filmMaker
-  - action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.lgtv_film_mode_set
-    data: {}
   mode: single
 - id: vpn_refresh_on_toggle
   alias: 'VPN: Odświeżanie statusu po zmianie'
@@ -2625,7 +2564,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 20
+          temperature: 16
           hvac_mode: auto
       - action: notify.send_message
         target:
@@ -2696,7 +2635,7 @@
         target:
           entity_id: climate.klimatyzator
         data:
-          temperature: 22
+          temperature: 16
           hvac_mode: auto
     - alias: Koniec osuszania - wyłącz
       conditions:

@@ -14,7 +14,8 @@ lgtv_picture_mode:
           - expert2
   sequence:
   - variables:
-      eye_comfort: '{%- if picture_mode %}off {%- else %}on{% endif %}'
+      film_mode: '{{ picture_mode == ''filmMaker'' }}'
+      eye_comfort: '{{ ''off'' if picture_mode == ''filmMaker'' else ''on'' }}'
   - action: webostv.command
     data:
       entity_id: media_player.lg_tv
@@ -37,7 +38,7 @@ lgtv_picture_mode:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 500
   - action: webostv.button
     data:
       entity_id: media_player.lg_tv
@@ -46,7 +47,7 @@ lgtv_picture_mode:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 500
   - action: webostv.command
     data:
       entity_id: media_player.lg_tv
@@ -69,11 +70,19 @@ lgtv_picture_mode:
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 400
+      milliseconds: 500
   - action: webostv.button
     data:
       entity_id: media_player.lg_tv
       button: ENTER
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 500
+  - action: input_boolean.turn_{{ 'on' if film_mode else 'off' }}
+    target:
+      entity_id: input_boolean.lgtv_film_mode_set
 lgtv_script:
   alias: LGTV_Script
   description: ''
@@ -103,21 +112,6 @@ fear_pc_script:
     data: {}
     target:
       device_id: 82d438cb58cfac2ce0769bed5bbaa7bf
-  description: ''
-lgtv_script_off:
-  alias: LGTV_Script_OFF
-  sequence:
-  - action: input_boolean.turn_off
-    metadata: {}
-    target:
-      entity_id: input_boolean.lgtv_film_mode_set
-    data: {}
-  - action: input_button.press
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_button.lgtv_manual2
   description: ''
 lgtv_script_off_now:
   sequence:
